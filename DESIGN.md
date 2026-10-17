@@ -420,16 +420,43 @@ interface GridProps extends BoxProps {
 ### Button
 ```tsx
 interface ButtonProps {
-  size?: ScaleProp;
-  borderRadius?: ScaleProp;
-  fontWeight?: ScaleProp;
-  boxShadow?: ScaleProp;
-  padding?: ScaleProp;
-  variant?: 'primary' | 'secondary' | 'ghost' | 'outline';
+  // Scale props (all optional, default = normal)
+  size?: ScaleProp;              // fontSize + padding + gap
+  borderRadius?: ScaleProp;      // corner roundness
+  fontWeight?: ScaleProp;        // text weight
+  boxShadow?: ScaleProp;         // elevation
+  padding?: ScaleProp;           // internal spacing (overrides size-based)
+  
   disabled?: boolean;
   children: React.ReactNode;
   onClick?: () => void;
+  className?: string;
+  style?: React.CSSProperties;
 }
+```
+
+**Default appearance** (CSS Module):
+```css
+.button {
+  background: var(--color-primary-bg);
+  color: var(--color-primary-text);
+  border-color: var(--color-primary-border);
+}
+.button:hover { background: var(--color-primary-hover-bg); }
+```
+
+**Consumer creates "secondary" via CSS variable override:**
+```css
+/* Their globals.css */
+.my-secondary-button {
+  --color-primary-bg: var(--color-secondary-bg);
+  --color-primary-text: var(--color-secondary-text);
+  --color-primary-border: var(--color-secondary-border);
+  --color-primary-hover-bg: var(--color-secondary-hover-bg);
+}
+```
+```tsx
+<Button className="my-secondary-button" />
 ```
 
 ### Card
@@ -438,9 +465,34 @@ interface CardProps {
   size?: ScaleProp;              // Affects internal padding, font sizes
   borderRadius?: ScaleProp;
   boxShadow?: ScaleProp;
-  padding?: ScaleProp;           // Internal content padding
-  variant?: 'elevated' | 'outlined' | 'filled';
+  padding?: ScaleProp;           // Content padding
   children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+}
+```
+
+**Default appearance:**
+```css
+.card {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-normal);
+  box-shadow: var(--elevation-normal);
+}
+```
+
+**Consumer creates variants via CSS:**
+```css
+.my-outlined-card {
+  --color-card-bg: transparent;
+  --color-card-border: var(--color-border-default);
+  --elevation-normal: none;
+}
+.my-elevated-card {
+  --color-card-bg: var(--color-bg-primary);
+  --color-card-border: transparent;
+  --elevation-normal: var(--elevation-more);
 }
 ```
 
@@ -451,7 +503,7 @@ interface InputProps {
   borderRadius?: ScaleProp;
   fontWeight?: ScaleProp;        // Label weight
   padding?: ScaleProp;           // Internal padding
-  // ... standard input props
+  // ... standard input props (value, onChange, placeholder, etc.)
 }
 ```
 
@@ -745,7 +797,7 @@ const meta: Meta<typeof Button> = {
     borderRadius: { control: 'select', options: ['less', 'normal', 'more'] },
     fontWeight: { control: 'select', options: ['less', 'normal', 'more'] },
     boxShadow: { control: 'select', options: ['less', 'normal', 'more'] },
-    variant: { control: 'select', options: ['primary', 'secondary', 'ghost', 'outline'] },
+    padding: { control: 'select', options: ['less', 'normal', 'more'] },
   },
 };
 export default meta;
@@ -786,8 +838,8 @@ export const EscapeHatch: Story = {
 - [ ] `Text` — Typography with `size`, `weight`, `color` props
 
 ### Phase 3: Components
-- [ ] `Button` — Showcase component with all variant props
-- [ ] `Card` — Container with variant support
+- [ ] `Button` — Showcase component with all scale props
+- [ ] `Card` — Container with scale props
 - [ ] `Input` / `Textarea` — Form primitives
 - [ ] `Select` — Compound component pattern
 
