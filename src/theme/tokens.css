@@ -1,0 +1,31 @@
+/**
+ * Scale tokens — 3 values per property (less/normal/more)
+ * Only 12 CSS variables total for the entire scale system.
+ */
+
+:root {
+  /* Size scale — affects font-size, padding, gap */
+  --size-less: 0.875rem;    /* 14px — compact */
+  --size-normal: 1rem;      /* 16px — base */
+  --size-more: 1.25rem;     /* 20px — prominent */
+
+  /* Radius scale — affects border-radius */
+  --radius-less: 0.125rem;  /* 2px — sharp */
+  --radius-normal: 0.375rem; /* 6px — default */
+  --radius-more: 0.75rem;   /* 12px — round */
+
+  /* Weight scale — affects font-weight */
+  --weight-less: 300;       /* light */
+  --weight-normal: 400;     /* regular */
+  --weight-more: 600;       /* semibold */
+
+  /* Spacing scale — affects padding, margin, gap, width, height */
+  --space-less: 0.5rem;     /* 8px — dense */
+  --space-normal: 1rem;     /* 16px — comfortable */
+  --space-more: 1.5rem;     /* 24px — spacious */
+
+  /* Elevation scale — affects box-shadow */
+  --elevation-less: 0 1px 2px rgb(0 0 0 / 0.05);
+  --elevation-normal: 0 4px 6px rgb(0 0 0 / 0.07);
+  --elevation-more: 0 10px 15px rgb(0 0 0 / 0.1);
+}

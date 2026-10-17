@@ -1,0 +1,231 @@
+# More or Less UI
+
+A React UI library built on **relative scaling** (`more`/`less`/`normal`) with CSS Variables for theming.
+
+## Philosophy
+
+**One mental model for everything:** Every sizing/styling prop accepts three intentional variants + an escape hatch.
+
+```tsx
+// Universal pattern
+<Component />                    // normal (default)
+<Component prop="more" />        // one step up
+<Component prop="less" />        // one step down
+<Component prop="1.5rem" />      // escape hatch: any CSS value
+<Component prop={18} />          // escape hatch: number = pixels
+```
+
+No `sm`/`md`/`lg`/`xl`/`2xl` — just `more`/`less`/`normal`.
+
+## Features
+
+- **Relative Scale System** — `more`/`less`/`normal` across all props (size, radius, weight, spacing, elevation)
+- **CSS Variables for Theming** — Native, SSR-safe, framework-agnostic
+- **CSS Modules for Variants** — Zero runtime, browser-resolved, DevTools-friendly
+- **Direct CSS Property Names** — `borderRadius`, `fontWeight`, `boxShadow`, `padding`, `margin`, `gap`, `width`, `height`
+- **Escape Hatch** — Any CSS value as string or number (pixels)
+- **React ThemeProvider** — Optional programmatic theme switching with persistence
+- **Tree-shakeable** — ESM/CJS dual package exports
+- **TypeScript First** — Full type safety with `ScaleProp` type
+
+## Installation
+
+```bash
+npm install more-or-less-ui
+# or
+pnpm add more-or-less-ui
+# or
+yarn add more-or-less-ui
+```
+
+## Quick Start
+
+```tsx
+import { Button, Box, Flex, Text } from 'more-or-less-ui';
+import 'more-or-less-ui/styles.css';
+
+function App() {
+  return (
+    <Flex gap="more" align="center">
+      <Button size="more" borderRadius="more">
+        Primary Action
+      </Button>
+      <Button size="less" boxShadow="less">
+        Secondary
+      </Button>
+    </Flex>
+  );
+}
+```
+
+## Theming
+
+### 1. CSS Variable Overrides (Global)
+
+```css
+/* Your globals.css */
+@import 'more-or-less-ui/styles.css';
+
+:root {
+  --color-primary-500: #ec4899;      /* Your brand color */
+  --size-less: 0.75rem;
+  --size-normal: 1rem;
+  --size-more: 1.5rem;
+  --radius-less: 0;
+  --radius-normal: 0.5rem;
+  --radius-more: 1rem;
+}
+```
+
+### 2. Light/Dark Mode
+
+```css
+/* CSS-only: respects OS preference */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg-primary: #111827;
+    --color-text-primary: #f9fafb;
+  }
+}
+
+/* Or class-based toggle */
+[data-theme="dark"] {
+  --color-bg-primary: #111827;
+  --color-text-primary: #f9fafb;
+}
+```
+
+### 3. React ThemeProvider (Programmatic)
+
+```tsx
+import { ThemeProvider, useTheme } from 'more-or-less-ui';
+
+function App() {
+  return (
+    <ThemeProvider defaultTheme="system" storageKey="my-app-theme">
+      <Header />
+    </ThemeProvider>
+  );
+}
+
+function Header() {
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  return (
+    <select value={theme} onChange={e => setTheme(e.target.value)}>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="system">System</option>
+    </select>
+  );
+}
+```
+
+## Scale Props
+
+Every component accepts these props with `ScaleProp` type (`'less' | 'normal' | 'more' | string | number | undefined`):
+
+| Prop | CSS Property | Description |
+|------|--------------|-------------|
+| `size` | `fontSize` + `padding` + `gap` | Compound: text size + spacing |
+| `borderRadius` | `borderRadius` | Corner roundness |
+| `fontWeight` | `fontWeight` | Text weight |
+| `boxShadow` | `boxShadow` | Elevation/depth |
+| `padding` | `padding` | Internal spacing |
+| `margin` | `margin` | External spacing |
+| `gap` | `gap` | Child spacing |
+| `width` | `width` | Element width |
+| `height` | `height` | Element height |
+| `minWidth` | `minWidth` | Minimum width |
+| `minHeight` | `minHeight` | Minimum height |
+
+### Usage Examples
+
+```tsx
+// Standard variants (90% of cases)
+<Button size="more" />
+<Button borderRadius="less" />
+<Button fontWeight="more" />
+<Box padding="more" gap="normal" />
+
+// Escape hatch (10% of cases)
+<Button size="1.5rem" borderRadius="50%" fontWeight={700} />
+<Box width="300px" height="200px" padding="1rem 2rem" />
+```
+
+## Components
+
+### Primitives (Building Blocks)
+
+- `Box` — Fundamental layout primitive with all scale props
+- `Flex` — Flexbox layout helper
+- `Stack` — Vertical/horizontal stack with divider
+- `Grid` — Grid layout helper
+- `Text` — Typography with size/weight/color
+
+### Components (Composed)
+
+- `Button` — Interactive button with all scale props
+- `Card` — Container with elevation
+- `Input` — Form input
+- `Textarea` — Multi-line input
+- `Select` — Compound select component
+
+## Extensibility
+
+Build custom components using the same design tokens:
+
+```tsx
+import { Box, Text, ScaleProp, isVariant } from 'more-or-less-ui';
+
+interface StatCardProps {
+  value: string;
+  label: string;
+  size?: ScaleProp;
+  borderRadius?: ScaleProp;
+  boxShadow?: ScaleProp;
+}
+
+export function StatCard({ value, label, size, borderRadius, boxShadow }) {
+  return (
+    <Box
+      padding="normal"
+      borderRadius={borderRadius}
+      boxShadow={boxShadow}
+      bg="bgPrimary"
+      border
+      borderColor="borderDefault"
+    >
+      <Text size={size} fontWeight="more" color="textPrimary">
+        {value}
+      </Text>
+      <Text size="less" color="textMuted">
+        {label}
+      </Text>
+    </Box>
+  );
+}
+```
+
+## Scripts
+
+```bash
+npm run dev        # Watch mode build
+npm run build      # Production build
+npm run typecheck  # TypeScript check
+npm run test       # Run tests
+npm run test:watch # Watch tests
+npm run lint       # ESLint
+npm run storybook  # Start Storybook
+```
+
+## Publishing
+
+```bash
+npm run changeset  # Create changeset
+npm run version    # Version bump
+npm run release    # Publish to npm
+```
+
+## License
+
+MIT

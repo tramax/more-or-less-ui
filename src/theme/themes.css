@@ -1,0 +1,21 @@
+/**
+ * Theme definitions — Light and Dark mode token overrides.
+ * Imported by styles.css. Consumers can override via [data-theme] or CSS variables.
+ */
+
+/* Light theme (default) — defined in colors.css :root */
+
+/* Dark theme — defined in colors.css [data-theme="dark"] */
+
+/* 
+ * Consumer usage:
+ * 
+ * 1. CSS-only (respects OS preference):
+ *    @media (prefers-color-scheme: dark) { :root { ... } }
+ * 
+ * 2. Class-based (manual toggle):
+ *    <html data-theme="dark">...</html>
+ * 
+ * 3. React ThemeProvider (programmatic):
+ *    <ThemeProvider defaultTheme="system" />
+ */
