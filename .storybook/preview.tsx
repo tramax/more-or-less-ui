@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import type { Decorator, Preview } from '@storybook/react-vite';
 import '@/styles.css';
+import './preview.css';
 
 const withTheme: Decorator = (Story, context) => {
   const theme = context.globals['theme'] === 'dark' ? 'dark' : 'light';
@@ -32,7 +33,7 @@ const preview: Preview = {
   parameters: {
     layout: 'centered',
     controls: { expanded: true },
-    // Keep Storybook's canvas background in sync with our theme tokens
+    // The canvas colour comes from preview.css and follows the theme toggle
     backgrounds: { disabled: true },
   },
 };

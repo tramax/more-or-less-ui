@@ -1,0 +1,16 @@
+/*
+ * Storybook-only canvas styling (not part of the library's tokens).
+ * A warm grey backdrop so white surfaces (cards, shadows) read against it.
+ */
+:root {
+  --sb-canvas: #ece8e3;
+}
+
+[data-theme='dark'] {
+  --sb-canvas: #1c1917;
+}
+
+body,
+.docs-story {
+  background-color: var(--sb-canvas);
+}
