@@ -24,6 +24,7 @@ const SCALE_SPEC = {
     'minHeight',
     'borderRadius',
     'boxShadow',
+    'background',
   ],
   // Drives several CSS properties
   compound: { size: ['width', 'height'] },

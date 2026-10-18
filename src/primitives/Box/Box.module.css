@@ -6,7 +6,8 @@
  * Order matters: shorthands (size, padding, margin) come before the longhands they can be combined
  * with, so `padding="more" paddingLeft="less"` resolves the way it reads.
  *
- * width/height/min-* and `size` use the space scale (see theme/tokens.css).
+ * width/height/min-* and `size` use the space scale (see theme/tokens.css);
+ * `background` uses the --color-background-* tokens (see theme/tokens.css).
  */
 
 .sizeLess {
@@ -190,4 +191,14 @@
 }
 .boxShadowMore {
   box-shadow: var(--elevation-more);
+}
+
+.backgroundLess {
+  background: var(--color-background-less);
+}
+.backgroundNormal {
+  background: var(--color-background-normal);
+}
+.backgroundMore {
+  background: var(--color-background-more);
 }

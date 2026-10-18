@@ -28,6 +28,7 @@ const SCALE_PROPS = [
   'minHeight',
   'borderRadius',
   'boxShadow',
+  'background',
 ] as const;
 const VARIANTS = ['less', 'normal', 'more'] as const;
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
