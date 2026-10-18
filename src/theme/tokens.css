@@ -1,6 +1,6 @@
 /**
  * Scale tokens — 3 values per property (less/normal/more)
- * Only 12 CSS variables total for the entire scale system.
+ * Only 15 CSS variables total (5 scales × 3) for the entire scale system.
  */
 
 :root {

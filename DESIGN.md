@@ -31,6 +31,7 @@
 | **Testing** | `Vitest` + React Testing Library | Native ESM, TypeScript, shares config with Vite/tsup |
 | **Component Explorer** | **Storybook** | Mature ecosystem, Chromatic integration, team familiarity |
 | **Styling** | **CSS Modules + CSS Variables** | Zero runtime, native theming, SSR-safe, escape hatch via inline styles |
+| **CSS Modules naming** | `*.module.css` | Required for Vite (Storybook/Vitest) and esbuild (tsup) to treat a file as a CSS Module. tsup emits component CSS into `dist/styles.css` (single consumer import) via a small plugin in `tsup.config.ts` |
 | **Publishing** | Public npm + Changesets | Standard versioning, automated releases |
 
 ### Theming System
@@ -186,7 +187,7 @@ Use standard CSS property names (camelCase) for direct mappings — **no transla
 ### CSS Module for Variants, Inline Styles for Escape Hatch
 
 ```css
-/* Component.styles.css */
+/* Component.module.css */
 .component {
   /* Base (normal) values */
   font-size: var(--size-normal);
@@ -227,7 +228,7 @@ Use standard CSS property names (camelCase) for direct mappings — **no transla
 import { forwardRef } from 'react';
 import { clsx } from 'clsx';
 import { ScaleProp, isVariant } from '../types/scale';
-import styles from './Component.styles.css';
+import styles from './Component.module.css';
 
 interface ComponentProps {
   // Compound
@@ -629,7 +630,7 @@ more-or-less-ui/
 ├── package.json
 ├── tsup.config.ts
 ├── tsconfig.json
-├── vite.config.ts          # For Storybook
+├── vite.config.ts          # Optional — Storybook/Vitest work without it
 ├── .storybook/
 │   ├── main.ts
 │   └── preview.ts
@@ -653,7 +654,7 @@ more-or-less-ui/
 │   ├── primitives/
 │   │   ├── Box/
 │   │   │   ├── Box.tsx
-│   │   │   ├── Box.styles.css
+│   │   │   ├── Box.module.css
 │   │   │   ├── Box.stories.tsx
 │   │   │   └── index.ts
 │   │   ├── Flex/
@@ -672,7 +673,7 @@ more-or-less-ui/
 │   │   ├── CompoundComponent.tsx
 │   │   └── index.ts
 │   └── styles.css          # Global styles + CSS variable registration
-├── stories/                # Storybook stories
+├── (stories live next to their component as *.stories.tsx)
 └── tests/                  # Vitest tests
 ```
 
@@ -785,7 +786,7 @@ function Header() {
 
 ```tsx
 // components/Button/Button.stories.tsx
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from './Button';
 
 const meta: Meta<typeof Button> = {
@@ -844,7 +845,8 @@ export const EscapeHatch: Story = {
 - [ ] `Select` — Compound component pattern
 
 ### Phase 4: Developer Experience
-- [ ] Storybook configured with all stories
+- [x] Storybook 10 configured (react-vite, docs + a11y addons, light/dark toolbar toggle)
+- [ ] Stories for every component
 - [ ] Vitest + React Testing Library setup
 - [ ] Changesets for versioning
 - [ ] CI/CD for npm publishing

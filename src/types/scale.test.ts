@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isVariant, type ScaleProp, type Variant } from './scale';
+import { isVariant, type ScaleProp, type Variant } from '@/types/scale';
 
 describe('scale types', () => {
   describe('isVariant', () => {
