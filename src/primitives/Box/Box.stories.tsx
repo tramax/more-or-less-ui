@@ -1,11 +1,16 @@
 import type { ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Box } from './Box';
+import { Box, BOX_DEFAULTS } from './Box';
 
 const scaleControl = {
   control: 'select',
   options: [undefined, 'less', 'normal', 'more'],
 } as const;
+
+// Storybook can't reduce CSSProperties[...] to a control, so it falls back to an object editor
+const cssControl = (...options: string[]) =>
+  ({ control: 'select', options: [undefined, ...options] }) as const;
+const textControl = { control: 'text' } as const;
 
 const VARIANTS = ['less', 'normal', 'more'] as const;
 
@@ -18,7 +23,21 @@ const meta: Meta<typeof Box> = {
   title: 'Primitives/Box',
   component: Box,
   tags: ['autodocs'],
+  // Reflect the component's defaults in the controls and the Default column
+  args: BOX_DEFAULTS,
   argTypes: {
+    display: cssControl('block', 'flex', 'grid', 'inline-flex', 'none'),
+    flex: textControl,
+    flexDirection: cssControl('row', 'row-reverse', 'column', 'column-reverse'),
+    alignItems: cssControl('flex-start', 'center', 'flex-end', 'stretch', 'baseline'),
+    justifyContent: cssControl(
+      'flex-start',
+      'center',
+      'flex-end',
+      'space-between',
+      'space-around',
+      'space-evenly',
+    ),
     padding: scaleControl,
     margin: scaleControl,
     gap: scaleControl,
