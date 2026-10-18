@@ -1,6 +1,8 @@
 /**
- * Scale tokens — 3 values per property (less/normal/more)
- * Only 15 CSS variables total (5 scales × 3) for the entire scale system.
+ * Design tokens (light theme / defaults). Dark-mode overrides live in themes.css.
+ *
+ * - Scale tokens: 3 values per property (less/normal/more), 15 CSS variables (5 scales × 3)
+ * - Color tokens: deliberately minimal. One brand color and the Box background scale.
  */
 
 :root {
@@ -28,4 +30,12 @@
   --elevation-less: 0 1px 2px rgb(0 0 0 / 0.05);
   --elevation-normal: 0 4px 6px rgb(0 0 0 / 0.07);
   --elevation-more: 0 10px 15px rgb(0 0 0 / 0.1);
+
+  /* Brand color */
+  --color-primary: #3b82f6;
+
+  /* Background scale — affects Box background */
+  --color-background-less: transparent;
+  --color-background-normal: Canvas; /* system canvas: white in light, system dark in dark */
+  --color-background-more: #d9c9ad; /* sand */
 }

@@ -67,7 +67,7 @@ function App() {
 @import 'more-or-less-ui/styles.css';
 
 :root {
-  --color-primary-500: #ec4899;      /* Your brand color */
+  --color-primary: #ec4899;      /* Your brand color */
   --size-less: 0.75rem;
   --size-normal: 1rem;
   --size-more: 1.5rem;
@@ -80,18 +80,13 @@ function App() {
 ### 2. Light/Dark Mode
 
 ```css
+/* Class-based toggle: <html data-theme="dark"> sets color-scheme: dark and the dark overrides */
+
 /* CSS-only: respects OS preference */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg-primary: #111827;
-    --color-text-primary: #f9fafb;
+    color-scheme: dark;
   }
-}
-
-/* Or class-based toggle */
-[data-theme="dark"] {
-  --color-bg-primary: #111827;
-  --color-text-primary: #f9fafb;
 }
 ```
 

@@ -9,7 +9,6 @@
 
 /* Design tokens (scale + colors) */
 @import './theme/tokens.css';
-@import './theme/colors.css';
 @import './theme/themes.css';
 
 /* Base resets */
@@ -41,8 +40,8 @@ body {
     sans-serif;
   font-size: var(--size-normal);
   line-height: 1.5;
-  color: var(--color-text-primary);
-  background-color: var(--color-bg-primary);
+  color: CanvasText;
+  background-color: Canvas;
 }
 
 /* Focus visible polyfill styles */
@@ -51,19 +50,13 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-border-focus);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
 /* Selection */
 ::selection {
-  background-color: var(--color-primary-200);
-  color: var(--color-primary-900);
-}
-
-[data-theme='dark'] ::selection {
-  background-color: var(--color-primary-800);
-  color: var(--color-primary-100);
+  background-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 /* Reduced motion */

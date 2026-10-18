@@ -7,7 +7,7 @@ const ROOT = typeof document !== 'undefined' ? document.documentElement : null;
 
 /**
  * Get the computed value of a CSS variable.
- * @param name - CSS variable name (e.g., '--color-primary-500')
+ * @param name - CSS variable name (e.g., '--color-primary')
  * @param element - Element to read from (default: document.documentElement)
  * @returns The computed value, or empty string if not found
  */

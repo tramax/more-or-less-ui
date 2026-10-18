@@ -92,58 +92,35 @@ export function isVariant(value: ScaleProp): value is Variant {
 
 ### Color Tokens (Separate from Scale)
 
+Deliberately minimal for now: **one brand color and the Box `background` scale**. No palettes, no
+numbered shades (50-900), no primary/secondary families. More colors get added when a component
+actually needs one.
+
 ```css
-/* theme/colors.css */
+/* theme/tokens.css (alongside the scale tokens) */
 :root {
-  /* Primary */
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-on-primary: #ffffff;
+  --color-primary: #3b82f6;
 
-  /* Secondary */
-  --color-secondary-100: #f1f5f9;
-  --color-secondary-200: #e2e8f0;
-  --color-secondary-300: #cbd5e1;
-  --color-secondary-900: #0f172a;
-
-  /* Semantic */
-  --color-bg-primary: #ffffff;
-  --color-text-primary: #111827;
-  --color-text-muted: #6b7280;
-  --color-border-default: #e5e7eb;
-
-  /* Variants */
-  --color-primary-bg: var(--color-primary-500);
-  --color-primary-text: var(--color-on-primary);
-  --color-primary-border: transparent;
-  --color-primary-hover-bg: var(--color-primary-600);
-
-  --color-secondary-bg: var(--color-secondary-100);
-  --color-secondary-text: var(--color-secondary-900);
-  --color-secondary-border: var(--color-secondary-300);
-  --color-secondary-hover-bg: var(--color-secondary-200);
-
-  --color-ghost-bg: transparent;
-  --color-ghost-text: var(--color-primary-600);
-  --color-ghost-hover-bg: var(--color-primary-50);
-
-  --color-outline-bg: transparent;
-  --color-outline-text: var(--color-primary-600);
-  --color-outline-border: var(--color-primary-600);
-  --color-outline-hover-bg: var(--color-primary-50);
+  /* Background scale: Box's `background` less / normal / more */
+  --color-background-less: transparent;
+  --color-background-normal: Canvas; /* system canvas: white in light, system dark in dark */
+  --color-background-more: #d9c9ad; /* sand */
 }
 
+/* theme/themes.css */
 [data-theme="dark"] {
-  --color-bg-primary: #111827;
-  --color-text-primary: #f9fafb;
-  --color-text-muted: #9ca3af;
-  --color-border-default: #374151;
-  --color-primary-500: #60a5fa;
-  --color-primary-600: #93c5fd;
-  --color-on-primary: #111827;
-  /* ... variant overrides for dark */
+  color-scheme: dark; /* flips system colors: Canvas, CanvasText, form controls, scrollbars */
+  --color-background-more: #4a3f33; /* umber */
+  /* ...heavier --elevation-* shadows */
 }
 ```
+
+Page text and background use the browser's system colors (`CanvasText` / `Canvas`), so dark mode
+needs no text/background variables of its own.
+
+> **Note:** the Button and Card sections below were written against the earlier, larger palette
+> (`--color-primary-bg`, `--color-card-bg`, ...). Those variables no longer exist; component colors
+> will be redesigned when those components are built.
 
 ---
 
@@ -602,8 +579,7 @@ export function useTokens() {
   const { resolvedTheme } = useTheme();
   return {
     colors: {
-      primary: getCSSVariable('--color-primary-500'),
-      bgPrimary: getCSSVariable('--color-bg-primary'),
+      primary: getCSSVariable('--color-primary'),
       // ...
     },
     size: {
@@ -637,9 +613,8 @@ more-or-less-ui/
 ├── src/
 │   ├── index.ts            # Public exports
 │   ├── theme/
-│   │   ├── tokens.css      # Scale CSS variables (15 vars)
-│   │   ├── colors.css      # Color tokens
-│   │   ├── themes.css      # Light/dark theme definitions
+│   │   ├── tokens.css      # Scale (15 vars) + color tokens
+│   │   ├── themes.css      # Dark-mode overrides
 │   │   ├── ThemeProvider.tsx
 │   │   └── index.ts
 │   ├── types/
@@ -733,8 +708,7 @@ export type { ButtonProps } from './components/Button';
   --radius-normal: 0.5rem;
   --radius-more: 1rem;
 
-  --color-primary-500: #ec4899;
-  --color-primary-600: #db2777;
+  --color-primary: #ec4899;
 }
 ```
 
@@ -743,17 +717,11 @@ export type { ButtonProps } from './components/Button';
 /* globals.css */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg-primary: #111827;
-    --color-text-primary: #f9fafb;
-    --elevation-normal: 0 4px 6px rgb(0 0 0 / 0.3);
+    color-scheme: dark;
   }
 }
 
-/* Or class-based */
-[data-theme="dark"] {
-  --color-bg-primary: #111827;
-  --color-text-primary: #f9fafb;
-}
+/* Or attribute-based: <html data-theme="dark"> */
 ```
 
 ### 3. Programmatic Theme Switching (React)
@@ -825,7 +793,7 @@ export const EscapeHatch: Story = {
 ### Phase 1: Foundation
 - [ ] `types/scale.ts` — `ScaleProp`, `Variant`, `isVariant`
 - [ ] `theme/tokens.css` — 15 scale CSS variables
-- [ ] `theme/colors.css` — Color tokens + semantic aliases
+- [x] Color tokens in `theme/tokens.css` — Minimal: one primary color + Box background scale
 - [ ] `theme/themes.css` — Light/dark theme definitions
 - [ ] `theme/ThemeProvider.tsx` + `useTheme` hook
 - [ ] `utils/cssVars.ts` — `getCSSVariable`, `getAllTokens`
