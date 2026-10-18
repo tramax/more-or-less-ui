@@ -1,0 +1,193 @@
+/*
+ * Box: variant classes. Every scale prop has one class per variant, named <prop><Variant>
+ * (looked up by resolveScaleProps). Unlike components with a built-in look, Box has no base values,
+ * so `normal` is a real class too.
+ *
+ * Order matters: shorthands (size, padding, margin) come before the longhands they can be combined
+ * with, so `padding="more" paddingLeft="less"` resolves the way it reads.
+ *
+ * width/height/min-* and `size` use the space scale (see theme/tokens.css).
+ */
+
+.sizeLess {
+  width: var(--space-less);
+  height: var(--space-less);
+}
+.sizeNormal {
+  width: var(--space-normal);
+  height: var(--space-normal);
+}
+.sizeMore {
+  width: var(--space-more);
+  height: var(--space-more);
+}
+
+.paddingLess {
+  padding: var(--space-less);
+}
+.paddingNormal {
+  padding: var(--space-normal);
+}
+.paddingMore {
+  padding: var(--space-more);
+}
+
+.paddingLeftLess {
+  padding-left: var(--space-less);
+}
+.paddingLeftNormal {
+  padding-left: var(--space-normal);
+}
+.paddingLeftMore {
+  padding-left: var(--space-more);
+}
+
+.paddingRightLess {
+  padding-right: var(--space-less);
+}
+.paddingRightNormal {
+  padding-right: var(--space-normal);
+}
+.paddingRightMore {
+  padding-right: var(--space-more);
+}
+
+.paddingTopLess {
+  padding-top: var(--space-less);
+}
+.paddingTopNormal {
+  padding-top: var(--space-normal);
+}
+.paddingTopMore {
+  padding-top: var(--space-more);
+}
+
+.paddingBottomLess {
+  padding-bottom: var(--space-less);
+}
+.paddingBottomNormal {
+  padding-bottom: var(--space-normal);
+}
+.paddingBottomMore {
+  padding-bottom: var(--space-more);
+}
+
+.marginLess {
+  margin: var(--space-less);
+}
+.marginNormal {
+  margin: var(--space-normal);
+}
+.marginMore {
+  margin: var(--space-more);
+}
+
+.marginLeftLess {
+  margin-left: var(--space-less);
+}
+.marginLeftNormal {
+  margin-left: var(--space-normal);
+}
+.marginLeftMore {
+  margin-left: var(--space-more);
+}
+
+.marginRightLess {
+  margin-right: var(--space-less);
+}
+.marginRightNormal {
+  margin-right: var(--space-normal);
+}
+.marginRightMore {
+  margin-right: var(--space-more);
+}
+
+.marginTopLess {
+  margin-top: var(--space-less);
+}
+.marginTopNormal {
+  margin-top: var(--space-normal);
+}
+.marginTopMore {
+  margin-top: var(--space-more);
+}
+
+.marginBottomLess {
+  margin-bottom: var(--space-less);
+}
+.marginBottomNormal {
+  margin-bottom: var(--space-normal);
+}
+.marginBottomMore {
+  margin-bottom: var(--space-more);
+}
+
+.gapLess {
+  gap: var(--space-less);
+}
+.gapNormal {
+  gap: var(--space-normal);
+}
+.gapMore {
+  gap: var(--space-more);
+}
+
+.widthLess {
+  width: var(--space-less);
+}
+.widthNormal {
+  width: var(--space-normal);
+}
+.widthMore {
+  width: var(--space-more);
+}
+
+.heightLess {
+  height: var(--space-less);
+}
+.heightNormal {
+  height: var(--space-normal);
+}
+.heightMore {
+  height: var(--space-more);
+}
+
+.minWidthLess {
+  min-width: var(--space-less);
+}
+.minWidthNormal {
+  min-width: var(--space-normal);
+}
+.minWidthMore {
+  min-width: var(--space-more);
+}
+
+.minHeightLess {
+  min-height: var(--space-less);
+}
+.minHeightNormal {
+  min-height: var(--space-normal);
+}
+.minHeightMore {
+  min-height: var(--space-more);
+}
+
+.borderRadiusLess {
+  border-radius: var(--radius-less);
+}
+.borderRadiusNormal {
+  border-radius: var(--radius-normal);
+}
+.borderRadiusMore {
+  border-radius: var(--radius-more);
+}
+
+.boxShadowLess {
+  box-shadow: var(--elevation-less);
+}
+.boxShadowNormal {
+  box-shadow: var(--elevation-normal);
+}
+.boxShadowMore {
+  box-shadow: var(--elevation-more);
+}
