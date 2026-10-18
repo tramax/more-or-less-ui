@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Box } from './Box';
 
@@ -7,6 +8,11 @@ const scaleControl = {
 } as const;
 
 const VARIANTS = ['less', 'normal', 'more'] as const;
+
+// Lays the variants out side by side without adding Box's own defaults to the demo
+const Row = ({ alignItems, children }: { alignItems?: 'flex-start'; children: ReactNode }) => (
+  <div style={{ display: 'flex', alignItems, gap: '1rem' }}>{children}</div>
+);
 
 const meta: Meta<typeof Box> = {
   title: 'Primitives/Box',
@@ -28,80 +34,68 @@ export default meta;
 type Story = StoryObj<typeof Box>;
 
 export const Default: Story = {
-  args: { padding: 'normal', borderRadius: 'normal', background: 'normal', children: 'Box' },
+  args: { children: 'Box' },
 };
 
-export const PaddingLess: Story = {
-  args: { ...Default.args, padding: 'less', children: 'padding="less"' },
-};
-
-export const PaddingMore: Story = {
-  args: { ...Default.args, padding: 'more', children: 'padding="more"' },
+export const Padding: Story = {
+  render: () => (
+    <Row alignItems="flex-start">
+      {VARIANTS.map((v) => (
+        <Box key={v} padding={v}>
+          padding="{v}"
+        </Box>
+      ))}
+    </Row>
+  ),
 };
 
 export const Background: Story = {
   render: () => (
-    <Box display="flex" gap="normal">
+    <Row>
       {VARIANTS.map((v) => (
-        <Box key={v} padding="normal" borderRadius="normal" background={v}>
-          background="{v}"
-        </Box>
+        <Box key={v} background={v} />
       ))}
-    </Box>
+    </Row>
   ),
 };
 
 export const BorderRadius: Story = {
   render: () => (
-    <Box display="flex" gap="normal">
+    <Row>
       {VARIANTS.map((v) => (
-        <Box key={v} padding="normal" borderRadius={v} background="normal">
-          borderRadius="{v}"
-        </Box>
+        <Box key={v} borderRadius={v} />
       ))}
-    </Box>
+    </Row>
   ),
 };
 
 export const BoxShadow: Story = {
   render: () => (
-    <Box display="flex" gap="more" padding="more">
+    <Row>
       {VARIANTS.map((v) => (
-        <Box key={v} padding="normal" borderRadius="normal" boxShadow={v} background="normal">
-          boxShadow="{v}"
-        </Box>
+        <Box key={v} boxShadow={v} />
       ))}
-    </Box>
+    </Row>
   ),
 };
 
+// padding={0}: the default padding is larger than every size, so it would hide the difference
 export const Size: Story = {
-  args: {
-    size: 'more',
-  },
-
   render: () => (
-    <Box display="flex" alignItems="center" gap="normal">
+    <Row>
       {VARIANTS.map((v) => (
-        <Box key={v} size={v} borderRadius="less" background="more" />
+        <Box key={v} size={v} padding={0} />
       ))}
-    </Box>
+    </Row>
   ),
 };
 
 export const Layout: Story = {
   render: () => (
-    <Box
-      display="flex"
-      flexDirection="column"
-      gap="less"
-      padding="normal"
-      borderRadius="normal"
-      background="normal"
-    >
-      <Box size="normal" borderRadius="less" background="more" />
-      <Box size="normal" borderRadius="less" background="more" />
-      <Box size="normal" borderRadius="less" background="more" />
+    <Box display="flex" flexDirection="column" gap="less" background="less">
+      <Box />
+      <Box />
+      <Box />
     </Box>
   ),
 };

@@ -31,6 +31,12 @@ const SCALE_PROPS = [
   'background',
 ] as const;
 const VARIANTS = ['less', 'normal', 'more'] as const;
+const DEFAULT_CLASSES = [
+  styles.paddingNormal,
+  styles.gapNormal,
+  styles.borderRadiusNormal,
+  styles.backgroundNormal,
+];
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 describe('Box', () => {
@@ -53,9 +59,9 @@ describe('Box', () => {
       expect(el.getAttribute('aria-label')).toBe('b');
     });
 
-    it('adds no classes or styles when no scale props are set', () => {
+    it('adds only the default classes and no styles when no scale props are set', () => {
       const el = renderBox();
-      expect(el.getAttribute('class')).toBeFalsy();
+      expect([...el.classList]).toEqual(DEFAULT_CLASSES);
       expect(el.getAttribute('style')).toBeFalsy();
     });
 
@@ -81,18 +87,59 @@ describe('Box', () => {
       },
     );
 
-    it('applies "normal" explicitly (Box has no base values)', () => {
-      const el = renderBox({ padding: 'normal' });
-      expect(el.classList.contains(styles.paddingNormal as string)).toBe(true);
-    });
-
     it('combines several props', () => {
       const el = renderBox({ padding: 'more', margin: 'less', borderRadius: 'normal' });
       expect([...el.classList]).toEqual([
         styles.paddingMore,
         styles.marginLess,
+        styles.gapNormal,
         styles.borderRadiusNormal,
+        styles.backgroundNormal,
       ]);
+    });
+  });
+
+  describe('defaults', () => {
+    it.each(['padding', 'gap', 'borderRadius', 'background'] as const)(
+      '%s defaults to normal',
+      (prop) => {
+        expect(renderBox().classList.contains(styles[`${prop}Normal`] as string)).toBe(true);
+      },
+    );
+
+    it.each(['margin', 'boxShadow', 'size', 'width', 'height', 'minWidth', 'minHeight'] as const)(
+      '%s is opt-in',
+      (prop) => {
+        const el = renderBox();
+        for (const variant of VARIANTS) {
+          expect(el.classList.contains(styles[`${prop}${cap(variant)}`] as string)).toBe(false);
+        }
+      },
+    );
+
+    it('replaces the default when a variant is given', () => {
+      const el = renderBox({ padding: 'more' });
+      expect(el.classList.contains(styles.paddingMore as string)).toBe(true);
+      expect(el.classList.contains(styles.paddingNormal as string)).toBe(false);
+    });
+
+    it('is replaced by an escape-hatch value, including 0', () => {
+      const el = renderBox({ padding: 0, background: 'red' });
+      expect(el.style.padding).toBe('0px');
+      expect(el.style.background).toBe('red');
+      expect(el.classList.contains(styles.paddingNormal as string)).toBe(false);
+      expect(el.classList.contains(styles.backgroundNormal as string)).toBe(false);
+    });
+
+    it('lets a per-side prop override the default shorthand', () => {
+      const el = renderBox({ paddingLeft: 'less' });
+      expect(el.classList.contains(styles.paddingNormal as string)).toBe(true);
+      expect(el.classList.contains(styles.paddingLeftLess as string)).toBe(true);
+    });
+
+    it('turns the background off with "less" (transparent)', () => {
+      const el = renderBox({ background: 'less' });
+      expect(el.classList.contains(styles.backgroundLess as string)).toBe(true);
     });
   });
 
@@ -102,7 +149,7 @@ describe('Box', () => {
       expect(el.style.padding).toBe('12px 24px');
       expect(el.style.borderRadius).toBe('50%');
       expect(el.style.gap).toBe('1.5rem');
-      expect(el.getAttribute('class')).toBeFalsy();
+      expect([...el.classList]).toEqual([styles.backgroundNormal]);
     });
 
     it('treats numbers as pixels', () => {

@@ -1,7 +1,7 @@
 /*
  * Box: variant classes. Every scale prop has one class per variant, named <prop><Variant>
- * (looked up by resolveScaleProps). Unlike components with a built-in look, Box has no base values,
- * so `normal` is a real class too.
+ * (looked up by resolveScaleProps). Box has no base values in CSS: `normal` is a real class too, and
+ * the props that default to `normal` get it from SCALE_SPEC.defaults in Box.tsx.
  *
  * Order matters: shorthands (size, padding, margin) come before the longhands they can be combined
  * with, so `padding="more" paddingLeft="less"` resolves the way it reads.

@@ -1,14 +1,17 @@
 import type { CSSProperties } from 'react';
-import { isVariant, type ScaleProp } from '@/types/scale';
+import { isVariant, type ScaleProp, type Variant } from '@/types/scale';
 
 /**
  * Which props a component treats as scale props.
  * - `direct`: each drives the CSS property of the same name (`padding` → `padding`)
  * - `compound`: each drives several CSS properties (`size` → `width` + `height`)
+ * - `defaults`: the variant a prop gets when the caller leaves it `undefined`; props not listed here
+ *   stay unset. Opt out of a default with an escape-hatch value such as `0`.
  */
 export interface ScaleSpec<D extends string, C extends string> {
   direct?: readonly D[];
   compound?: Record<C, readonly (keyof CSSProperties)[]>;
+  defaults?: Partial<Record<NoInfer<D | C>, Variant>>;
 }
 
 /** CSS Module class map as imported (`import styles from './X.module.css'`). */
@@ -35,7 +38,7 @@ export function getVariantClass(
 
 /**
  * Pull the scale props out of a component's props and resolve them into what it needs:
- * - `classNames`: CSS Module classes for `less` / `normal` / `more`
+ * - `classNames`: CSS Module classes for `less` / `normal` / `more` (including `spec.defaults`)
  * - `style`: inline styles for escape-hatch values (anything else: '1.5rem', 12, '50%')
  * - `rest`: the remaining props, safe to spread onto the DOM element
  */
@@ -53,7 +56,9 @@ export function resolveScaleProps<
   const rest: Record<string, unknown> = { ...props };
 
   const resolve = (prop: string, cssProperties: readonly string[]) => {
-    const value = (props as Record<string, ScaleProp>)[prop];
+    const value =
+      (props as Record<string, ScaleProp>)[prop] ??
+      (spec.defaults as Record<string, Variant> | undefined)?.[prop];
     delete rest[prop];
     if (value === undefined) return;
 

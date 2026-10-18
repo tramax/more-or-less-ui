@@ -10,7 +10,7 @@ export type Variant = 'less' | 'normal' | 'more';
  * - Variant keywords: 'less' | 'normal' | 'more'
  * - Any CSS value as string: '1.5rem', '50%', '2px'
  * - Numbers (treated as pixels): 16, 24
- * - undefined (defaults to 'normal')
+ * - undefined (the component's default for that prop, usually 'normal')
  */
 export type ScaleProp = Variant | string | number | undefined;
 

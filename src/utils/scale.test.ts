@@ -66,6 +66,36 @@ describe('resolveScaleProps', () => {
     expect(resolveScaleProps(classes, spec, { size: 'less' }).classNames).toEqual([]);
   });
 
+  describe('defaults', () => {
+    const withDefaults = { ...spec, defaults: { padding: 'normal', size: 'more' } } as const;
+
+    it('applies the default variant to props left undefined', () => {
+      const r = resolveScaleProps(classes, withDefaults, {});
+      expect(r.classNames).toEqual(['p-normal', 's-more']);
+    });
+
+    it('treats an explicit undefined like an omitted prop', () => {
+      const r = resolveScaleProps(classes, withDefaults, { padding: undefined });
+      expect(r.classNames).toEqual(['p-normal', 's-more']);
+    });
+
+    it('lets a given variant or escape hatch replace the default', () => {
+      expect(resolveScaleProps(classes, withDefaults, { padding: 'more' }).classNames).toEqual([
+        'p-more',
+        's-more',
+      ]);
+      const r = resolveScaleProps(classes, withDefaults, { padding: 0 });
+      expect(r.classNames).toEqual(['s-more']);
+      expect(r.style).toEqual({ padding: '0px' });
+    });
+
+    it('does not leak defaulted props into rest', () => {
+      expect(
+        resolveScaleProps(classes, withDefaults, { padding: undefined, id: 'a' }).rest,
+      ).toEqual({ id: 'a' });
+    });
+  });
+
   it('returns the other props as rest, without the scale props', () => {
     const r = resolveScaleProps(classes, spec, { padding: 'more', size: 4, id: 'a', title: 'b' });
     expect(r.rest).toEqual({ id: 'a', title: 'b' });
