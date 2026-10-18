@@ -10,7 +10,6 @@ const renderBox = (props: ComponentProps<typeof Box> = {}) => {
 };
 
 const SCALE_PROPS = [
-  'size',
   'padding',
   'paddingLeft',
   'paddingRight',
@@ -66,10 +65,9 @@ describe('Box', () => {
     });
 
     it('does not leak scale props to the DOM', () => {
-      const el = renderBox({ padding: 'more', width: 100, size: 'less' });
+      const el = renderBox({ padding: 'more', width: 100 });
       expect(el.hasAttribute('padding')).toBe(false);
       expect(el.hasAttribute('width')).toBe(false);
-      expect(el.hasAttribute('size')).toBe(false);
     });
   });
 
@@ -107,7 +105,7 @@ describe('Box', () => {
       },
     );
 
-    it.each(['margin', 'boxShadow', 'size', 'width', 'height', 'minWidth', 'minHeight'] as const)(
+    it.each(['margin', 'boxShadow', 'width', 'height', 'minWidth', 'minHeight'] as const)(
       '%s is opt-in',
       (prop) => {
         const el = renderBox();
@@ -157,12 +155,6 @@ describe('Box', () => {
       expect(el.style.width).toBe('300px');
       expect(el.style.minHeight).toBe('20px');
       expect(el.style.marginLeft).toBe('8px');
-    });
-
-    it('drives width and height from size', () => {
-      const el = renderBox({ size: 40 });
-      expect(el.style.width).toBe('40px');
-      expect(el.style.height).toBe('40px');
     });
 
     it('mixes a variant on one prop with an escape hatch on another', () => {

@@ -349,9 +349,6 @@ interface BoxProps {
   borderRadius?: ScaleProp;
   boxShadow?: ScaleProp;
 
-  // Semantic compound
-    size?: ScaleProp;           // width + height (avatar, icon wrapper, badge)
-
   // Layout (pass through)
   display?: string;
   flex?: string;

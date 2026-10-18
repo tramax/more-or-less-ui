@@ -19,7 +19,6 @@ const meta: Meta<typeof Box> = {
   component: Box,
   tags: ['autodocs'],
   argTypes: {
-    size: scaleControl,
     padding: scaleControl,
     margin: scaleControl,
     gap: scaleControl,
@@ -74,17 +73,6 @@ export const BoxShadow: Story = {
     <Row>
       {VARIANTS.map((v) => (
         <Box key={v} boxShadow={v} />
-      ))}
-    </Row>
-  ),
-};
-
-// padding={0}: the default padding is larger than every size, so it would hide the difference
-export const Size: Story = {
-  render: () => (
-    <Row>
-      {VARIANTS.map((v) => (
-        <Box key={v} size={v} padding={0} />
       ))}
     </Row>
   ),

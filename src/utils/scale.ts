@@ -8,7 +8,7 @@ import { isVariant, type ScaleProp, type Variant } from '@/types/scale';
  * - `defaults`: the variant a prop gets when the caller leaves it `undefined`; props not listed here
  *   stay unset. Opt out of a default with an escape-hatch value such as `0`.
  */
-export interface ScaleSpec<D extends string, C extends string> {
+export interface ScaleSpec<D extends string, C extends string = never> {
   direct?: readonly D[];
   compound?: Record<C, readonly (keyof CSSProperties)[]>;
   defaults?: Partial<Record<NoInfer<D | C>, Variant>>;
@@ -44,8 +44,8 @@ export function getVariantClass(
  */
 export function resolveScaleProps<
   D extends string,
-  C extends string,
-  P extends Partial<Record<D | C, ScaleProp>>,
+  C extends string = never,
+  P extends Partial<Record<D | C, ScaleProp>> = Partial<Record<D | C, ScaleProp>>,
 >(
   classes: ClassMap,
   spec: ScaleSpec<D, C>,

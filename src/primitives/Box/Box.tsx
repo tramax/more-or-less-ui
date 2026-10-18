@@ -26,8 +26,6 @@ const SCALE_SPEC = {
     'boxShadow',
     'background',
   ],
-  // Drives several CSS properties
-  compound: { size: ['width', 'height'] },
   // Opinionated starting look: a padded, rounded surface that spaces its children. Everything else
   // (margin, shadow, dimensions, per-side overrides) is opt-in so layout stays predictable.
   // Opt out of a default with an escape-hatch value, e.g. padding={0} or background="less".
@@ -39,7 +37,7 @@ const SCALE_SPEC = {
   },
 } as const;
 
-type ScalePropName = (typeof SCALE_SPEC.direct)[number] | keyof typeof SCALE_SPEC.compound;
+type ScalePropName = (typeof SCALE_SPEC.direct)[number];
 
 export interface BoxProps
   extends Omit<HTMLAttributes<HTMLDivElement>, 'color'>, Partial<Record<ScalePropName, ScaleProp>> {

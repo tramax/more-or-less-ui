@@ -135,7 +135,7 @@ Every component accepts these props with `ScaleProp` type (`'less' | 'normal' | 
 
 ### Defaults
 
-Components are opinionated: a prop you leave out falls back to `normal` where that makes a good starting point. `Box`, for example, defaults `padding`, `gap`, `borderRadius` and `background` to `normal`, so `<Box>` is a padded, rounded surface. `margin`, `boxShadow` and the dimension props (`size`, `width`, `height`, `minWidth`, `minHeight`) stay opt-in.
+Components are opinionated: a prop you leave out falls back to `normal` where that makes a good starting point. `Box`, for example, defaults `padding`, `gap`, `borderRadius` and `background` to `normal`, so `<Box>` is a padded, rounded surface. `margin`, `boxShadow` and the dimension props (`width`, `height`, `minWidth`, `minHeight`) stay opt-in.
 
 To switch a default off, pass an escape-hatch value: `padding={0}`, or `background="less"` for a transparent background.
 

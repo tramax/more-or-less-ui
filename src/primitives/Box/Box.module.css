@@ -3,25 +3,12 @@
  * (looked up by resolveScaleProps). Box has no base values in CSS: `normal` is a real class too, and
  * the props that default to `normal` get it from SCALE_SPEC.defaults in Box.tsx.
  *
- * Order matters: shorthands (size, padding, margin) come before the longhands they can be combined
+ * Order matters: shorthands (padding, margin) come before the longhands they can be combined
  * with, so `padding="more" paddingLeft="less"` resolves the way it reads.
  *
- * width/height/min-* and `size` use the space scale (see theme/tokens.css);
+ * width/height/min-* use the space scale (see theme/tokens.css);
  * `background` uses the --color-background-* tokens (see theme/tokens.css).
  */
-
-.sizeLess {
-  width: var(--space-less);
-  height: var(--space-less);
-}
-.sizeNormal {
-  width: var(--space-normal);
-  height: var(--space-normal);
-}
-.sizeMore {
-  width: var(--space-more);
-  height: var(--space-more);
-}
 
 .paddingLess {
   padding: var(--space-less);
