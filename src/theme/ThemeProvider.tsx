@@ -32,36 +32,41 @@ export function ThemeProvider({
   const [mounted, setMounted] = useState(false);
 
   // Apply theme to document
-  const applyTheme = useCallback((newTheme: Theme) => {
-    const root = document.documentElement;
-    
-    if (disableTransitionOnChange) {
-      root.style.setProperty('--theme-transition', 'none');
-      // Force reflow
-      root.offsetHeight;
-    }
+  const applyTheme = useCallback(
+    (newTheme: Theme) => {
+      const root = document.documentElement;
 
-    if (newTheme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      root.setAttribute('data-theme', systemTheme);
-      setResolvedTheme(systemTheme);
-    } else {
-      root.setAttribute('data-theme', newTheme);
-      setResolvedTheme(newTheme);
-    }
+      if (disableTransitionOnChange) {
+        root.style.setProperty('--theme-transition', 'none');
+        // Force reflow
+        root.offsetHeight;
+      }
 
-    if (disableTransitionOnChange) {
-      // Re-enable transitions after a tick
-      requestAnimationFrame(() => {
-        root.style.removeProperty('--theme-transition');
-      });
-    }
-  }, [disableTransitionOnChange]);
+      if (newTheme === 'system') {
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light';
+        root.setAttribute('data-theme', systemTheme);
+        setResolvedTheme(systemTheme);
+      } else {
+        root.setAttribute('data-theme', newTheme);
+        setResolvedTheme(newTheme);
+      }
+
+      if (disableTransitionOnChange) {
+        // Re-enable transitions after a tick
+        requestAnimationFrame(() => {
+          root.style.removeProperty('--theme-transition');
+        });
+      }
+    },
+    [disableTransitionOnChange],
+  );
 
   // Initialize on mount
   useEffect(() => {
     setMounted(true);
-    
+
     // Read from localStorage if available
     if (storageKey && typeof window !== 'undefined') {
       const stored = localStorage.getItem(storageKey) as Theme | null;
@@ -71,7 +76,7 @@ export function ThemeProvider({
         return;
       }
     }
-    
+
     // Apply default
     applyTheme(defaultTheme);
   }, [applyTheme, defaultTheme, storageKey]);
@@ -90,13 +95,16 @@ export function ThemeProvider({
   }, [enableSystem, theme, applyTheme]);
 
   // Persist theme changes
-  const setTheme = useCallback((newTheme: Theme) => {
-    setThemeState(newTheme);
-    applyTheme(newTheme);
-    if (storageKey && typeof window !== 'undefined') {
-      localStorage.setItem(storageKey, newTheme);
-    }
-  }, [applyTheme, storageKey]);
+  const setTheme = useCallback(
+    (newTheme: Theme) => {
+      setThemeState(newTheme);
+      applyTheme(newTheme);
+      if (storageKey && typeof window !== 'undefined') {
+        localStorage.setItem(storageKey, newTheme);
+      }
+    },
+    [applyTheme, storageKey],
+  );
 
   // Don't render children until mounted (avoid hydration mismatch)
   if (!mounted) {

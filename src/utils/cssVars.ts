@@ -11,10 +11,7 @@ const ROOT = typeof document !== 'undefined' ? document.documentElement : null;
  * @param element - Element to read from (default: document.documentElement)
  * @returns The computed value, or empty string if not found
  */
-export function getCSSVariable(
-  name: string,
-  element: HTMLElement = ROOT!
-): string {
+export function getCSSVariable(name: string, element: HTMLElement = ROOT!): string {
   if (!element) return '';
   return getComputedStyle(element).getPropertyValue(name).trim();
 }
@@ -27,20 +24,20 @@ export function getCSSVariable(
  */
 export function getCSSVariablesByPrefix(
   prefix: string,
-  element: HTMLElement = ROOT!
+  element: HTMLElement = ROOT!,
 ): Record<string, string> {
   if (!element) return {};
-  
+
   const styles = getComputedStyle(element);
   const result: Record<string, string> = {};
-  
+
   for (let i = 0; i < styles.length; i++) {
     const name = styles[i];
     if (name && name.startsWith(prefix)) {
       result[name] = styles.getPropertyValue(name).trim();
     }
   }
-  
+
   return result;
 }
 

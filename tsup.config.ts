@@ -1,5 +1,13 @@
 import { defineConfig, type Options } from 'tsup';
-import { copyFileSync, mkdirSync, existsSync, readdirSync, readFileSync, writeFileSync, rmSync } from 'fs';
+import {
+  copyFileSync,
+  mkdirSync,
+  existsSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+} from 'fs';
 import { dirname, join } from 'path';
 
 const srcDir = join(__dirname, 'src');
@@ -29,7 +37,11 @@ const cssModules: EsbuildPlugin = {
     }));
     build.onLoad({ filter: /.*/, namespace: 'css-module' }, (args) => {
       const file = args.path.slice(0, -SUFFIX.length);
-      return { contents: readFileSync(file, 'utf8'), loader: 'local-css', resolveDir: dirname(file) };
+      return {
+        contents: readFileSync(file, 'utf8'),
+        loader: 'local-css',
+        resolveDir: dirname(file),
+      };
     });
   },
 };
@@ -46,7 +58,9 @@ const emitCss = () => {
   const componentCss = join(distDir, 'index.css');
   let css = inlineImports(join(srcDir, 'styles.css'), srcDir);
   if (existsSync(componentCss)) {
-    const componentCode = readFileSync(componentCss, 'utf8').replace(/\/\*# sourceMappingURL=.*?\*\//g, '').trim();
+    const componentCode = readFileSync(componentCss, 'utf8')
+      .replace(/\/\*# sourceMappingURL=.*?\*\//g, '')
+      .trim();
     css += `\n${componentCode}\n`;
     rmSync(componentCss);
     rmSync(`${componentCss}.map`, { force: true });

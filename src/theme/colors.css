@@ -82,7 +82,7 @@
 }
 
 /* === Dark Mode === */
-[data-theme="dark"] {
+[data-theme='dark'] {
   /* Background */
   --color-bg-primary: var(--color-secondary-900);
   --color-bg-secondary: var(--color-secondary-800);

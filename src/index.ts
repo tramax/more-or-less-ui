@@ -24,7 +24,7 @@ export { clsx } from '@/utils/clsx';
 export type { ClassValue } from '@/utils/clsx';
 
 // Styles entry point (import 'more-or-less-ui/styles.css')
-export { } from '@/styles.css';
+export {} from '@/styles.css';
 
 // Primitives (to be implemented)
 // export { Box } from '@/primitives/Box';

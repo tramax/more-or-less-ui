@@ -23,12 +23,22 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* Smooth theme transitions */
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
   font-size: var(--size-normal);
   line-height: 1.5;
   color: var(--color-text-primary);
@@ -51,7 +61,7 @@ body {
   color: var(--color-primary-900);
 }
 
-[data-theme="dark"] ::selection {
+[data-theme='dark'] ::selection {
   background-color: var(--color-primary-800);
   color: var(--color-primary-100);
 }
