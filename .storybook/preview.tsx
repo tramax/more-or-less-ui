@@ -33,8 +33,15 @@ const preview: Preview = {
   parameters: {
     layout: 'centered',
     controls: { expanded: true },
-    // The canvas colour comes from preview.css and follows the theme toggle
-    backgrounds: { disabled: true },
+    // With no background selected, the canvas colour comes from preview.css and
+    // follows the theme toggle. Picking one here overrides it.
+    backgrounds: {
+      options: {
+        white: { name: 'White', value: '#ffffff' },
+        light: { name: 'Light', value: '#f5f2ef' },
+        dark: { name: 'Dark', value: '#1c1917' },
+      },
+    },
   },
 };
 
