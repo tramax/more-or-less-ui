@@ -24,4 +24,12 @@
   --elevation-less: 0 1px 2px rgb(0 0 0 / 0.2);
   --elevation-normal: 0 4px 6px rgb(0 0 0 / 0.3);
   --elevation-more: 0 10px 15px rgb(0 0 0 / 0.4);
+  /* The neutral shadow tint (Button `less`, escape-hatch backgrounds) is the brand colour darkened
+     75%, still lighter than a dark page: use black. */
+  --shadow-color: black;
+
+  /* A shadow has to be darker than the page to show. On a dark page, a background darkened only
+     45% is still lighter than the page, so it reads as a glow: go nearly to black instead. */
+  --button-shadow-darken: 85%;
+  --button-shadow-boost: 2;
 }
