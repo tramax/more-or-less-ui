@@ -109,14 +109,20 @@
   margin-bottom: var(--space-more);
 }
 
+/* corner-shape: squircle gives smoother, more organic corners than circular arcs. Browsers without
+   support ignore it and fall back to regular rounded corners. It lives on the token classes only, so
+   escape-hatch values (borderRadius="50%") keep their normal geometry. */
 .borderRadiusLess {
   border-radius: var(--radius-less);
+  corner-shape: squircle;
 }
 .borderRadiusNormal {
   border-radius: var(--radius-normal);
+  corner-shape: squircle;
 }
 .borderRadiusMore {
   border-radius: var(--radius-more);
+  corner-shape: squircle;
 }
 
 .boxShadowLess {

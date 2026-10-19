@@ -68,9 +68,9 @@ export function isVariant(value: ScaleProp): value is Variant {
   --size-more: 1.25rem;     /* 20px */
 
   /* Radius scale */
-  --radius-less: 0.125rem;  /* 2px */
-  --radius-normal: 0.375rem; /* 6px */
-  --radius-more: 0.75rem;   /* 12px */
+  --radius-less: 0.5rem;    /* 8px */
+  --radius-normal: 1.25rem; /* 20px */
+  --radius-more: 2rem;      /* 32px */
 
   /* Weight scale */
   --weight-less: 300;
