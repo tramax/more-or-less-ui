@@ -6,7 +6,7 @@
  * Order matters: shorthands (padding, margin) come before the longhands they can be combined
  * with, so `padding="more" paddingLeft="less"` resolves the way it reads.
  *
- * `background` uses the --color-background-* tokens (see theme/tokens.css).
+ * `background` uses the --color-box-background-* tokens (see theme/tokens.css).
  */
 
 .paddingLess {
@@ -136,11 +136,11 @@
 }
 
 .backgroundLess {
-  background: var(--color-background-less);
+  background: var(--color-box-background-less);
 }
 .backgroundNormal {
-  background: var(--color-background-normal);
+  background: var(--color-box-background-normal);
 }
 .backgroundMore {
-  background: var(--color-background-more);
+  background: var(--color-box-background-more);
 }

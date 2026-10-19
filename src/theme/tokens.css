@@ -2,7 +2,7 @@
  * Design tokens (light theme / defaults). Dark-mode overrides live in themes.css.
  *
  * - Scale tokens: 3 values per property (less/normal/more), 15 CSS variables (5 scales × 3)
- * - Color tokens: deliberately minimal. One brand color and the Box background scale.
+ * - Color tokens: deliberately minimal. One brand color, plus a background scale for Box and one for Button.
  */
 
 :root {
@@ -35,15 +35,28 @@
   /* Elevation scale — affects box-shadow.
      Two layers each: a tight contact shadow plus a wide ambient one. Keep the layer
      count and order identical across tokens so hover transitions interpolate per layer. */
-  --elevation-less: 0 1px 2px color-mix(in oklab, var(--shadow-color) 6%, transparent),
+  --elevation-less:
+    0 1px 2px color-mix(in oklab, var(--shadow-color) 6%, transparent),
     0 2px 6px color-mix(in oklab, var(--shadow-color) 4%, transparent);
-  --elevation-normal: 0 2px 4px color-mix(in oklab, var(--shadow-color) 7%, transparent),
+  --elevation-normal:
+    0 2px 4px color-mix(in oklab, var(--shadow-color) 7%, transparent),
     0 8px 16px color-mix(in oklab, var(--shadow-color) 6%, transparent);
-  --elevation-more: 0 4px 8px color-mix(in oklab, var(--shadow-color) 8%, transparent),
+  --elevation-more:
+    0 4px 8px color-mix(in oklab, var(--shadow-color) 8%, transparent),
     0 16px 32px color-mix(in oklab, var(--shadow-color) 10%, transparent);
 
-  /* Background scale — affects Box background */
-  --color-background-less: transparent;
-  --color-background-normal: Canvas; /* system canvas: white in light, system dark in dark */
-  --color-background-more: var(--color-primary);
+  /* Box background scale — affects Box background */
+  --color-box-background-less: transparent;
+  --color-box-background-normal: Canvas; /* system canvas: white in light, system dark in dark */
+  --color-box-background-more: var(--color-primary);
+
+  /* Button background scale — affects Button background. Separate from Box's so each can be
+     customised on its own. */
+  --color-button-background-less: transparent;
+  --color-button-background-normal: color-mix(
+    in oklab,
+    var(--color-primary) 40%,
+    Canvas
+  ); /* brand tint on the canvas: keeps CanvasText readable in both themes */
+  --color-button-background-more: var(--color-primary);
 }

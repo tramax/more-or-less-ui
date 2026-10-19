@@ -1,0 +1,130 @@
+/*
+ * Button: base styles first (border radius, font weight and shadow are fixed here, not props), then
+ * one class per scale variant, named <prop><Variant> (looked up by resolveScaleProps). The base has
+ * no scale values: `normal` is a real class too, and every prop gets it from BUTTON_DEFAULTS in
+ * Button.tsx.
+ *
+ * Padding and the gap between children are in em, so `size` (which only sets font-size) scales them
+ * too, and so does an escape-hatch size such as size="1.5rem".
+ *
+ * `background` uses the --color-button-background-* tokens (see theme/tokens.css), separate from
+ * Box's so they can be customised independently.
+ */
+
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5em 1em;
+  border: 0;
+  /* Fixed, not props. Placeholders on the `normal` tokens until the Button's own look is defined.
+     corner-shape: squircle gives smoother corners than circular arcs, as in Box. */
+  border-radius: var(--radius-normal);
+  corner-shape: squircle;
+  box-shadow: var(--elevation-normal);
+  font-weight: var(--weight-more);
+  color: CanvasText;
+  font-family: inherit;
+  line-height: 1.25;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: box-shadow 150ms ease, opacity 150ms ease;
+}
+
+/* Hover and pressed tint: a currentColor overlay works on any background, transparent and
+   escape-hatch gradients included, where a background-color change would not. */
+.button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  corner-shape: inherit;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+.button:hover::after {
+  opacity: 0.08;
+}
+.button:active::after {
+  opacity: 0.16;
+}
+
+.button:focus-visible {
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.button:disabled::after {
+  display: none;
+}
+
+.content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  transition: opacity 150ms ease;
+}
+
+.loading {
+  cursor: progress;
+}
+/* Transparent, not visibility: hidden, which would drop the button's accessible name */
+.loading .content {
+  opacity: 0;
+}
+.loading::after {
+  display: none;
+}
+
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1em;
+  height: 1em;
+  margin: -0.5em 0 0 -0.5em;
+  border: 0.125em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2s;
+  }
+}
+
+.sizeLess {
+  font-size: var(--size-less);
+}
+.sizeNormal {
+  font-size: var(--size-normal);
+}
+.sizeMore {
+  font-size: var(--size-more);
+}
+
+.backgroundLess {
+  background: var(--color-button-background-less);
+}
+.backgroundNormal {
+  background: var(--color-button-background-normal);
+}
+.backgroundMore {
+  background: var(--color-button-background-more);
+}

@@ -92,7 +92,7 @@ export function isVariant(value: ScaleProp): value is Variant {
 
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color and the Box `background` scale**. No palettes, no
+Deliberately minimal for now: **one brand color plus a `background` scale per component that has one (Box, Button)**. No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -101,16 +101,22 @@ actually needs one.
 :root {
   --color-primary: #3b82f6;
 
-  /* Background scale: Box's `background` less / normal / more */
-  --color-background-less: transparent;
-  --color-background-normal: Canvas; /* system canvas: white in light, system dark in dark */
-  --color-background-more: #d9c9ad; /* sand */
+  /* Box's `background` less / normal / more */
+  --color-box-background-less: transparent;
+  --color-box-background-normal: Canvas; /* system canvas: white in light, system dark in dark */
+  --color-box-background-more: #d9c9ad; /* sand */
+
+  /* Button's `background`, separate so each component can be customised on its own */
+  --color-button-background-less: transparent;
+  --color-button-background-normal: color-mix(in oklab, var(--color-primary) 40%, Canvas);
+  --color-button-background-more: #d9c9ad; /* sand */
 }
 
 /* theme/themes.css */
 [data-theme="dark"] {
   color-scheme: dark; /* flips system colors: Canvas, CanvasText, form controls, scrollbars */
-  --color-background-more: #4a3f33; /* umber */
+  --color-box-background-more: #4a3f33; /* umber */
+  --color-button-background-more: #4a3f33; /* umber */
   /* ...heavier --elevation-* shadows */
 }
 ```
@@ -370,45 +376,26 @@ interface GridProps extends BoxProps {
 
 ### Button
 ```tsx
-interface ButtonProps {
+interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'color' | 'disabled'> {
   // Scale props (all optional, default = normal)
-  size?: ScaleProp;              // fontSize + padding + gap
-  borderRadius?: ScaleProp;      // corner roundness
-  fontWeight?: ScaleProp;        // text weight
-  boxShadow?: ScaleProp;         // elevation
-  padding?: ScaleProp;           // internal spacing (overrides size-based)
-  
-  disabled?: boolean;
-  children: React.ReactNode;
-  onClick?: () => void;
-  className?: string;
-  style?: React.CSSProperties;
+  size?: ScaleProp;              // font-size; padding and gap are in em, so they follow it
+  background?: ScaleProp;        // --color-button-background-* tokens; normal is the primary color mixed with Canvas
+
+  isDisabled?: boolean;          // native `disabled`: not clickable, not focusable
+  isLoading?: boolean;           // spinner + aria-busy + aria-disabled; ignores clicks, stays focusable
+  type?: 'button' | 'submit' | 'reset';  // defaults to 'button'
+  onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 ```
 
-**Default appearance** (CSS Module):
-```css
-.button {
-  background: var(--color-primary-bg);
-  color: var(--color-primary-text);
-  border-color: var(--color-primary-border);
-}
-.button:hover { background: var(--color-primary-hover-bg); }
-```
+No `variant` and no `color` prop: every prop has exactly three predefined values plus the escape
+hatch. `background="more"` is the brand-colored button, `background="less"` the transparent one.
 
-**Consumer creates "secondary" via CSS variable override:**
-```css
-/* Their globals.css */
-.my-secondary-button {
-  --color-primary-bg: var(--color-secondary-bg);
-  --color-primary-text: var(--color-secondary-text);
-  --color-primary-border: var(--color-secondary-border);
-  --color-primary-hover-bg: var(--color-secondary-hover-bg);
-}
-```
-```tsx
-<Button className="my-secondary-button" />
-```
+Border radius, font weight and box shadow are not props: the Button defines them itself in its CSS
+module (currently placeholders on the `normal` tokens).
+
+Boolean props use the `is*` prefix. While `isLoading`, the content stays in the layout (transparent)
+so the button keeps its width and its accessible name.
 
 ### Card
 ```tsx
@@ -766,7 +753,7 @@ export const EscapeHatch: Story = {
 ### Phase 1: Foundation
 - [ ] `types/scale.ts` — `ScaleProp`, `Variant`, `isVariant`
 - [ ] `theme/tokens.css` — 15 scale CSS variables
-- [x] Color tokens in `theme/tokens.css` — Minimal: one primary color + Box background scale
+- [x] Color tokens in `theme/tokens.css` — Minimal: one primary color + Box and Button background scales
 - [ ] `theme/themes.css` — Light/dark theme definitions
 - [ ] `theme/ThemeProvider.tsx` + `useTheme` hook
 - [ ] `utils/cssVars.ts` — `getCSSVariable`, `getAllTokens`
@@ -780,7 +767,7 @@ export const EscapeHatch: Story = {
 - [ ] `Text` — Typography with `size`, `weight`, `color` props
 
 ### Phase 3: Components
-- [ ] `Button` — Showcase component with all scale props
+- [x] `Button` — size, background, isDisabled, isLoading
 - [ ] `Card` — Container with scale props
 - [ ] `Input` / `Textarea` — Form primitives
 - [ ] `Select` — Compound component pattern

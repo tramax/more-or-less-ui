@@ -36,8 +36,11 @@ export type { BoxProps } from '@/primitives';
 // export { Grid } from '@/primitives/Grid';
 // export { Text } from '@/primitives/Text';
 
+// Components
+export { Button } from '@/components';
+export type { ButtonProps } from '@/components';
+
 // Components (to be implemented)
-// export { Button } from '@/components/Button';
 // export { Card } from '@/components/Card';
 // export { Input } from '@/components/Input';
 // export { Textarea } from '@/components/Textarea';

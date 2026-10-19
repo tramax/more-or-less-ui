@@ -3,7 +3,7 @@
  * A warm grey backdrop so white surfaces (cards, shadows) read against it.
  */
 :root {
-  --sb-canvas: #ece8e3;
+  --sb-canvas: #f5f2ef;
 }
 
 [data-theme='dark'] {

@@ -17,7 +17,8 @@
   /* Flips system colors (Canvas, CanvasText, form controls, scrollbars) to their dark variants */
   color-scheme: dark;
 
-  --color-background-more: #4a3f33; /* umber */
+  --color-box-background-more: #4a3f33; /* umber */
+  --color-button-background-more: #4a3f33; /* umber */
 
   /* Shadows need to be heavier to read on dark surfaces */
   --elevation-less: 0 1px 2px rgb(0 0 0 / 0.2);
