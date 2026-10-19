@@ -31,12 +31,23 @@ const Variants = ({ prop }: { prop: 'padding' | 'background' | 'borderRadius' | 
   </Row>
 );
 
+// The controls get BOX_DEFAULTS as args, but users don't have to write them: drop props that are at
+// their default from the code snippet, so a bare `<Box>` shows as `<Box>`
+const omitDefaults = (code: string) =>
+  Object.entries(BOX_DEFAULTS)
+    .reduce(
+      (c, [prop, value]) => c.replace(new RegExp(String.raw`\s+${prop}="${value}"`, 'g'), ''),
+      code,
+    )
+    .replace(/<Box\s+>/g, '<Box>');
+
 const meta: Meta<typeof Box> = {
   title: 'Primitives/Box',
   component: Box,
   tags: ['autodocs'],
   // Reflect the component's defaults in the controls and the Default column
   args: BOX_DEFAULTS,
+  parameters: { docs: { source: { transform: omitDefaults } } },
   argTypes: {
     padding: scaleControl,
     margin: scaleControl,
