@@ -20,9 +20,6 @@ const SCALE_PROPS = [
   'marginRight',
   'marginTop',
   'marginBottom',
-  'gap',
-  'width',
-  'height',
   'minWidth',
   'minHeight',
   'borderRadius',
@@ -30,12 +27,7 @@ const SCALE_PROPS = [
   'background',
 ] as const;
 const VARIANTS = ['less', 'normal', 'more'] as const;
-const DEFAULT_CLASSES = [
-  styles.paddingNormal,
-  styles.gapNormal,
-  styles.borderRadiusNormal,
-  styles.backgroundNormal,
-];
+const DEFAULT_CLASSES = [styles.paddingNormal, styles.borderRadiusNormal, styles.backgroundNormal];
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 describe('Box', () => {
@@ -65,9 +57,9 @@ describe('Box', () => {
     });
 
     it('does not leak scale props to the DOM', () => {
-      const el = renderBox({ padding: 'more', width: 100 });
+      const el = renderBox({ padding: 'more', minWidth: 100 });
       expect(el.hasAttribute('padding')).toBe(false);
-      expect(el.hasAttribute('width')).toBe(false);
+      expect(el.hasAttribute('minWidth')).toBe(false);
     });
   });
 
@@ -90,7 +82,6 @@ describe('Box', () => {
       expect([...el.classList]).toEqual([
         styles.paddingMore,
         styles.marginLess,
-        styles.gapNormal,
         styles.borderRadiusNormal,
         styles.backgroundNormal,
       ]);
@@ -98,22 +89,16 @@ describe('Box', () => {
   });
 
   describe('defaults', () => {
-    it.each(['padding', 'gap', 'borderRadius', 'background'] as const)(
-      '%s defaults to normal',
-      (prop) => {
-        expect(renderBox().classList.contains(styles[`${prop}Normal`] as string)).toBe(true);
-      },
-    );
+    it.each(['padding', 'borderRadius', 'background'] as const)('%s defaults to normal', (prop) => {
+      expect(renderBox().classList.contains(styles[`${prop}Normal`] as string)).toBe(true);
+    });
 
-    it.each(['margin', 'boxShadow', 'width', 'height', 'minWidth', 'minHeight'] as const)(
-      '%s is opt-in',
-      (prop) => {
-        const el = renderBox();
-        for (const variant of VARIANTS) {
-          expect(el.classList.contains(styles[`${prop}${cap(variant)}`] as string)).toBe(false);
-        }
-      },
-    );
+    it.each(['margin', 'boxShadow', 'minWidth', 'minHeight'] as const)('%s is opt-in', (prop) => {
+      const el = renderBox();
+      for (const variant of VARIANTS) {
+        expect(el.classList.contains(styles[`${prop}${cap(variant)}`] as string)).toBe(false);
+      }
+    });
 
     it('replaces the default when a variant is given', () => {
       const el = renderBox({ padding: 'more' });
@@ -143,39 +128,24 @@ describe('Box', () => {
 
   describe('escape hatch', () => {
     it('writes strings to the matching CSS property', () => {
-      const el = renderBox({ padding: '12px 24px', borderRadius: '50%', gap: '1.5rem' });
+      const el = renderBox({ padding: '12px 24px', borderRadius: '50%', margin: '1.5rem' });
       expect(el.style.padding).toBe('12px 24px');
       expect(el.style.borderRadius).toBe('50%');
-      expect(el.style.gap).toBe('1.5rem');
+      expect(el.style.margin).toBe('1.5rem');
       expect([...el.classList]).toEqual([styles.backgroundNormal]);
     });
 
     it('treats numbers as pixels', () => {
-      const el = renderBox({ width: 300, minHeight: 20, marginLeft: 8 });
-      expect(el.style.width).toBe('300px');
+      const el = renderBox({ minWidth: 300, minHeight: 20, marginLeft: 8 });
+      expect(el.style.minWidth).toBe('300px');
       expect(el.style.minHeight).toBe('20px');
       expect(el.style.marginLeft).toBe('8px');
     });
 
     it('mixes a variant on one prop with an escape hatch on another', () => {
-      const el = renderBox({ padding: 'more', width: '50%' });
+      const el = renderBox({ padding: 'more', minWidth: '50%' });
       expect(el.classList.contains(styles.paddingMore as string)).toBe(true);
-      expect(el.style.width).toBe('50%');
-    });
-  });
-
-  describe('layout props', () => {
-    it('passes them through as inline styles', () => {
-      const el = renderBox({
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      });
-      expect(el.style.display).toBe('flex');
-      expect(el.style.flexDirection).toBe('column');
-      expect(el.style.alignItems).toBe('center');
-      expect(el.style.justifyContent).toBe('space-between');
+      expect(el.style.minWidth).toBe('50%');
     });
   });
 
@@ -187,8 +157,8 @@ describe('Box', () => {
     });
 
     it('lets the style prop win over escape-hatch values', () => {
-      const el = renderBox({ width: 100, style: { width: 200, color: 'red' } });
-      expect(el.style.width).toBe('200px');
+      const el = renderBox({ minWidth: 100, style: { minWidth: 200, color: 'red' } });
+      expect(el.style.minWidth).toBe('200px');
       expect(el.style.color).toBe('red');
     });
   });

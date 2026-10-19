@@ -21,7 +21,7 @@
   --weight-normal: 400; /* regular */
   --weight-more: 600; /* semibold */
 
-  /* Spacing scale — affects padding, margin, gap, width, height */
+  /* Spacing scale — affects padding, margin, min-width, min-height */
   --space-less: 0.5rem; /* 8px — dense */
   --space-normal: 1rem; /* 16px — comfortable */
   --space-more: 1.5rem; /* 24px — spacious */

@@ -1,4 +1,4 @@
-import { forwardRef, type CSSProperties, type HTMLAttributes } from 'react';
+import { forwardRef, type HTMLAttributes } from 'react';
 import { clsx } from '@/utils/clsx';
 import { resolveScaleProps } from '@/utils/scale';
 import type { ScaleProp } from '@/types/scale';
@@ -7,7 +7,6 @@ import styles from './Box.module.css';
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
 export const BOX_DEFAULTS = {
   padding: 'normal',
-  gap: 'normal',
   borderRadius: 'normal',
   background: 'normal',
 } as const;
@@ -25,9 +24,6 @@ const SCALE_SPEC = {
     'marginRight',
     'marginTop',
     'marginBottom',
-    'gap',
-    'width',
-    'height',
     'minWidth',
     'minHeight',
     'borderRadius',
@@ -42,18 +38,11 @@ const SCALE_SPEC = {
 
 type ScalePropName = (typeof SCALE_SPEC.direct)[number];
 
-export interface BoxProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, 'color'>, Partial<Record<ScalePropName, ScaleProp>> {
-  // Layout: plain CSS pass-through, no scale
-  display?: CSSProperties['display'];
-  flex?: CSSProperties['flex'];
-  flexDirection?: CSSProperties['flexDirection'];
-  alignItems?: CSSProperties['alignItems'];
-  justifyContent?: CSSProperties['justifyContent'];
-}
+export type BoxProps = Omit<HTMLAttributes<HTMLDivElement>, 'color'> &
+  Partial<Record<ScalePropName, ScaleProp>>;
 
 export const Box = forwardRef<HTMLDivElement, BoxProps>(function Box(
-  { display, flex, flexDirection, alignItems, justifyContent, className, style, ...props },
+  { className, style, ...props },
   ref,
 ) {
   const { classNames, style: scaleStyle, rest } = resolveScaleProps(styles, SCALE_SPEC, props);
@@ -63,7 +52,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(function Box(
       {...rest}
       ref={ref}
       className={clsx(classNames, className)}
-      style={{ display, flex, flexDirection, alignItems, justifyContent, ...scaleStyle, ...style }}
+      style={{ ...scaleStyle, ...style }}
     />
   );
 });

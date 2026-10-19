@@ -7,11 +7,6 @@ const scaleControl = {
   options: [undefined, 'less', 'normal', 'more'],
 } as const;
 
-// Storybook can't reduce CSSProperties[...] to a control, so it falls back to an object editor
-const cssControl = (...options: string[]) =>
-  ({ control: 'select', options: [undefined, ...options] }) as const;
-const textControl = { control: 'text' } as const;
-
 const VARIANTS = ['less', 'normal', 'more'] as const;
 
 // Lays the variants out side by side without adding Box's own defaults to the demo
@@ -26,23 +21,8 @@ const meta: Meta<typeof Box> = {
   // Reflect the component's defaults in the controls and the Default column
   args: BOX_DEFAULTS,
   argTypes: {
-    display: cssControl('block', 'flex', 'grid', 'inline-flex', 'none'),
-    flex: textControl,
-    flexDirection: cssControl('row', 'row-reverse', 'column', 'column-reverse'),
-    alignItems: cssControl('flex-start', 'center', 'flex-end', 'stretch', 'baseline'),
-    justifyContent: cssControl(
-      'flex-start',
-      'center',
-      'flex-end',
-      'space-between',
-      'space-around',
-      'space-evenly',
-    ),
     padding: scaleControl,
     margin: scaleControl,
-    gap: scaleControl,
-    width: scaleControl,
-    height: scaleControl,
     borderRadius: scaleControl,
     boxShadow: scaleControl,
     background: scaleControl,
@@ -97,20 +77,10 @@ export const BoxShadow: Story = {
   ),
 };
 
-export const Layout: Story = {
-  render: () => (
-    <Box display="flex" flexDirection="column" gap="less" background="less">
-      <Box />
-      <Box />
-      <Box />
-    </Box>
-  ),
-};
-
 export const EscapeHatch: Story = {
   args: {
     padding: '12px 24px',
-    width: 280,
+    minWidth: 280,
     borderRadius: '50px',
     boxShadow: '0 8px 16px rgb(0 0 0 / 0.2)',
     background: 'linear-gradient(135deg, #fde68a, #fca5a5)',

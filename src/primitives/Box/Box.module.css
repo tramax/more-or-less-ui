@@ -6,7 +6,7 @@
  * Order matters: shorthands (padding, margin) come before the longhands they can be combined
  * with, so `padding="more" paddingLeft="less"` resolves the way it reads.
  *
- * width/height/min-* use the space scale (see theme/tokens.css);
+ * min-width/min-height use the space scale (see theme/tokens.css);
  * `background` uses the --color-background-* tokens (see theme/tokens.css).
  */
 
@@ -108,36 +108,6 @@
 }
 .marginBottomMore {
   margin-bottom: var(--space-more);
-}
-
-.gapLess {
-  gap: var(--space-less);
-}
-.gapNormal {
-  gap: var(--space-normal);
-}
-.gapMore {
-  gap: var(--space-more);
-}
-
-.widthLess {
-  width: var(--space-less);
-}
-.widthNormal {
-  width: var(--space-normal);
-}
-.widthMore {
-  width: var(--space-more);
-}
-
-.heightLess {
-  height: var(--space-less);
-}
-.heightNormal {
-  height: var(--space-normal);
-}
-.heightMore {
-  height: var(--space-more);
 }
 
 .minWidthLess {

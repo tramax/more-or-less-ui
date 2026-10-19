@@ -145,9 +145,6 @@ Use standard CSS property names (camelCase) for direct mappings — **no transla
 | `marginRight` | `margin-right` | `ScaleProp` |
 | `marginTop` | `margin-top` | `ScaleProp` |
 | `marginBottom` | `margin-bottom` | `ScaleProp` |
-| `gap` | `gap` | `ScaleProp` |
-| `width` | `width` | `ScaleProp` |
-| `height` | `height` | `ScaleProp` |
 | `minWidth` | `min-width` | `ScaleProp` |
 | `minHeight` | `min-height` | `ScaleProp` |
 
@@ -291,8 +288,6 @@ export const Component = forwardRef<HTMLDivElement, ComponentProps>(
 <Box 
   padding="more" 
   margin="less" 
-  gap="normal"
-  width="100%"
   borderRadius="more"
   boxShadow="less"
 />
@@ -309,9 +304,8 @@ export const Component = forwardRef<HTMLDivElement, ComponentProps>(
 />
 
 <Box
-  width="300px"
-  height="200px"
-  minWidth="250px"
+  minWidth="300px"
+  minHeight="200px"
   borderRadius="12px"
   padding="1rem 2rem"
 />
@@ -337,24 +331,14 @@ interface BoxProps {
   marginRight?: ScaleProp;
   marginTop?: ScaleProp;
   marginBottom?: ScaleProp;
-  gap?: ScaleProp;
 
   // Size (direct CSS mappings)
-  width?: ScaleProp;
-  height?: ScaleProp;
   minWidth?: ScaleProp;
   minHeight?: ScaleProp;
 
   // Radius, Shadow (direct)
   borderRadius?: ScaleProp;
   boxShadow?: ScaleProp;
-
-  // Layout (pass through)
-  display?: string;
-  flex?: string;
-  flexDirection?: string;
-  alignItems?: string;
-  justifyContent?: string;
 
   children?: React.ReactNode;
   className?: string;
@@ -371,7 +355,7 @@ interface FlexProps extends BoxProps {
   wrap?: 'nowrap' | 'wrap' | 'wrap-reverse';
   align?: 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline';
   justify?: 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly';
-  gap?: ScaleProp;  // Already in BoxProps
+  gap?: ScaleProp;
 }
 
 // primitives/Stack.tsx
@@ -830,7 +814,7 @@ export const EscapeHatch: Story = {
 1. **Three variants + escape hatch** — `less`/`normal`/`more` + any CSS value
 2. **CSS Variables for theming** — Native, SSR-safe, framework-agnostic
 3. **CSS Modules for variants** — Zero runtime, browser-resolved, DevTools-friendly
-4. **Direct CSS property names** — `borderRadius`, `fontWeight`, `boxShadow`, `padding`, `margin`, `gap`, `width`, `height`
+4. **Direct CSS property names** — `borderRadius`, `fontWeight`, `boxShadow`, `padding`, `margin`, `minWidth`, `minHeight`
 5. **Semantic names only for compounds** — `size` (multi-property: fontSize + padding + gap)
 6. **Primitives first** — `Box`, `Flex`, `Stack` cover 80% of custom component needs
 7. **Export everything** — Tokens, hooks, utilities, types for consumer extensibility
