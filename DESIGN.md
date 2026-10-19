@@ -145,8 +145,6 @@ Use standard CSS property names (camelCase) for direct mappings — **no transla
 | `marginRight` | `margin-right` | `ScaleProp` |
 | `marginTop` | `margin-top` | `ScaleProp` |
 | `marginBottom` | `margin-bottom` | `ScaleProp` |
-| `minWidth` | `min-width` | `ScaleProp` |
-| `minHeight` | `min-height` | `ScaleProp` |
 
 ### Semantic/Compound Props (Multiple CSS Properties)
 
@@ -304,8 +302,6 @@ export const Component = forwardRef<HTMLDivElement, ComponentProps>(
 />
 
 <Box
-  minWidth="300px"
-  minHeight="200px"
   borderRadius="12px"
   padding="1rem 2rem"
 />
@@ -331,10 +327,6 @@ interface BoxProps {
   marginRight?: ScaleProp;
   marginTop?: ScaleProp;
   marginBottom?: ScaleProp;
-
-  // Size (direct CSS mappings)
-  minWidth?: ScaleProp;
-  minHeight?: ScaleProp;
 
   // Radius, Shadow (direct)
   borderRadius?: ScaleProp;
@@ -814,7 +806,7 @@ export const EscapeHatch: Story = {
 1. **Three variants + escape hatch** — `less`/`normal`/`more` + any CSS value
 2. **CSS Variables for theming** — Native, SSR-safe, framework-agnostic
 3. **CSS Modules for variants** — Zero runtime, browser-resolved, DevTools-friendly
-4. **Direct CSS property names** — `borderRadius`, `fontWeight`, `boxShadow`, `padding`, `margin`, `minWidth`, `minHeight`
+4. **Direct CSS property names** — `borderRadius`, `fontWeight`, `boxShadow`, `padding`, `margin`
 5. **Semantic names only for compounds** — `size` (multi-property: fontSize + padding + gap)
 6. **Primitives first** — `Box`, `Flex`, `Stack` cover 80% of custom component needs
 7. **Export everything** — Tokens, hooks, utilities, types for consumer extensibility

@@ -24,14 +24,12 @@ const SCALE_SPEC = {
     'marginRight',
     'marginTop',
     'marginBottom',
-    'minWidth',
-    'minHeight',
     'borderRadius',
     'boxShadow',
     'background',
   ],
-  // Opinionated starting look: a padded, rounded surface that spaces its children. Everything else
-  // (margin, shadow, dimensions, per-side overrides) is opt-in so layout stays predictable.
+  // Opinionated starting look: a padded, rounded surface. Everything else
+  // (margin, shadow, per-side overrides) is opt-in so layout stays predictable.
   // Opt out of a default with an escape-hatch value, e.g. padding={0} or background="less".
   defaults: BOX_DEFAULTS,
 } as const;

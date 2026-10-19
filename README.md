@@ -22,7 +22,7 @@ No `sm`/`md`/`lg`/`xl`/`2xl` — just `more`/`less`/`normal`.
 - **Relative Scale System** — `more`/`less`/`normal` across all props (size, radius, weight, spacing, elevation)
 - **CSS Variables for Theming** — Native, SSR-safe, framework-agnostic
 - **CSS Modules for Variants** — Zero runtime, browser-resolved, DevTools-friendly
-- **Direct CSS Property Names** — `borderRadius`, `fontWeight`, `boxShadow`, `padding`, `margin`, `minWidth`, `minHeight`
+- **Direct CSS Property Names** — `borderRadius`, `fontWeight`, `boxShadow`, `padding`, `margin`
 - **Escape Hatch** — Any CSS value as string or number (pixels)
 - **React ThemeProvider** — Optional programmatic theme switching with persistence
 - **Tree-shakeable** — ESM/CJS dual package exports
@@ -127,12 +127,10 @@ Every component accepts these props with `ScaleProp` type (`'less' | 'normal' | 
 | `boxShadow` | `boxShadow` | Elevation/depth |
 | `padding` | `padding` | Internal spacing |
 | `margin` | `margin` | External spacing |
-| `minWidth` | `minWidth` | Minimum width |
-| `minHeight` | `minHeight` | Minimum height |
 
 ### Defaults
 
-Components are opinionated: a prop you leave out falls back to `normal` where that makes a good starting point. `Box`, for example, defaults `padding`, `borderRadius` and `background` to `normal`, so `<Box>` is a padded, rounded surface. `margin`, `boxShadow` and the dimension props (`minWidth`, `minHeight`) stay opt-in.
+Components are opinionated: a prop you leave out falls back to `normal` where that makes a good starting point. `Box`, for example, defaults `padding`, `borderRadius` and `background` to `normal`, so `<Box>` is a padded, rounded surface. `margin` and `boxShadow` stay opt-in.
 
 To switch a default off, pass an escape-hatch value: `padding={0}`, or `background="less"` for a transparent background.
 
@@ -147,7 +145,7 @@ To switch a default off, pass an escape-hatch value: `padding={0}`, or `backgrou
 
 // Escape hatch (10% of cases)
 <Button size="1.5rem" borderRadius="50%" fontWeight={700} />
-<Box minWidth="300px" minHeight="200px" padding="1rem 2rem" />
+<Box margin="2rem" padding="1rem 2rem" />
 ```
 
 ## Components

@@ -7,6 +7,9 @@ const scaleControl = {
   options: [undefined, 'less', 'normal', 'more'],
 } as const;
 
+// Escape-hatch values are free-form, so a select can't show them
+const textControl = { control: 'text' } as const;
+
 const VARIANTS = ['less', 'normal', 'more'] as const;
 
 // The variant stories render all three variants at once, so their controls would do nothing
@@ -70,9 +73,14 @@ export const BoxShadow: Story = {
 };
 
 export const EscapeHatch: Story = {
+  argTypes: {
+    padding: textControl,
+    borderRadius: textControl,
+    boxShadow: textControl,
+    background: textControl,
+  },
   args: {
     padding: '12px 24px',
-    minWidth: 280,
     borderRadius: '50px',
     boxShadow: '0 8px 16px rgb(0 0 0 / 0.2)',
     background: 'linear-gradient(135deg, #fde68a, #fca5a5)',

@@ -20,8 +20,6 @@ const SCALE_PROPS = [
   'marginRight',
   'marginTop',
   'marginBottom',
-  'minWidth',
-  'minHeight',
   'borderRadius',
   'boxShadow',
   'background',
@@ -57,9 +55,9 @@ describe('Box', () => {
     });
 
     it('does not leak scale props to the DOM', () => {
-      const el = renderBox({ padding: 'more', minWidth: 100 });
+      const el = renderBox({ padding: 'more', margin: 'less' });
       expect(el.hasAttribute('padding')).toBe(false);
-      expect(el.hasAttribute('minWidth')).toBe(false);
+      expect(el.hasAttribute('margin')).toBe(false);
     });
   });
 
@@ -93,7 +91,7 @@ describe('Box', () => {
       expect(renderBox().classList.contains(styles[`${prop}Normal`] as string)).toBe(true);
     });
 
-    it.each(['margin', 'boxShadow', 'minWidth', 'minHeight'] as const)('%s is opt-in', (prop) => {
+    it.each(['margin', 'boxShadow'] as const)('%s is opt-in', (prop) => {
       const el = renderBox();
       for (const variant of VARIANTS) {
         expect(el.classList.contains(styles[`${prop}${cap(variant)}`] as string)).toBe(false);
@@ -136,16 +134,16 @@ describe('Box', () => {
     });
 
     it('treats numbers as pixels', () => {
-      const el = renderBox({ minWidth: 300, minHeight: 20, marginLeft: 8 });
-      expect(el.style.minWidth).toBe('300px');
-      expect(el.style.minHeight).toBe('20px');
+      const el = renderBox({ marginTop: 300, marginBottom: 20, marginLeft: 8 });
+      expect(el.style.marginTop).toBe('300px');
+      expect(el.style.marginBottom).toBe('20px');
       expect(el.style.marginLeft).toBe('8px');
     });
 
     it('mixes a variant on one prop with an escape hatch on another', () => {
-      const el = renderBox({ padding: 'more', minWidth: '50%' });
+      const el = renderBox({ padding: 'more', margin: '50%' });
       expect(el.classList.contains(styles.paddingMore as string)).toBe(true);
-      expect(el.style.minWidth).toBe('50%');
+      expect(el.style.margin).toBe('50%');
     });
   });
 
@@ -157,8 +155,8 @@ describe('Box', () => {
     });
 
     it('lets the style prop win over escape-hatch values', () => {
-      const el = renderBox({ minWidth: 100, style: { minWidth: 200, color: 'red' } });
-      expect(el.style.minWidth).toBe('200px');
+      const el = renderBox({ margin: 100, style: { margin: 200, color: 'red' } });
+      expect(el.style.margin).toBe('200px');
       expect(el.style.color).toBe('red');
     });
   });
