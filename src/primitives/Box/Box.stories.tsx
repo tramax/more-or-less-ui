@@ -9,9 +9,23 @@ const scaleControl = {
 
 const VARIANTS = ['less', 'normal', 'more'] as const;
 
+// The variant stories render all three variants at once, so their controls would do nothing
+const comparison = { controls: { disable: true } };
+
 // Lays the variants out side by side without adding Box's own defaults to the demo
 const Row = ({ alignItems, children }: { alignItems?: 'flex-start'; children: ReactNode }) => (
   <div style={{ display: 'flex', alignItems, gap: '1rem' }}>{children}</div>
+);
+
+// One Box per variant, each labelled with the prop it demonstrates
+const Variants = ({ prop }: { prop: 'padding' | 'background' | 'borderRadius' | 'boxShadow' }) => (
+  <Row alignItems="flex-start">
+    {VARIANTS.map((v) => (
+      <Box key={v} {...{ [prop]: v }}>
+        {prop}="{v}"
+      </Box>
+    ))}
+  </Row>
 );
 
 const meta: Meta<typeof Box> = {
@@ -36,45 +50,23 @@ export const Default: Story = {
 };
 
 export const Padding: Story = {
-  render: () => (
-    <Row alignItems="flex-start">
-      {VARIANTS.map((v) => (
-        <Box key={v} padding={v}>
-          padding="{v}"
-        </Box>
-      ))}
-    </Row>
-  ),
+  parameters: comparison,
+  render: () => <Variants prop="padding" />,
 };
 
 export const Background: Story = {
-  render: () => (
-    <Row>
-      {VARIANTS.map((v) => (
-        <Box key={v} background={v} />
-      ))}
-    </Row>
-  ),
+  parameters: comparison,
+  render: () => <Variants prop="background" />,
 };
 
 export const BorderRadius: Story = {
-  render: () => (
-    <Row>
-      {VARIANTS.map((v) => (
-        <Box key={v} borderRadius={v} />
-      ))}
-    </Row>
-  ),
+  parameters: comparison,
+  render: () => <Variants prop="borderRadius" />,
 };
 
 export const BoxShadow: Story = {
-  render: () => (
-    <Row>
-      {VARIANTS.map((v) => (
-        <Box key={v} boxShadow={v} />
-      ))}
-    </Row>
-  ),
+  parameters: comparison,
+  render: () => <Variants prop="boxShadow" />,
 };
 
 export const EscapeHatch: Story = {

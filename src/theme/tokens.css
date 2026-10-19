@@ -32,10 +32,10 @@
   --elevation-more: 0 10px 15px rgb(0 0 0 / 0.1);
 
   /* Brand color */
-  --color-primary: #3b82f6;
+  --color-primary: #d9c9ad;
 
   /* Background scale — affects Box background */
   --color-background-less: transparent;
   --color-background-normal: Canvas; /* system canvas: white in light, system dark in dark */
-  --color-background-more: #d9c9ad; /* sand */
+  --color-background-more: var(--color-primary);
 }
