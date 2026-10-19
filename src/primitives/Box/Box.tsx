@@ -7,7 +7,9 @@ import styles from './Box.module.css';
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
 export const BOX_DEFAULTS = {
   padding: 'normal',
+  margin: 'normal',
   borderRadius: 'normal',
+  boxShadow: 'normal',
   background: 'normal',
 } as const;
 
@@ -28,9 +30,9 @@ const SCALE_SPEC = {
     'boxShadow',
     'background',
   ],
-  // Opinionated starting look: a padded, rounded surface. Everything else
-  // (margin, shadow, per-side overrides) is opt-in so layout stays predictable.
-  // Opt out of a default with an escape-hatch value, e.g. padding={0} or background="less".
+  // Every prop falls back to `normal`, so `<Box />` is a styled surface out of the box. The per-side
+  // props (paddingLeft, marginTop, ...) have no default: they only override their shorthand.
+  // Opt out with an escape-hatch value: padding={0}, margin={0}, boxShadow="none", background="transparent".
   defaults: BOX_DEFAULTS,
 } as const;
 

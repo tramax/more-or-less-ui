@@ -25,7 +25,13 @@ const SCALE_PROPS = [
   'background',
 ] as const;
 const VARIANTS = ['less', 'normal', 'more'] as const;
-const DEFAULT_CLASSES = [styles.paddingNormal, styles.borderRadiusNormal, styles.backgroundNormal];
+const DEFAULT_CLASSES = [
+  styles.paddingNormal,
+  styles.marginNormal,
+  styles.borderRadiusNormal,
+  styles.boxShadowNormal,
+  styles.backgroundNormal,
+];
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 describe('Box', () => {
@@ -81,22 +87,29 @@ describe('Box', () => {
         styles.paddingMore,
         styles.marginLess,
         styles.borderRadiusNormal,
+        styles.boxShadowNormal,
         styles.backgroundNormal,
       ]);
     });
   });
 
   describe('defaults', () => {
-    it.each(['padding', 'borderRadius', 'background'] as const)('%s defaults to normal', (prop) => {
-      expect(renderBox().classList.contains(styles[`${prop}Normal`] as string)).toBe(true);
-    });
+    it.each(['padding', 'margin', 'borderRadius', 'boxShadow', 'background'] as const)(
+      '%s defaults to normal',
+      (prop) => {
+        expect(renderBox().classList.contains(styles[`${prop}Normal`] as string)).toBe(true);
+      },
+    );
 
-    it.each(['margin', 'boxShadow'] as const)('%s is opt-in', (prop) => {
-      const el = renderBox();
-      for (const variant of VARIANTS) {
-        expect(el.classList.contains(styles[`${prop}${cap(variant)}`] as string)).toBe(false);
-      }
-    });
+    it.each(['paddingLeft', 'paddingTop', 'marginLeft', 'marginTop'] as const)(
+      '%s has no default, it only overrides its shorthand',
+      (prop) => {
+        const el = renderBox();
+        for (const variant of VARIANTS) {
+          expect(el.classList.contains(styles[`${prop}${cap(variant)}`] as string)).toBe(false);
+        }
+      },
+    );
 
     it('replaces the default when a variant is given', () => {
       const el = renderBox({ padding: 'more' });
@@ -122,6 +135,14 @@ describe('Box', () => {
       const el = renderBox({ background: 'less' });
       expect(el.classList.contains(styles.backgroundLess as string)).toBe(true);
     });
+
+    it('turns margin and shadow off with escape-hatch values', () => {
+      const el = renderBox({ margin: 0, boxShadow: 'none' });
+      expect(el.style.margin).toBe('0px');
+      expect(el.style.boxShadow).toBe('none');
+      expect(el.classList.contains(styles.marginNormal as string)).toBe(false);
+      expect(el.classList.contains(styles.boxShadowNormal as string)).toBe(false);
+    });
   });
 
   describe('escape hatch', () => {
@@ -130,7 +151,7 @@ describe('Box', () => {
       expect(el.style.padding).toBe('12px 24px');
       expect(el.style.borderRadius).toBe('50%');
       expect(el.style.margin).toBe('1.5rem');
-      expect([...el.classList]).toEqual([styles.backgroundNormal]);
+      expect([...el.classList]).toEqual([styles.boxShadowNormal, styles.backgroundNormal]);
     });
 
     it('treats numbers as pixels', () => {
