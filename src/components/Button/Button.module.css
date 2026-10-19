@@ -30,27 +30,73 @@
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
-  transition: box-shadow 150ms ease, opacity 150ms ease;
+  /* Hover motion. Entering uses a back-out curve: the y1 of 1.56 (> 1) makes the scale pass its
+     target by a few percent and settle, which reads as springy rather than mechanical. Leaving
+     uses a plain ease-out-quint with no overshoot, so the button doesn't dip below 1 and wobble
+     once the pointer has already gone. */
+  /* 16/15, the "minor second" step of the musical/modular scale, the smallest standard ratio */
+  --button-hover-scale: 1.0667;
+  --button-ease-enter: cubic-bezier(0.34, 2.56, 0.64, 1);
+  --button-ease-leave: cubic-bezier(0.22, 1, 0.36, 1);
+  transform: scale(1);
+  transition: transform 400ms var(--button-ease-leave), box-shadow 400ms var(--button-ease-leave),
+    opacity 150ms ease;
 }
 
-/* Hover and pressed tint: a currentColor overlay works on any background, transparent and
-   escape-hatch gradients included, where a background-color change would not. */
+/* transform is composited, so the scale runs on the GPU with no layout or paint per frame. No
+   will-change: it would pin the raster scale at 1 and blur the scaled-up text. The browser promotes
+   the button to its own layer for the length of the transition anyway.
+   Gated on hover-capable pointers (touch would leave the button stuck scaled after a tap) and off
+   for disabled and loading buttons. z-index lifts it over neighbours while it grows. */
+@media (hover: hover) {
+  .button:hover:not(:disabled, .loading) {
+    transform: scale(var(--button-hover-scale));
+    /* Next step up the elevation scale. The shadow gets the non-overshooting curve: it follows
+       the scale's timing but doesn't need to bounce. */
+    box-shadow: var(--elevation-more);
+    z-index: 1;
+    transition: transform 500ms var(--button-ease-enter), box-shadow 500ms var(--button-ease-leave),
+      opacity 150ms ease;
+  }
+  /* Pressed: settle back to full size, quickly and without overshoot. Releasing re-applies the
+     hover rule, so the button springs back up with the overshoot curve. */
+  .button:hover:active:not(:disabled, .loading) {
+    transform: scale(1);
+    /* Back down to the resting elevation, as if pushed in */
+    box-shadow: var(--elevation-normal);
+    transition: transform 200ms var(--button-ease-leave), box-shadow 200ms var(--button-ease-leave),
+      opacity 150ms ease;
+  }
+}
+
+/* Hover and pressed sheen: a white-to-transparent overlay blended with `overlay`, so it lifts
+   the button's own colour (dark tones get richer, light ones brighter) instead of laying a flat
+   tint on it, and works on any background, escape-hatch gradients included. The light comes from
+   above, matching the downward shadow. The button's transform makes it a stacking context, so
+   the blend only sees the button itself, never the page behind. */
 .button::after {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
   corner-shape: inherit;
-  background: currentColor;
+  /* A soft pool of light centred on the top edge (bottom edge when pressed, below), fading out
+     over most of the button. Softer than a straight linear ramp, which reads as a hard band. */
+  background: radial-gradient(ellipse at 50% 0%, white, transparent 75%);
+  mix-blend-mode: overlay;
   opacity: 0;
   pointer-events: none;
   transition: opacity 150ms ease;
 }
 .button:hover::after {
-  opacity: 0.08;
+  opacity: 0.2;
 }
+/* Pressed flips the light to come from below, as if the button were pushed in. Gradients can't
+   be transitioned, so this is an instant swap (animating a flip with scaleY(-1) looked bad: the
+   sheen visibly slid up and down). */
 .button:active::after {
-  opacity: 0.16;
+  background: radial-gradient(ellipse at 50% 100%, white, transparent 75%);
+  opacity: 0.2;
 }
 
 .button:focus-visible {
@@ -106,6 +152,11 @@
 @media (prefers-reduced-motion: reduce) {
   .spinner {
     animation-duration: 2s;
+  }
+  /* No scaling for reduced motion; the tint and the raised shadow remain as the hover cue */
+  .button:hover:not(:disabled, .loading),
+  .button:hover:active:not(:disabled, .loading) {
+    transform: none;
   }
 }
 
