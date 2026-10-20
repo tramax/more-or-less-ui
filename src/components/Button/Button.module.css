@@ -16,7 +16,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5em 1em;
+  padding: 0.75em 1em;
   border: 0;
   /* Fixed, not props. Placeholders on the `normal` tokens until the Button's own look is defined.
      corner-shape: squircle gives smoother corners than circular arcs, as in Box. */
@@ -33,13 +33,23 @@
   --button-shadow-strength: 0.35;
   --button-shadow-contact: calc(22% * var(--button-shadow-strength) * var(--button-shadow-boost));
   --button-shadow-ambient: calc(16% * var(--button-shadow-strength) * var(--button-shadow-boost));
-  --button-elevation-normal:
-    0 2px 4px
+  --button-elevation-less: 0 1px 2px
+      color-mix(
+        in oklab,
+        var(--button-shadow-color) calc(var(--button-shadow-contact) * 0.75),
+        transparent
+      ),
+    0 2px 6px
+      color-mix(
+        in oklab,
+        var(--button-shadow-color) calc(var(--button-shadow-ambient) * 0.5),
+        transparent
+      );
+  --button-elevation-normal: 0 2px 4px
       color-mix(in oklab, var(--button-shadow-color) var(--button-shadow-contact), transparent),
     0 8px 16px
       color-mix(in oklab, var(--button-shadow-color) var(--button-shadow-ambient), transparent);
-  --button-elevation-more:
-    0 4px 8px
+  --button-elevation-more: 0 4px 8px
       color-mix(
         in oklab,
         var(--button-shadow-color) calc(var(--button-shadow-contact) * 1.25),
@@ -68,9 +78,7 @@
   --button-ease-enter: cubic-bezier(0.34, 2.56, 0.64, 1);
   --button-ease-leave: cubic-bezier(0.22, 1, 0.36, 1);
   transform: scale(1);
-  transition:
-    transform 400ms var(--button-ease-leave),
-    box-shadow 400ms var(--button-ease-leave),
+  transition: transform 400ms var(--button-ease-leave), box-shadow 400ms var(--button-ease-leave),
     opacity 150ms ease;
 }
 
@@ -86,20 +94,16 @@
        the scale's timing but doesn't need to bounce. */
     box-shadow: var(--button-elevation-more);
     z-index: 1;
-    transition:
-      transform 500ms var(--button-ease-enter),
-      box-shadow 500ms var(--button-ease-leave),
+    transition: transform 500ms var(--button-ease-enter), box-shadow 500ms var(--button-ease-leave),
       opacity 150ms ease;
   }
   /* Pressed: settle back to full size, quickly and without overshoot. Releasing re-applies the
      hover rule, so the button springs back up with the overshoot curve. */
   .button:hover:active:not(:disabled, .loading) {
     transform: scale(1);
-    /* Back down to the resting elevation, as if pushed in */
-    box-shadow: var(--button-elevation-normal);
-    transition:
-      transform 200ms var(--button-ease-leave),
-      box-shadow 200ms var(--button-ease-leave),
+    /* Below the resting elevation, as if pushed in */
+    box-shadow: var(--button-elevation-less);
+    transition: transform 200ms var(--button-ease-leave), box-shadow 200ms var(--button-ease-leave),
       opacity 150ms ease;
   }
 }
