@@ -57,7 +57,7 @@ const omitDefaults = (code: string) =>
     .replace(/<Box\s+>/g, '<Box>');
 
 const meta: Meta<typeof Box> = {
-  title: 'Primitives/Box',
+  title: 'Layout and surfaces/Box',
   component: Box,
   tags: ['autodocs'],
   // Start the controls at the component's defaults

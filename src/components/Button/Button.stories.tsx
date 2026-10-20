@@ -58,7 +58,7 @@ const omitDefaults = (code: string) =>
     .replace(/<Button\s+>/g, '<Button>');
 
 const meta: Meta<typeof Button> = {
-  title: 'Components/Button',
+  title: 'Actions/Button',
   component: Button,
   tags: ['autodocs'],
   // Start the controls at the component's defaults

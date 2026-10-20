@@ -33,6 +33,21 @@ const preview: Preview = {
   parameters: {
     layout: 'centered',
     controls: { expanded: true },
+    // Sidebar groups are organised by what the user is trying to do, not by how a component is built.
+    // Groups not listed here (and stories within a group) fall back to alphabetical order.
+    options: {
+      storySort: {
+        order: [
+          'Foundations',
+          'Layout and surfaces',
+          'Actions',
+          'Inputs',
+          'Content',
+          'Feedback',
+          'Navigation and overlays',
+        ],
+      },
+    },
     // With no background selected, the canvas colour comes from preview.css and
     // follows the theme toggle. Picking one here overrides it.
     backgrounds: {
