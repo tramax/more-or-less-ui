@@ -92,7 +92,7 @@ export function isVariant(value: ScaleProp): value is Variant {
 
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color plus a `background` scale per component that has one (Box, Button)**. No palettes, no
+Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button), and a single faint fill for TextField**. No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -320,7 +320,7 @@ export const Component = forwardRef<HTMLDivElement, ComponentProps>(
 ### Box — The Fundamental Building Block
 
 ```tsx
-// primitives/Box.tsx
+// components/Box/Box.tsx
 interface BoxProps {
   // Spacing (direct CSS mappings)
   padding?: ScaleProp;
@@ -347,7 +347,7 @@ interface BoxProps {
 ### Flex, Stack, Grid — Composition Helpers
 
 ```tsx
-// primitives/Flex.tsx
+// components/Flex/Flex.tsx
 interface FlexProps extends BoxProps {
   direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
   wrap?: 'nowrap' | 'wrap' | 'wrap-reverse';
@@ -356,13 +356,13 @@ interface FlexProps extends BoxProps {
   gap?: ScaleProp;
 }
 
-// primitives/Stack.tsx
+// components/Stack/Stack.tsx
 interface StackProps extends BoxProps {
   direction?: 'vertical' | 'horizontal';
   divider?: React.ReactNode;
 }
 
-// primitives/Grid.tsx
+// components/Grid/Grid.tsx
 interface GridProps extends BoxProps {
   columns?: number | ScaleProp;      // Can use ScaleProp for escape hatch
   rows?: number | ScaleProp;
@@ -434,16 +434,41 @@ interface CardProps {
 }
 ```
 
-### Input, Textarea, Select
+### TextField
 ```tsx
-interface InputProps {
-  size?: ScaleProp;
-  borderRadius?: ScaleProp;
-  fontWeight?: ScaleProp;        // Label weight
-  padding?: ScaleProp;           // Internal padding
-  // ... standard input props (value, onChange, placeholder, etc.)
+interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
+  'size' | 'color' | 'disabled' | 'readOnly' | 'required' | 'type'> {
+  size?: ScaleProp;              // font-size on the root; padding and gaps are in em, so they follow
+  type?: 'text' | 'email' | 'password' | 'search' | 'tel' | 'url';
+  label?: string;                // visible, above the field; without it aria-label/aria-labelledby is required
+  error?: string;                // invalid state + message below the field; the caller decides when
+  isDisabled?: boolean;          // native `disabled`, dimmed
+  isReadOnly?: boolean;          // focusable, not editable, no fill
+  isRequired?: boolean;          // native `required` + an aria-hidden asterisk after the label
 }
 ```
+
+`size` is the only scale prop: no `background`, no `borderRadius`. The field is a block of faint
+color rather than a bordered box (easier to scan): `--color-textfield-background` is the brand
+color at low alpha, so it lays over any surface in both themes. Hover steps the alpha up, focus
+fades in a 2px inset-shadow border in the brand color (a transparent outline stays for forced-colors
+mode), and the error state is the same fill in `--color-danger`, with a `--color-danger` focus border.
+Because color alone can't carry the error, the message also gets an icon.
+
+`size` is also the native character-width attribute of `<input>`, so the scale prop replaces it.
+`className` and `style` go on the root (so `size` reaches the label and the message); `ref` and every
+other native prop go to the `<input>`.
+
+Based on NN/g and GOV.UK guidance: visible label above the field, no placeholder as label or hint,
+required fields marked, error specific and below the field, validated when the user leaves the field
+rather than on every keystroke (the component doesn't validate; see the `ValidateOnBlur` story).
+
+**Not yet:** hint text (probably alongside a Tooltip), adornments, multiline (`Textarea`), `type="number"`.
+**Open:** a borderless faint fill may not meet WCAG 1.4.11 (3:1 for the control's boundary); check it
+in Storybook, and add a stronger bottom edge if it needs one.
+
+### Textarea, Select
+Not built yet. `Textarea` should share TextField's look and label/error wiring.
 
 ---
 
@@ -586,21 +611,20 @@ more-or-less-ui/
 │   ├── utils/
 │   │   ├── cssVars.ts
 │   │   └── clsx.ts         # Re-export
-│   ├── primitives/
+│   ├── components/         # Flat: one folder per component. Grouping (Layout, Actions, ...)
+│   │   │                   # lives only in the Storybook story `title`.
 │   │   ├── Box/
 │   │   │   ├── Box.tsx
 │   │   │   ├── Box.module.css
 │   │   │   ├── Box.stories.tsx
 │   │   │   └── index.ts
+│   │   ├── Button/
 │   │   ├── Flex/
 │   │   ├── Stack/
 │   │   ├── Grid/
 │   │   ├── Text/
-│   │   └── index.ts
-│   ├── components/
-│   │   ├── Button/
 │   │   ├── Card/
-│   │   ├── Input/
+│   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
 │   │   └── index.ts
@@ -622,17 +646,15 @@ export { ThemeProvider, useTheme } from './theme/ThemeProvider';
 export { tokens, type ColorToken, type SpacingToken } from './theme/tokens';
 export { getCSSVariable, getAllTokens } from './utils/cssVars';
 
-// Primitives
-export { Box } from './primitives/Box';
-export { Flex } from './primitives/Flex';
-export { Stack } from './primitives/Stack';
-export { Grid } from './primitives/Grid';
-export { Text } from './primitives/Text';
-
 // Components
+export { Box } from './components/Box';
+export { Flex } from './components/Flex';
+export { Stack } from './components/Stack';
+export { Grid } from './components/Grid';
+export { Text } from './components/Text';
 export { Button } from './components/Button';
 export { Card } from './components/Card';
-export { Input } from './components/Input';
+export { TextField } from './components/TextField';
 export { Textarea } from './components/Textarea';
 export { Select } from './components/Select';
 
@@ -645,7 +667,7 @@ export { useTokens } from './hooks/useTokens';
 
 // Types
 export type { ScaleProp, Variant } from './types/scale';
-export type { BoxProps } from './primitives/Box';
+export type { BoxProps } from './components/Box';
 export type { ButtonProps } from './components/Button';
 // ...
 ```
@@ -769,7 +791,8 @@ export const EscapeHatch: Story = {
 ### Phase 3: Components
 - [x] `Button` — size, background, isDisabled, isLoading
 - [ ] `Card` — Container with scale props
-- [ ] `Input` / `Textarea` — Form primitives
+- [x] `TextField` — size, label, error, isDisabled, isReadOnly, isRequired
+- [ ] `Textarea` — Form primitive
 - [ ] `Select` — Compound component pattern
 
 ### Phase 4: Developer Experience
