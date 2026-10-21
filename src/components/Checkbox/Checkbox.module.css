@@ -3,9 +3,9 @@
  * group follows the font-size it inherits.
  *
  * Each option is a faint surface (see --color-checkbox-background* in theme/tokens.css) that is
- * raised on hover like a Button: lift, scale, a deeper shadow and a sheen. The motion and shadow
- * layers are copied from Button.module.css on purpose, with their own --checkbox-* variables, until a
- * second component (Radio) needs them and they can be shared.
+ * raised on hover like a Button: lift, scale, a shadow (none at rest, like the other inputs) and a
+ * sheen. The motion is copied from Button.module.css on purpose, with its own --checkbox-*
+ * variables, until a second component (Radio) needs it and it can be shared.
  *
  * Unavailable options, native `disabled` and `aria-disabled` (blocked by minChecked / maxChecked),
  * are dimmed and don't react to the pointer.
@@ -57,38 +57,9 @@
   line-height: 1.25;
   cursor: pointer;
   user-select: none;
-  /* Same two-layer structure as Button's elevation (contact + ambient), so hover interpolates per
-     layer. The shadow is the brand-tinted --shadow-color; --button-shadow-boost is the dark-theme
-     multiplier shared with Button. */
-  --checkbox-shadow-contact: calc(22% * 0.7 * var(--button-shadow-boost));
-  --checkbox-shadow-ambient: calc(16% * 0.7 * var(--button-shadow-boost));
-  --checkbox-elevation-less:
-    0 1px 2px
-      color-mix(
-        in oklab,
-        var(--shadow-color) calc(var(--checkbox-shadow-contact) * 0.75),
-        transparent
-      ),
-    0 2px 6px
-      color-mix(
-        in oklab,
-        var(--shadow-color) calc(var(--checkbox-shadow-ambient) * 0.5),
-        transparent
-      );
-  --checkbox-elevation-more:
-    0 4px 8px
-      color-mix(
-        in oklab,
-        var(--shadow-color) calc(var(--checkbox-shadow-contact) * 1.25),
-        transparent
-      ),
-    0 16px 32px
-      color-mix(
-        in oklab,
-        var(--shadow-color) calc(var(--checkbox-shadow-ambient) * 1.5),
-        transparent
-      );
-  box-shadow: var(--checkbox-elevation-less);
+  /* No shadow at rest, so the options look like the other inputs (TextField has none); the shared
+     --elevation-normal appears on hover. */
+  box-shadow: none;
   /* A gentler scale than Button's 1.0667: a wide row grows by that percentage per side, which would
      crowd its neighbours. Entering overshoots a little and settles; leaving doesn't. */
   --checkbox-hover-scale: 1.02;
@@ -108,7 +79,7 @@
 @media (hover: hover) {
   .option:hover:not(:has(.input:disabled, .input[aria-disabled='true'])) {
     transform: translateY(var(--checkbox-hover-lift)) scale(var(--checkbox-hover-scale));
-    box-shadow: var(--checkbox-elevation-more);
+    box-shadow: var(--elevation-normal);
     background: var(--color-checkbox-background-hover);
     z-index: 1;
     transition:
@@ -120,7 +91,7 @@
   /* Pressed: settle back to rest quickly and without overshoot */
   .option:hover:active:not(:has(.input:disabled, .input[aria-disabled='true'])) {
     transform: translateY(0) scale(1);
-    box-shadow: var(--checkbox-elevation-less);
+    box-shadow: none;
     transition:
       transform 200ms var(--checkbox-ease-leave),
       box-shadow 200ms var(--checkbox-ease-leave),
@@ -187,7 +158,7 @@
   height: 1.25em;
   margin: 0;
   /* The boundary a non-text control needs against its surface (WCAG 1.4.11), kept when checked */
-  border: 2px solid color-mix(in oklab, CanvasText 55%, transparent);
+  border: 2px solid var(--color-primary);
   border-radius: 0.375em;
   corner-shape: squircle;
   background: transparent;

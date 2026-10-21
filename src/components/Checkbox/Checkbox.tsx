@@ -133,7 +133,7 @@ export const Checkbox = forwardRef<HTMLFieldSetElement, CheckboxProps>(function 
                 </svg>
               </span>
               <span className={styles.text}>
-                <span className={styles.optionLabel}>{option.label}</span>
+                <span>{option.label}</span>
                 {option.description && (
                   <span id={descriptionId} className={styles.description}>
                     {option.description}

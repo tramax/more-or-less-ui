@@ -82,8 +82,10 @@
 
   /* Checkbox option fill. Same idea as TextField's: the brand color at low alpha, so it lays over
      any surface in both themes. Hover steps the alpha up; the error fill is the same in the error
-     color. The check mark is a fixed dark ink, not CanvasText: it sits on the brand color, which
-     stays light in dark mode too. */
+     color. The check mark sits on the brand color, which doesn't change between themes, so it is
+     black or white, whichever contrasts more with --color-primary, not CanvasText. This is the
+     fallback: black when the primary's OKLCH lightness is above 0.6, white below. A supporting
+     browser gets the exact choice from contrast-color() (see the end of this file). */
   --color-checkbox-background: color-mix(in oklab, var(--color-primary) 15%, transparent);
   --color-checkbox-background-hover: color-mix(in oklab, var(--color-primary) 25%, transparent);
   --color-checkbox-background-error: color-mix(in oklab, var(--color-danger) 15%, transparent);
@@ -92,5 +94,11 @@
     var(--color-danger) 25%,
     transparent
   );
-  --color-checkbox-check: #2b2118;
+  --color-checkbox-check: oklch(from var(--color-primary) clamp(0, (0.6 - l) * 1000, 1) 0 0);
+}
+
+@supports (color: contrast-color(red)) {
+  :root {
+    --color-checkbox-check: contrast-color(var(--color-primary));
+  }
 }

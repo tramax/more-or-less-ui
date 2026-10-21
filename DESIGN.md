@@ -507,9 +507,11 @@ hint text; say the limit in `label` ("Pick up to 2").
 
 **Look.** Each option is a faint brand-alpha surface like TextField's (`--color-checkbox-background*`),
 raised on hover like a Button: lift, a small scale (1.02, gentler than Button's since a row is wide),
-a deeper shadow, the sheen, and a pressed state that settles back. The box keeps a visible border
-(WCAG 1.4.11) and fills with the brand color when checked, with a fixed dark tick
-(`--color-checkbox-check`). The error state is the same fill in `--color-danger` plus an icon.
+a shadow that appears only on hover (options rest flat, like TextField), the sheen, and a pressed
+state that settles back. The box keeps a visible border
+(WCAG 1.4.11) and fills with the brand color when checked, with a tick that is
+black or white, whichever contrasts more with `--color-primary` (`--color-checkbox-check`, derived
+with `contrast-color()` and an OKLCH fallback, so a different primary adapts on its own). The error state is the same fill in `--color-danger` plus an icon.
 
 **Open:** the raised-hover CSS is copied from Button with local `--checkbox-*` variables; extract it
 once Radio needs it too. The hover scale and shadow strength want tuning in Storybook.
