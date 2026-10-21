@@ -790,10 +790,12 @@ export const EscapeHatch: Story = {
 
 ### Phase 3: Components
 - [x] `Button` — size, background, isDisabled, isLoading
-- [ ] `Card` — Container with scale props
 - [x] `TextField` — size, label, error, isDisabled, isReadOnly, isRequired
-- [ ] `Textarea` — Form primitive
+- [ ] `Checkbox`, `Radio` — Form controls, next
 - [ ] `Select` — Compound component pattern
+- [ ] `Textarea`, `Toggle` — Form controls
+- [ ] `Badge`, `Alert`, `Icon` — Display
+- [ ] `Card` — Only once it adds more than Box (slots, interactive variant, semantic element)
 
 ### Phase 4: Developer Experience
 - [x] Storybook 10 configured (react-vite, docs + a11y addons, light/dark toolbar toggle)

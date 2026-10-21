@@ -37,7 +37,7 @@ const omitDefaults = (code: string) =>
     .replace(/<TextField\s+\/>/g, '<TextField />');
 
 const meta: Meta<typeof TextField> = {
-  title: 'Forms/TextField',
+  title: 'Inputs/TextField',
   component: TextField,
   tags: ['autodocs'],
   // Start the controls at the component's defaults
