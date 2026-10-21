@@ -3,7 +3,7 @@
  *
  * - Scale tokens: 3 values per property (less/normal/more), 15 CSS variables (5 scales × 3)
  * - Color tokens: deliberately minimal. One brand color, an error color, a background scale for Box
- *   and one for Button, and a single faint fill for TextField.
+ *   and one for Button, and a single faint fill each for TextField and Checkbox.
  */
 
 :root {
@@ -79,4 +79,18 @@
     var(--color-danger) 25%,
     transparent
   );
+
+  /* Checkbox option fill. Same idea as TextField's: the brand color at low alpha, so it lays over
+     any surface in both themes. Hover steps the alpha up; the error fill is the same in the error
+     color. The check mark is a fixed dark ink, not CanvasText: it sits on the brand color, which
+     stays light in dark mode too. */
+  --color-checkbox-background: color-mix(in oklab, var(--color-primary) 15%, transparent);
+  --color-checkbox-background-hover: color-mix(in oklab, var(--color-primary) 25%, transparent);
+  --color-checkbox-background-error: color-mix(in oklab, var(--color-danger) 15%, transparent);
+  --color-checkbox-background-error-hover: color-mix(
+    in oklab,
+    var(--color-danger) 25%,
+    transparent
+  );
+  --color-checkbox-check: #2b2118;
 }

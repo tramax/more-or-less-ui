@@ -27,8 +27,14 @@ export type { ClassValue } from '@/utils/clsx';
 export {} from '@/styles.css';
 
 // Components
-export { Box, Button, TextField } from '@/components';
-export type { BoxProps, ButtonProps, TextFieldProps } from '@/components';
+export { Box, Button, Checkbox, TextField } from '@/components';
+export type {
+  BoxProps,
+  ButtonProps,
+  CheckboxProps,
+  CheckboxOption,
+  TextFieldProps,
+} from '@/components';
 
 // Components (to be implemented)
 // export { Flex } from '@/components/Flex';

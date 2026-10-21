@@ -92,7 +92,7 @@ export function isVariant(value: ScaleProp): value is Variant {
 
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button), and a single faint fill for TextField**. No palettes, no
+Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button), and a single faint fill each for TextField and Checkbox**. No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -467,6 +467,53 @@ rather than on every keystroke (the component doesn't validate; see the `Validat
 **Open:** a borderless faint fill may not meet WCAG 1.4.11 (3:1 for the control's boundary); check it
 in Storybook, and add a stronger bottom edge if it needs one.
 
+### Checkbox
+```tsx
+interface CheckboxOption {
+  value: string;
+  label: string;
+  description?: string;          // second line, linked with aria-describedby
+  isDisabled?: boolean;          // native `disabled` on that option
+}
+
+interface CheckboxProps extends Omit<FieldsetHTMLAttributes<HTMLFieldSetElement>,
+  'onChange' | 'disabled' | 'name' | 'defaultValue' | 'color'> {
+  options: CheckboxOption[];
+  value?: string[];              // controlled
+  defaultValue?: string[];       // uncontrolled
+  onChange?: (value: string[]) => void;  // values in `options` order, not click order
+  name?: string;                 // each checked input is submitted under it
+  orientation?: 'horizontal' | 'vertical';  // defaults to 'vertical'
+  minChecked?: number;
+  maxChecked?: number;
+  label?: string;                // the <legend>; without it aria-label/aria-labelledby is required
+  error?: string;                // invalid state + message below the group; the caller decides when
+  isDisabled?: boolean;          // every option disabled, group dimmed
+}
+```
+
+A group: a `<fieldset>` with one native `<input type="checkbox">` per option, so keyboard, form
+submission and screen readers come for free. `className`, `style` and `ref` go on the fieldset.
+
+**No scale props.** There is no `size`: everything is in `em`, so the group follows the font-size it
+inherits. Row shape, fill and motion are fixed in the CSS module.
+
+**`minChecked` / `maxChecked`** are enforced in the UI. Once `maxChecked` are checked the unchecked
+options are blocked; once `minChecked` are checked the checked ones are. Blocked options get
+`aria-disabled` and are dimmed but stay focusable (like Button's `isLoading`), as opposed to
+`isDisabled`, which is native `disabled`. A checked disabled option counts toward both limits. A
+`value` that already breaks a limit is not trimmed: report it through `error`. There is no built-in
+hint text; say the limit in `label` ("Pick up to 2").
+
+**Look.** Each option is a faint brand-alpha surface like TextField's (`--color-checkbox-background*`),
+raised on hover like a Button: lift, a small scale (1.02, gentler than Button's since a row is wide),
+a deeper shadow, the sheen, and a pressed state that settles back. The box keeps a visible border
+(WCAG 1.4.11) and fills with the brand color when checked, with a fixed dark tick
+(`--color-checkbox-check`). The error state is the same fill in `--color-danger` plus an icon.
+
+**Open:** the raised-hover CSS is copied from Button with local `--checkbox-*` variables; extract it
+once Radio needs it too. The hover scale and shadow strength want tuning in Storybook.
+
 ### Textarea, Select
 Not built yet. `Textarea` should share TextField's look and label/error wiring.
 
@@ -791,7 +838,8 @@ export const EscapeHatch: Story = {
 ### Phase 3: Components
 - [x] `Button` — size, background, isDisabled, isLoading
 - [x] `TextField` — size, label, error, isDisabled, isReadOnly, isRequired
-- [ ] `Checkbox`, `Radio` — Form controls, next
+- [x] `Checkbox` — options, orientation, minChecked/maxChecked, label, error, isDisabled (no `size`)
+- [ ] `Radio` — Form control, next (shares Checkbox's look and raised hover)
 - [ ] `Select` — Compound component pattern
 - [ ] `Textarea`, `Toggle` — Form controls
 - [ ] `Badge`, `Alert`, `Icon` — Display
