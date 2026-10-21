@@ -179,6 +179,9 @@
 
 .input {
   appearance: none;
+  /* Form controls don't inherit font-size (13.33px by default), which would make this 1.25em
+     smaller than the tick drawn over it */
+  font: inherit;
   box-sizing: border-box;
   width: 1.25em;
   height: 1.25em;
