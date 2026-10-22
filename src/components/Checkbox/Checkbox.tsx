@@ -1,5 +1,6 @@
 import { forwardRef, useId, useState, type FieldsetHTMLAttributes } from 'react';
 import { clsx } from '@/utils/clsx';
+import shared from '../_shared/OptionGroup.module.css';
 import styles from './Checkbox.module.css';
 
 export interface CheckboxOption {
@@ -99,10 +100,10 @@ export const Checkbox = forwardRef<HTMLFieldSetElement, CheckboxProps>(function 
       id={id}
       disabled={isDisabled}
       aria-describedby={clsx(describedBy, hasError && errorId) || undefined}
-      className={clsx(styles.root, isDisabled && styles.disabled, className)}
+      className={clsx(shared.root, styles.root, isDisabled && shared.disabled, className)}
     >
-      {label && <legend className={styles.legend}>{label}</legend>}
-      <div className={clsx(styles.options, styles[orientation])}>
+      {label && <legend className={shared.legend}>{label}</legend>}
+      <div className={clsx(shared.options, shared[orientation])}>
         {options.map((option, index) => {
           const isChecked = checked.includes(option.value);
           const optionDisabled = isDisabled || Boolean(option.isDisabled);
@@ -111,11 +112,11 @@ export const Checkbox = forwardRef<HTMLFieldSetElement, CheckboxProps>(function 
           const descriptionId = option.description ? `${rootId}-${index}-description` : undefined;
 
           return (
-            <label key={option.value} className={styles.option}>
-              <span className={styles.box}>
+            <label key={option.value} className={shared.option}>
+              <span className={shared.control}>
                 <input
                   type="checkbox"
-                  className={styles.input}
+                  className={clsx(shared.input, styles.input)}
                   name={name}
                   value={option.value}
                   checked={isChecked}
@@ -127,15 +128,18 @@ export const Checkbox = forwardRef<HTMLFieldSetElement, CheckboxProps>(function 
                     if (!isBlocked && !optionDisabled) toggle(option.value);
                   }}
                 />
-                {/* Drawn by a sibling, since an appearance: none input can't reliably hold a pseudo-element */}
-                <svg className={styles.check} viewBox="0 0 16 16" aria-hidden="true">
+                <svg
+                  className={clsx(shared.mark, styles.check)}
+                  viewBox="0 0 16 16"
+                  aria-hidden="true"
+                >
                   <path d="M3.5 8.5l3 3 6-7" pathLength={1} />
                 </svg>
               </span>
-              <span className={styles.text}>
+              <span className={shared.text}>
                 <span>{option.label}</span>
                 {option.description && (
-                  <span id={descriptionId} className={styles.description}>
+                  <span id={descriptionId} className={shared.description}>
                     {option.description}
                   </span>
                 )}
@@ -145,9 +149,9 @@ export const Checkbox = forwardRef<HTMLFieldSetElement, CheckboxProps>(function 
         })}
       </div>
       {hasError && (
-        <p id={errorId} className={styles.error}>
+        <p id={errorId} className={shared.error}>
           {/* Color alone can't carry the state, so the message also gets an icon */}
-          <svg className={styles.errorIcon} viewBox="0 0 16 16" aria-hidden="true">
+          <svg className={shared.errorIcon} viewBox="0 0 16 16" aria-hidden="true">
             <circle cx="8" cy="8" r="7" fill="currentColor" />
             <path d="M8 4.25v4.5" stroke="Canvas" strokeWidth="1.75" strokeLinecap="round" />
             <circle cx="8" cy="11.5" r="1" fill="Canvas" />

@@ -92,7 +92,7 @@ export function isVariant(value: ScaleProp): value is Variant {
 
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button), and a single faint fill each for TextField and Checkbox**. No palettes, no
+Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button), and a single faint fill each for TextField, Checkbox and Radio**. No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -513,8 +513,51 @@ state that settles back. The box keeps a visible border
 black or white, whichever contrasts more with `--color-primary` (`--color-checkbox-check`, derived
 with `contrast-color()` and an OKLCH fallback, so a different primary adapts on its own). The error state is the same fill in `--color-danger` plus an icon.
 
-**Open:** the raised-hover CSS is copied from Button with local `--checkbox-*` variables; extract it
-once Radio needs it too. The hover scale and shadow strength want tuning in Storybook.
+The group, option row, raised hover and error state are shared with Radio in
+`components/_shared/OptionGroup.module.css`. A component sets `--option-background*` on its root from
+its own `--color-<component>-*` tokens, and shapes the control itself.
+
+**Open:** the raised-hover CSS is still a copy of Button's motion (as `--option-*` variables). The hover
+scale and shadow strength want tuning in Storybook.
+
+### Radio
+```tsx
+interface RadioOption {
+  value: string;
+  label: string;
+  description?: string;          // second line, linked with aria-describedby
+  isDisabled?: boolean;          // native `disabled` on that option
+}
+
+interface RadioProps extends Omit<FieldsetHTMLAttributes<HTMLFieldSetElement>,
+  'onChange' | 'disabled' | 'name' | 'defaultValue' | 'color' | 'role'> {
+  options: RadioOption[];
+  value?: string | null;         // controlled; null = controlled with nothing selected
+  defaultValue?: string;         // uncontrolled
+  onChange?: (value: string) => void;
+  name?: string;                 // shared by the inputs; generated when left out
+  orientation?: 'horizontal' | 'vertical';  // defaults to 'vertical'
+  label?: string;                // the <legend>; without it aria-label/aria-labelledby is required
+  error?: string;                // invalid state + message below the group; the caller decides when
+  isDisabled?: boolean;          // every option disabled, group dimmed
+  isRequired?: boolean;          // native `required` on the inputs + an aria-hidden asterisk after the label
+}
+```
+
+Checkbox's single-select sibling: a `<fieldset role="radiogroup">` with one native
+`<input type="radio">` per option. The shared `name` makes the browser do the rest (arrow keys move
+and select, Tab treats the group as one stop, disabled options are skipped). `className`, `style`
+and `ref` go on the fieldset. No scale props, same as Checkbox.
+
+**Value.** `null` is the explicit "nothing selected" for a controlled group; `undefined` means
+uncontrolled. `onChange` fires only when the selection changes. A user can't clear a radio, so
+clearing is the caller's job (`value={null}`). There is no `minChecked` / `maxChecked` and no
+blocked (`aria-disabled`) state: only native `disabled` applies.
+
+**Look.** Same option rows as Checkbox (`--color-radio-*` tokens, identical values). The control is a
+circle with a visible border (WCAG 1.4.11) that fills with the brand color when selected, with a dot
+that scales in. The dot is black or white, whichever contrasts more with `--color-primary`
+(`--color-radio-dot`, derived like Checkbox's tick).
 
 ### Textarea, Select
 Not built yet. `Textarea` should share TextField's look and label/error wiring.
@@ -676,6 +719,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
+│   │   ├── _shared/        # CSS shared by several components (OptionGroup: Checkbox + Radio)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -841,7 +885,7 @@ export const EscapeHatch: Story = {
 - [x] `Button` — size, background, isDisabled, isLoading
 - [x] `TextField` — size, label, error, isDisabled, isReadOnly, isRequired
 - [x] `Checkbox` — options, orientation, minChecked/maxChecked, label, error, isDisabled (no `size`)
-- [ ] `Radio` — Form control, next (shares Checkbox's look and raised hover)
+- [x] `Radio` — options, orientation, label, error, isDisabled, isRequired (no `size`); shares `_shared/OptionGroup` with Checkbox
 - [ ] `Select` — Compound component pattern
 - [ ] `Textarea`, `Toggle` — Form controls
 - [ ] `Badge`, `Alert`, `Icon` — Display

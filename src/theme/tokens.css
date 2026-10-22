@@ -3,7 +3,7 @@
  *
  * - Scale tokens: 3 values per property (less/normal/more), 15 CSS variables (5 scales × 3)
  * - Color tokens: deliberately minimal. One brand color, an error color, a background scale for Box
- *   and one for Button, and a single faint fill each for TextField and Checkbox.
+ *   and one for Button, and a single faint fill each for TextField, Checkbox and Radio.
  */
 
 :root {
@@ -95,10 +95,19 @@
     transparent
   );
   --color-checkbox-check: oklch(from var(--color-primary) clamp(0, (0.6 - l) * 1000, 1) 0 0);
+
+  /* Radio option fill and dot. The same as Checkbox's, separate so each can be customised on its own.
+     The dot sits on the brand color like the check mark, so it is chosen the same way. */
+  --color-radio-background: color-mix(in oklab, var(--color-primary) 15%, transparent);
+  --color-radio-background-hover: color-mix(in oklab, var(--color-primary) 25%, transparent);
+  --color-radio-background-error: color-mix(in oklab, var(--color-danger) 15%, transparent);
+  --color-radio-background-error-hover: color-mix(in oklab, var(--color-danger) 25%, transparent);
+  --color-radio-dot: oklch(from var(--color-primary) clamp(0, (0.6 - l) * 1000, 1) 0 0);
 }
 
 @supports (color: contrast-color(red)) {
   :root {
     --color-checkbox-check: contrast-color(var(--color-primary));
+    --color-radio-dot: contrast-color(var(--color-primary));
   }
 }

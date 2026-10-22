@@ -1,0 +1,39 @@
+/*
+ * Radio: the group, the option rows, their hover and the error state are shared with Checkbox (see
+ * _shared/OptionGroup.module.css). Only the colors and the shape of the control live here: a circle
+ * that fills with the brand color when selected, with a dot that scales in.
+ */
+
+.root {
+  /* The option fill; see --color-radio-* in theme/tokens.css */
+  --option-background: var(--color-radio-background);
+  --option-background-hover: var(--color-radio-background-hover);
+  --option-background-error: var(--color-radio-background-error);
+  --option-background-error-hover: var(--color-radio-background-error-hover);
+}
+
+.input {
+  border-radius: 50%;
+}
+.input:checked {
+  background: var(--color-primary);
+}
+
+.dot {
+  width: 0.5em;
+  height: 0.5em;
+  place-self: center;
+  border-radius: 50%;
+  background: var(--color-radio-dot);
+  transform: scale(0);
+  transition: transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.input:checked + .dot {
+  transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    transition: none;
+  }
+}

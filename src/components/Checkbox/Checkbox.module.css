@@ -1,171 +1,20 @@
 /*
- * Checkbox: a fieldset of options. There are no scale props (no `size`): everything is in em, so the
- * group follows the font-size it inherits.
- *
- * Each option is a faint surface (see --color-checkbox-background* in theme/tokens.css) that is
- * raised on hover like a Button: lift, scale, a shadow (none at rest, like the other inputs) and a
- * sheen. The motion is copied from Button.module.css on purpose, with its own --checkbox-*
- * variables, until a second component (Radio) needs it and it can be shared.
- *
- * Unavailable options, native `disabled` and `aria-disabled` (blocked by minChecked / maxChecked),
- * are dimmed and don't react to the pointer.
+ * Checkbox: the group, the option rows, their hover and the error state are shared with Radio (see
+ * _shared/OptionGroup.module.css). Only the colors and the shape of the control live here: a rounded
+ * square that fills with the brand color when checked, with a tick that draws itself in.
  */
 
 .root {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.legend {
-  padding: 0;
-  margin-bottom: 0.5em;
-  font-size: 0.875em;
-  font-weight: var(--weight-more);
-  line-height: 1.25;
-}
-
-.disabled {
-  opacity: 0.5;
-}
-
-.options {
-  display: flex;
-  gap: 0.75em;
-}
-.vertical {
-  flex-direction: column;
-  align-items: stretch;
-}
-.horizontal {
-  flex-flow: row wrap;
-  align-items: flex-start;
-}
-
-.option {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: start;
-  column-gap: 0.75em;
-  padding: 0.75em 1em;
-  /* Fixed, not props. corner-shape: squircle gives smoother corners than circular arcs, as in Box. */
-  border-radius: var(--radius-less);
-  corner-shape: squircle;
-  background: var(--color-checkbox-background);
-  line-height: 1.25;
-  cursor: pointer;
-  user-select: none;
-  /* No shadow at rest, so the options look like the other inputs (TextField has none); the shared
-     --elevation-normal appears on hover. */
-  box-shadow: none;
-  /* A gentler scale than Button's 1.0667: a wide row grows by that percentage per side, which would
-     crowd its neighbours. Entering overshoots a little and settles; leaving doesn't. */
-  --checkbox-hover-scale: 1.02;
-  --checkbox-hover-lift: -2px;
-  --checkbox-ease-enter: cubic-bezier(0.34, 2.56, 0.64, 1);
-  --checkbox-ease-leave: cubic-bezier(0.22, 1, 0.36, 1);
-  /* Same function list in every state, so transform interpolates each function separately */
-  transform: translateY(0) scale(1);
-  transition:
-    transform 400ms var(--checkbox-ease-leave),
-    box-shadow 400ms var(--checkbox-ease-leave),
-    background-color 150ms ease,
-    opacity 150ms ease;
-}
-
-/* Gated on hover-capable pointers: touch would leave the option stuck raised after a tap */
-@media (hover: hover) {
-  .option:hover:not(:has(.input:disabled, .input[aria-disabled='true'])) {
-    transform: translateY(var(--checkbox-hover-lift)) scale(var(--checkbox-hover-scale));
-    box-shadow: var(--elevation-normal);
-    background: var(--color-checkbox-background-hover);
-    z-index: 1;
-    transition:
-      transform 500ms var(--checkbox-ease-enter),
-      box-shadow 500ms var(--checkbox-ease-leave),
-      background-color 150ms ease,
-      opacity 150ms ease;
-  }
-  /* Pressed: settle back to rest quickly and without overshoot */
-  .option:hover:active:not(:has(.input:disabled, .input[aria-disabled='true'])) {
-    transform: translateY(0) scale(1);
-    box-shadow: none;
-    transition:
-      transform 200ms var(--checkbox-ease-leave),
-      box-shadow 200ms var(--checkbox-ease-leave),
-      background-color 150ms ease,
-      opacity 150ms ease;
-  }
-}
-
-/* Sheen, as on Button: a white pool of light blended with `overlay`, from above and, when
-   pressed, from below. */
-.option::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  corner-shape: inherit;
-  background: radial-gradient(ellipse at 50% 0%, white, transparent 75%);
-  mix-blend-mode: overlay;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 150ms ease;
-}
-.option:hover:not(:has(.input:disabled, .input[aria-disabled='true']))::after {
-  opacity: 0.2;
-}
-.option:active:not(:has(.input:disabled, .input[aria-disabled='true']))::after {
-  background: radial-gradient(ellipse at 50% 100%, white, transparent 75%);
-  opacity: 0.2;
-}
-
-.option:has(.input:focus-visible) {
-  outline: 2px solid CanvasText;
-  outline-offset: 2px;
-}
-
-/* Unavailable. The group's own dimming (.disabled) already covers a disabled group, so only a
-   lone disabled option dims itself. */
-.option:has(.input[aria-disabled='true']),
-.option:has(.input:disabled) {
-  cursor: not-allowed;
-}
-.option:has(.input[aria-disabled='true']),
-.root:not(.disabled) .option:has(.input:disabled) {
-  opacity: 0.5;
-}
-
-.box {
-  display: grid;
-  /* Centres the box on the first line of text */
-  margin-top: 0.0625em;
-}
-.input,
-.check {
-  grid-area: 1 / 1;
+  /* The option fill; see --color-checkbox-* in theme/tokens.css */
+  --option-background: var(--color-checkbox-background);
+  --option-background-hover: var(--color-checkbox-background-hover);
+  --option-background-error: var(--color-checkbox-background-error);
+  --option-background-error-hover: var(--color-checkbox-background-error-hover);
 }
 
 .input {
-  appearance: none;
-  /* Form controls don't inherit font-size (13.33px by default), which would make this 1.25em
-     smaller than the tick drawn over it */
-  font: inherit;
-  box-sizing: border-box;
-  width: 1.25em;
-  height: 1.25em;
-  margin: 0;
-  /* The boundary a non-text control needs against its surface (WCAG 1.4.11), kept when checked */
-  border: 2px solid var(--color-primary);
   border-radius: 0.375em;
   corner-shape: squircle;
-  background: transparent;
-  cursor: inherit;
-  transition:
-    background-color 150ms ease,
-    border-color 150ms ease;
 }
 .input:checked {
   background: var(--color-primary);
@@ -174,7 +23,6 @@
 .check {
   width: 1.25em;
   height: 1.25em;
-  pointer-events: none;
   fill: none;
   stroke: var(--color-checkbox-check);
   stroke-width: 2;
@@ -196,50 +44,7 @@
   stroke-dashoffset: 0;
 }
 
-.text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125em;
-  min-width: 0;
-}
-
-.description {
-  font-size: 0.875em;
-  color: color-mix(in oklab, CanvasText 70%, transparent);
-}
-
-/* The same fill, in the error color. The message and icon carry the state too, not color alone. */
-.root:has(.error) .option {
-  background: var(--color-checkbox-background-error);
-}
-@media (hover: hover) {
-  .root:has(.error) .option:hover:not(:has(.input:disabled, .input[aria-disabled='true'])) {
-    background: var(--color-checkbox-background-error-hover);
-  }
-}
-
-.error {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5em;
-  margin: 0.5em 0 0;
-  color: var(--color-danger);
-  font-size: 0.875em;
-  line-height: 1.25;
-}
-
-.errorIcon {
-  flex: none;
-  width: 1.25em;
-  height: 1.25em;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  /* No scaling or lifting; the fill, the raised shadow and the sheen remain as the hover cue */
-  .option:hover,
-  .option:hover:active {
-    transform: none;
-  }
   .check path {
     transition: none;
   }

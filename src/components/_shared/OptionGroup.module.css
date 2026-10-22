@@ -1,0 +1,229 @@
+/*
+ * Shared by Checkbox and Radio: a fieldset of options, each a faint surface that is raised on hover
+ * like a Button: lift, scale, a shadow (none at rest, like the other inputs) and a sheen. The motion
+ * is copied from Button.module.css on purpose, with its own --option-* variables.
+ *
+ * There are no scale props (no `size`): everything is in em, so the group follows the font-size it
+ * inherits.
+ *
+ * Colors come from the component, which sets these on its own root class (from its own
+ * --color-<component>-* tokens in theme/tokens.css), so each can be customised on its own:
+ *   --option-background, --option-background-hover,
+ *   --option-background-error, --option-background-error-hover
+ *
+ * Unavailable options, native `disabled` and `aria-disabled` (blocked by Checkbox's minChecked /
+ * maxChecked), are dimmed and don't react to the pointer.
+ *
+ * The control inside an option (`.control` > `.input` + a `.mark` sibling) is shaped by the component.
+ */
+
+.root {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: 0.5em;
+  font-size: 0.875em;
+  font-weight: var(--weight-more);
+  line-height: 1.25;
+}
+
+.asterisk {
+  color: var(--color-danger);
+}
+
+.disabled {
+  opacity: 0.5;
+}
+
+.options {
+  display: flex;
+  gap: 0.75em;
+}
+.vertical {
+  flex-direction: column;
+  align-items: stretch;
+}
+.horizontal {
+  flex-flow: row wrap;
+  align-items: flex-start;
+}
+
+.option {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  column-gap: 0.75em;
+  padding: 0.75em 1em;
+  /* Fixed, not props. corner-shape: squircle gives smoother corners than circular arcs, as in Box. */
+  border-radius: var(--radius-less);
+  corner-shape: squircle;
+  background: var(--option-background);
+  line-height: 1.25;
+  cursor: pointer;
+  user-select: none;
+  /* No shadow at rest, so the options look like the other inputs (TextField has none); the shared
+     --elevation-normal appears on hover. */
+  box-shadow: none;
+  /* A gentler scale than Button's 1.0667: a wide row grows by that percentage per side, which would
+     crowd its neighbours. Entering overshoots a little and settles; leaving doesn't. */
+  --option-hover-scale: 1.02;
+  --option-hover-lift: -2px;
+  --option-ease-enter: cubic-bezier(0.34, 2.56, 0.64, 1);
+  --option-ease-leave: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Same function list in every state, so transform interpolates each function separately */
+  transform: translateY(0) scale(1);
+  transition:
+    transform 400ms var(--option-ease-leave),
+    box-shadow 400ms var(--option-ease-leave),
+    background-color 150ms ease,
+    opacity 150ms ease;
+}
+
+/* Gated on hover-capable pointers: touch would leave the option stuck raised after a tap */
+@media (hover: hover) {
+  .option:hover:not(:has(input:disabled, input[aria-disabled='true'])) {
+    transform: translateY(var(--option-hover-lift)) scale(var(--option-hover-scale));
+    box-shadow: var(--elevation-normal);
+    background: var(--option-background-hover);
+    z-index: 1;
+    transition:
+      transform 500ms var(--option-ease-enter),
+      box-shadow 500ms var(--option-ease-leave),
+      background-color 150ms ease,
+      opacity 150ms ease;
+  }
+  /* Pressed: settle back to rest quickly and without overshoot */
+  .option:hover:active:not(:has(input:disabled, input[aria-disabled='true'])) {
+    transform: translateY(0) scale(1);
+    box-shadow: none;
+    transition:
+      transform 200ms var(--option-ease-leave),
+      box-shadow 200ms var(--option-ease-leave),
+      background-color 150ms ease,
+      opacity 150ms ease;
+  }
+}
+
+/* Sheen, as on Button: a white pool of light blended with `overlay`, from above and, when
+   pressed, from below. */
+.option::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  corner-shape: inherit;
+  background: radial-gradient(ellipse at 50% 0%, white, transparent 75%);
+  mix-blend-mode: overlay;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+.option:hover:not(:has(input:disabled, input[aria-disabled='true']))::after {
+  opacity: 0.2;
+}
+.option:active:not(:has(input:disabled, input[aria-disabled='true']))::after {
+  background: radial-gradient(ellipse at 50% 100%, white, transparent 75%);
+  opacity: 0.2;
+}
+
+.option:has(input:focus-visible) {
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
+}
+
+/* Unavailable. The group's own dimming (.disabled) already covers a disabled group, so only a
+   lone disabled option dims itself. */
+.option:has(input[aria-disabled='true']),
+.option:has(input:disabled) {
+  cursor: not-allowed;
+}
+.option:has(input[aria-disabled='true']),
+.root:not(.disabled) .option:has(input:disabled) {
+  opacity: 0.5;
+}
+
+/* The control: an input drawn by the component, with a mark (tick, dot) stacked over it. The mark is
+   a sibling, since an appearance: none input can't reliably hold a pseudo-element. */
+.control {
+  display: grid;
+  /* Centres the control on the first line of text */
+  margin-top: 0.0625em;
+}
+.input,
+.mark {
+  grid-area: 1 / 1;
+}
+
+.input {
+  appearance: none;
+  /* Form controls don't inherit font-size (13.33px by default), which would make this 1.25em
+     smaller than the mark drawn over it */
+  font: inherit;
+  box-sizing: border-box;
+  width: 1.25em;
+  height: 1.25em;
+  margin: 0;
+  /* The boundary a non-text control needs against its surface (WCAG 1.4.11), kept when checked */
+  border: 2px solid var(--color-primary);
+  background: transparent;
+  cursor: inherit;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.mark {
+  pointer-events: none;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125em;
+  min-width: 0;
+}
+
+.description {
+  font-size: 0.875em;
+  color: color-mix(in oklab, CanvasText 70%, transparent);
+}
+
+/* The same fill, in the error color. The message and icon carry the state too, not color alone. */
+.root:has(.error) .option {
+  background: var(--option-background-error);
+}
+@media (hover: hover) {
+  .root:has(.error) .option:hover:not(:has(input:disabled, input[aria-disabled='true'])) {
+    background: var(--option-background-error-hover);
+  }
+}
+
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+  margin: 0.5em 0 0;
+  color: var(--color-danger);
+  font-size: 0.875em;
+  line-height: 1.25;
+}
+
+.errorIcon {
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No scaling or lifting; the fill, the raised shadow and the sheen remain as the hover cue */
+  .option:hover,
+  .option:hover:active {
+    transform: none;
+  }
+}

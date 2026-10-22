@@ -2,7 +2,7 @@ import { createRef, useState, type ComponentProps } from 'react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import { Checkbox, type CheckboxOption } from './Checkbox';
-import styles from './Checkbox.module.css';
+import shared from '../_shared/OptionGroup.module.css';
 
 const OPTIONS: CheckboxOption[] = [
   { value: 'a', label: 'Apple' },
@@ -68,13 +68,13 @@ describe('Checkbox', () => {
 
   describe('orientation', () => {
     it('is vertical by default', () => {
-      const options = renderGroup().root.querySelector(`.${styles.options}`);
-      expect(options?.classList.contains(styles.vertical as string)).toBe(true);
+      const options = renderGroup().root.querySelector(`.${shared.options}`);
+      expect(options?.classList.contains(shared.vertical as string)).toBe(true);
     });
 
     it.each(['horizontal', 'vertical'] as const)('applies %s', (orientation) => {
-      const options = renderGroup({ orientation }).root.querySelector(`.${styles.options}`);
-      expect(options?.classList.contains(styles[orientation] as string)).toBe(true);
+      const options = renderGroup({ orientation }).root.querySelector(`.${shared.options}`);
+      expect(options?.classList.contains(shared[orientation] as string)).toBe(true);
     });
   });
 
@@ -193,7 +193,7 @@ describe('Checkbox', () => {
   describe('description', () => {
     it('is linked to its input with aria-describedby', () => {
       const { root, input } = renderGroup();
-      const description = root.querySelector(`.${styles.description}`);
+      const description = root.querySelector(`.${shared.description}`);
       expect(description?.textContent).toBe('Yellow');
       expect(input('b').getAttribute('aria-describedby')).toBe(description?.id);
       expect(input('a').hasAttribute('aria-describedby')).toBe(false);
@@ -205,7 +205,7 @@ describe('Checkbox', () => {
       const { root, inputs } = renderGroup({ isDisabled: true });
       expect(root.disabled).toBe(true);
       expect(inputs().every((i) => i.disabled)).toBe(true);
-      expect(root.classList.contains(styles.disabled as string)).toBe(true);
+      expect(root.classList.contains(shared.disabled as string)).toBe(true);
     });
 
     it('on an option disables only that input', () => {
@@ -213,7 +213,7 @@ describe('Checkbox', () => {
       const { root, input } = renderGroup({ options });
       expect(input('b').disabled).toBe(true);
       expect(input('a').disabled).toBe(false);
-      expect(root.classList.contains(styles.disabled as string)).toBe(false);
+      expect(root.classList.contains(shared.disabled as string)).toBe(false);
     });
 
     it('does not toggle a disabled option', () => {
@@ -257,7 +257,7 @@ describe('Checkbox', () => {
   describe('error', () => {
     it('marks the inputs invalid and shows the message, linked by aria-describedby', () => {
       const { root, inputs } = renderGroup({ error: 'Pick one' });
-      const message = root.querySelector(`.${styles.error}`);
+      const message = root.querySelector(`.${shared.error}`);
       expect(message?.textContent).toBe('Pick one');
       expect(root.getAttribute('aria-describedby')).toBe(message?.id);
       expect(inputs().every((i) => i.getAttribute('aria-invalid') === 'true')).toBe(true);
@@ -265,18 +265,18 @@ describe('Checkbox', () => {
 
     it('gives the message an icon hidden from assistive tech', () => {
       const { root } = renderGroup({ error: 'Oops' });
-      expect(root.querySelector(`.${styles.error} svg`)?.getAttribute('aria-hidden')).toBe('true');
+      expect(root.querySelector(`.${shared.error} svg`)?.getAttribute('aria-hidden')).toBe('true');
     });
 
     it('keeps a consumer aria-describedby alongside the message', () => {
       const { root } = renderGroup({ error: 'Oops', 'aria-describedby': 'other' });
-      const message = root.querySelector(`.${styles.error}`);
+      const message = root.querySelector(`.${shared.error}`);
       expect(root.getAttribute('aria-describedby')).toBe(`other ${message?.id}`);
     });
 
     it('adds no message, no aria-invalid and no aria-describedby without an error', () => {
       const { root, inputs } = renderGroup();
-      expect(root.querySelector(`.${styles.error}`)).toBeNull();
+      expect(root.querySelector(`.${shared.error}`)).toBeNull();
       expect(root.hasAttribute('aria-describedby')).toBe(false);
       expect(inputs().some((i) => i.hasAttribute('aria-invalid'))).toBe(false);
     });
