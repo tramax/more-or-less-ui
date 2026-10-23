@@ -3,6 +3,7 @@ import { afterEach, describe, it, expect, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import { TextField } from './TextField';
 import styles from './TextField.module.css';
+import labelStyles from '../_shared/FieldLabel.module.css';
 import errorStyles from '../_shared/FieldError.module.css';
 
 const renderField = (props: Partial<ComponentProps<typeof TextField>> = {}) => {
@@ -181,14 +182,14 @@ describe('TextField', () => {
     it('sets native required and shows an asterisk hidden from assistive tech', () => {
       const { input, label } = renderField({ isRequired: true });
       expect(input.required).toBe(true);
-      const asterisk = label?.querySelector(`.${styles.asterisk}`);
+      const asterisk = label?.querySelector(`.${labelStyles.asterisk}`);
       expect(asterisk?.getAttribute('aria-hidden')).toBe('true');
     });
 
     it('has neither when not required', () => {
       const { input, label } = renderField();
       expect(input.required).toBe(false);
-      expect(label?.querySelector(`.${styles.asterisk}`)).toBeNull();
+      expect(label?.querySelector(`.${labelStyles.asterisk}`)).toBeNull();
     });
   });
 

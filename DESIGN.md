@@ -724,7 +724,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio; FieldError, types: all fields; OptionText: options)
+│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio; FieldError, FieldLabel, types: all fields; OptionText: options)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx

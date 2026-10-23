@@ -3,6 +3,7 @@ import { clsx } from '@/utils/clsx';
 import { resolveScaleProps } from '@/utils/scale';
 import type { ScaleProp } from '@/types/scale';
 import { FieldError } from '../_shared/FieldError';
+import { FieldLabel } from '../_shared/FieldLabel';
 import type { NameProps } from '../_shared/types';
 import styles from './TextField.module.css';
 
@@ -81,15 +82,9 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
       style={{ ...scaleStyle, ...style }}
     >
       {label && (
-        <label htmlFor={inputId} className={styles.label}>
+        <FieldLabel as="label" htmlFor={inputId} isRequired={isRequired}>
           {label}
-          {/* The native `required` already tells assistive tech, so the asterisk is visual only */}
-          {isRequired && (
-            <span className={styles.asterisk} aria-hidden="true">
-              {' *'}
-            </span>
-          )}
-        </label>
+        </FieldLabel>
       )}
       <input
         {...rest}

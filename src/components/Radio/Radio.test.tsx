@@ -3,6 +3,7 @@ import { afterEach, describe, it, expect, vi } from 'vitest';
 import { render, fireEvent, cleanup, screen } from '@testing-library/react';
 import { Radio, type RadioOption } from './Radio';
 import shared from '../_shared/OptionGroup.module.css';
+import labelStyles from '../_shared/FieldLabel.module.css';
 
 const OPTIONS: RadioOption[] = [
   { value: 'a', label: 'Apple' },
@@ -206,14 +207,14 @@ describe('Radio', () => {
     it('sets required on every input and adds a visual-only asterisk', () => {
       const { root, inputs } = renderGroup({ isRequired: true });
       expect(inputs().every((i) => i.required)).toBe(true);
-      const asterisk = root.querySelector(`legend .${shared.asterisk}`);
+      const asterisk = root.querySelector(`legend .${labelStyles.asterisk}`);
       expect(asterisk?.getAttribute('aria-hidden')).toBe('true');
     });
 
     it('is off by default', () => {
       const { root, inputs } = renderGroup();
       expect(inputs().some((i) => i.required)).toBe(false);
-      expect(root.querySelector(`.${shared.asterisk}`)).toBeNull();
+      expect(root.querySelector(`.${labelStyles.asterisk}`)).toBeNull();
     });
   });
 

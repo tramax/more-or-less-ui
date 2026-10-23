@@ -18,16 +18,6 @@
   align-items: stretch;
 }
 
-.label {
-  font-size: 0.875em;
-  font-weight: var(--weight-more);
-  line-height: 1.25;
-}
-
-.asterisk {
-  color: var(--color-danger);
-}
-
 .input {
   box-sizing: border-box;
   width: 100%;

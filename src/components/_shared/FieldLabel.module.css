@@ -1,0 +1,15 @@
+/*
+ * The visible name of a field or a group: a small semibold line, with an asterisk when it is
+ * required. Shared by TextField (a <label>), Checkbox and Radio (a <legend>). Sized in em, so it
+ * follows the font-size around it; a caller adds spacing through `className`.
+ */
+
+.label {
+  font-size: 0.875em;
+  font-weight: var(--weight-more);
+  line-height: 1.25;
+}
+
+.asterisk {
+  color: var(--color-danger);
+}

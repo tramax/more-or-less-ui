@@ -2,6 +2,7 @@ import { forwardRef, useId, useState, type FieldsetHTMLAttributes } from 'react'
 import { clsx } from '@/utils/clsx';
 import shared from '../_shared/OptionGroup.module.css';
 import { FieldError } from '../_shared/FieldError';
+import { FieldLabel } from '../_shared/FieldLabel';
 import { OptionText } from '../_shared/OptionText';
 import type { NameProps, OptionBase } from '../_shared/types';
 import styles from './Radio.module.css';
@@ -72,15 +73,9 @@ export const Radio = forwardRef<HTMLFieldSetElement, RadioProps>(function Radio(
       className={clsx(shared.root, styles.root, isDisabled && shared.disabled, className)}
     >
       {label && (
-        <legend className={shared.legend}>
+        <FieldLabel as="legend" isRequired={isRequired} className={shared.legend}>
           {label}
-          {/* The native `required` already tells assistive tech, so the asterisk is visual only */}
-          {isRequired && (
-            <span className={shared.asterisk} aria-hidden="true">
-              {' *'}
-            </span>
-          )}
-        </legend>
+        </FieldLabel>
       )}
       <div className={clsx(shared.options, shared[orientation])}>
         {options.map((option, index) => {

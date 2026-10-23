@@ -2,6 +2,7 @@ import { forwardRef, useId, useState, type FieldsetHTMLAttributes } from 'react'
 import { clsx } from '@/utils/clsx';
 import shared from '../_shared/OptionGroup.module.css';
 import { FieldError } from '../_shared/FieldError';
+import { FieldLabel } from '../_shared/FieldLabel';
 import { OptionText } from '../_shared/OptionText';
 import type { NameProps, OptionBase } from '../_shared/types';
 import styles from './Checkbox.module.css';
@@ -92,7 +93,11 @@ export const Checkbox = forwardRef<HTMLFieldSetElement, CheckboxProps>(function 
       aria-describedby={clsx(describedBy, hasError && errorId) || undefined}
       className={clsx(shared.root, styles.root, isDisabled && shared.disabled, className)}
     >
-      {label && <legend className={shared.legend}>{label}</legend>}
+      {label && (
+        <FieldLabel as="legend" className={shared.legend}>
+          {label}
+        </FieldLabel>
+      )}
       <div className={clsx(shared.options, shared[orientation])}>
         {options.map((option, index) => {
           const isChecked = checked.includes(option.value);

@@ -24,16 +24,10 @@
   border: 0;
 }
 
+/* The legend's spacing; its look is FieldLabel (_shared/FieldLabel) */
 .legend {
   padding: 0;
   margin-bottom: 0.5em;
-  font-size: 0.875em;
-  font-weight: var(--weight-more);
-  line-height: 1.25;
-}
-
-.asterisk {
-  color: var(--color-danger);
 }
 
 .disabled {
