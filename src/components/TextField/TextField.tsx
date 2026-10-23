@@ -2,6 +2,8 @@ import { forwardRef, useId, type InputHTMLAttributes } from 'react';
 import { clsx } from '@/utils/clsx';
 import { resolveScaleProps } from '@/utils/scale';
 import type { ScaleProp } from '@/types/scale';
+import { FieldError } from '../_shared/FieldError';
+import type { NameProps } from '../_shared/types';
 import styles from './TextField.module.css';
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
@@ -18,12 +20,6 @@ const SCALE_SPEC = {
   compound: { size: ['fontSize'] },
   defaults: TEXTFIELD_DEFAULTS,
 } as const;
-
-// A field with no visible label must still have an accessible name
-type NameProps =
-  | { label: string }
-  | { label?: undefined; 'aria-label': string }
-  | { label?: undefined; 'aria-labelledby': string };
 
 export type TextFieldProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -107,17 +103,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
         aria-describedby={clsx(describedBy, hasError && errorId) || undefined}
         className={styles.input}
       />
-      {hasError && (
-        <p id={errorId} className={styles.error}>
-          {/* Color alone can't carry the state, so the message also gets an icon */}
-          <svg className={styles.errorIcon} viewBox="0 0 16 16" aria-hidden="true">
-            <circle cx="8" cy="8" r="7" fill="currentColor" />
-            <path d="M8 4.25v4.5" stroke="Canvas" strokeWidth="1.75" strokeLinecap="round" />
-            <circle cx="8" cy="11.5" r="1" fill="Canvas" />
-          </svg>
-          <span>{error}</span>
-        </p>
-      )}
+      {hasError && <FieldError id={errorId}>{error}</FieldError>}
     </div>
   );
 });

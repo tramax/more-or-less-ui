@@ -3,6 +3,7 @@ import { afterEach, describe, it, expect, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import { TextField } from './TextField';
 import styles from './TextField.module.css';
+import errorStyles from '../_shared/FieldError.module.css';
 
 const renderField = (props: Partial<ComponentProps<typeof TextField>> = {}) => {
   const { container } = render(<TextField label="Name" {...props} />);
@@ -194,7 +195,7 @@ describe('TextField', () => {
   describe('error', () => {
     it('marks the input invalid and shows the message, linked by aria-describedby', () => {
       const { root, input } = renderField({ error: 'Enter your name' });
-      const message = root.querySelector(`.${styles.error}`);
+      const message = root.querySelector(`.${errorStyles.error}`);
       expect(message?.textContent).toBe('Enter your name');
       expect(input.getAttribute('aria-invalid')).toBe('true');
       expect(input.getAttribute('aria-describedby')).toBe(message?.id);
@@ -208,13 +209,13 @@ describe('TextField', () => {
 
     it('keeps a consumer aria-describedby alongside the message', () => {
       const { root, input } = renderField({ error: 'Oops', 'aria-describedby': 'other' });
-      const message = root.querySelector(`.${styles.error}`);
+      const message = root.querySelector(`.${errorStyles.error}`);
       expect(input.getAttribute('aria-describedby')).toBe(`other ${message?.id}`);
     });
 
     it('adds no message, no aria-invalid and no aria-describedby without an error', () => {
       const { root, input } = renderField();
-      expect(root.querySelector(`.${styles.error}`)).toBeNull();
+      expect(root.querySelector(`.${errorStyles.error}`)).toBeNull();
       expect(input.hasAttribute('aria-invalid')).toBe(false);
       expect(input.hasAttribute('aria-describedby')).toBe(false);
     });

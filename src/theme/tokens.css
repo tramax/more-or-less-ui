@@ -3,7 +3,7 @@
  *
  * - Scale tokens: 3 values per property (less/normal/more), 15 CSS variables (5 scales × 3)
  * - Color tokens: deliberately minimal. One brand color, an error color, a background scale for Box
- *   and one for Button, and a single faint fill each for TextField, Checkbox and Radio.
+ *   and one for Button, and one faint field fill that TextField, Checkbox and Radio alias.
  */
 
 :root {
@@ -69,45 +69,43 @@
   /* Error color: the TextField's error message and its error fill */
   --color-danger: #c62828;
 
-  /* TextField fill. A single value, not a scale: the brand color at low alpha, so it lays over any
-     surface in both themes. Hover steps the alpha up; the error fill is the same in the error color. */
-  --color-textfield-background: color-mix(in oklab, var(--color-primary) 15%, transparent);
-  --color-textfield-background-hover: color-mix(in oklab, var(--color-primary) 25%, transparent);
-  --color-textfield-background-error: color-mix(in oklab, var(--color-danger) 15%, transparent);
-  --color-textfield-background-error-hover: color-mix(
-    in oklab,
-    var(--color-danger) 25%,
-    transparent
-  );
+  /* Field fill, shared by the input components. A single value, not a scale: the brand color at low
+     alpha, so it lays over any surface in both themes. Hover steps the alpha up; the error fill is
+     the same in the error color. This is the one place the recipe lives. */
+  --color-field-background: color-mix(in oklab, var(--color-primary) 15%, transparent);
+  --color-field-background-hover: color-mix(in oklab, var(--color-primary) 25%, transparent);
+  --color-field-background-error: color-mix(in oklab, var(--color-danger) 15%, transparent);
+  --color-field-background-error-hover: color-mix(in oklab, var(--color-danger) 25%, transparent);
 
-  /* Checkbox option fill. Same idea as TextField's: the brand color at low alpha, so it lays over
-     any surface in both themes. Hover steps the alpha up; the error fill is the same in the error
-     color. The check mark sits on the brand color, which doesn't change between themes, so it is
-     black or white, whichever contrasts more with --color-primary, not CanvasText. This is the
-     fallback: black when the primary's OKLCH lightness is above 0.6, white below. A supporting
+  /* Text, a check mark or a dot drawn on the brand color. That color doesn't change between themes,
+     so this is black or white, whichever contrasts more with --color-primary, not CanvasText. This is
+     the fallback: black when the primary's OKLCH lightness is above 0.6, white below. A supporting
      browser gets the exact choice from contrast-color() (see the end of this file). */
-  --color-checkbox-background: color-mix(in oklab, var(--color-primary) 15%, transparent);
-  --color-checkbox-background-hover: color-mix(in oklab, var(--color-primary) 25%, transparent);
-  --color-checkbox-background-error: color-mix(in oklab, var(--color-danger) 15%, transparent);
-  --color-checkbox-background-error-hover: color-mix(
-    in oklab,
-    var(--color-danger) 25%,
-    transparent
-  );
-  --color-checkbox-check: oklch(from var(--color-primary) clamp(0, (0.6 - l) * 1000, 1) 0 0);
+  --color-on-primary: oklch(from var(--color-primary) clamp(0, (0.6 - l) * 1000, 1) 0 0);
 
-  /* Radio option fill and dot. The same as Checkbox's, separate so each can be customised on its own.
-     The dot sits on the brand color like the check mark, so it is chosen the same way. */
-  --color-radio-background: color-mix(in oklab, var(--color-primary) 15%, transparent);
-  --color-radio-background-hover: color-mix(in oklab, var(--color-primary) 25%, transparent);
-  --color-radio-background-error: color-mix(in oklab, var(--color-danger) 15%, transparent);
-  --color-radio-background-error-hover: color-mix(in oklab, var(--color-danger) 25%, transparent);
-  --color-radio-dot: oklch(from var(--color-primary) clamp(0, (0.6 - l) * 1000, 1) 0 0);
+  /* Per-component tokens. Each aliases the shared value above, so a component can be customised on
+     its own while the default stays defined once. Only set one to something else when the component
+     really differs; a new input component adds its aliases here rather than a new recipe. */
+  --color-textfield-background: var(--color-field-background);
+  --color-textfield-background-hover: var(--color-field-background-hover);
+  --color-textfield-background-error: var(--color-field-background-error);
+  --color-textfield-background-error-hover: var(--color-field-background-error-hover);
+
+  --color-checkbox-background: var(--color-field-background);
+  --color-checkbox-background-hover: var(--color-field-background-hover);
+  --color-checkbox-background-error: var(--color-field-background-error);
+  --color-checkbox-background-error-hover: var(--color-field-background-error-hover);
+  --color-checkbox-check: var(--color-on-primary);
+
+  --color-radio-background: var(--color-field-background);
+  --color-radio-background-hover: var(--color-field-background-hover);
+  --color-radio-background-error: var(--color-field-background-error);
+  --color-radio-background-error-hover: var(--color-field-background-error-hover);
+  --color-radio-dot: var(--color-on-primary);
 }
 
 @supports (color: contrast-color(red)) {
   :root {
-    --color-checkbox-check: contrast-color(var(--color-primary));
-    --color-radio-dot: contrast-color(var(--color-primary));
+    --color-on-primary: contrast-color(var(--color-primary));
   }
 }

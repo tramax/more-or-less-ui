@@ -1,0 +1,21 @@
+/*
+ * The error message under a field or a group: the --color-danger text with an icon, since color alone
+ * can't carry the state. Shared by TextField, Checkbox and Radio. Sized in em, so it follows the
+ * font-size of whatever it sits in; a caller adds spacing through `className`.
+ */
+
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 0.875em;
+  line-height: 1.25;
+}
+
+.icon {
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+}

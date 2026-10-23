@@ -1,22 +1,12 @@
 import { forwardRef, useId, useState, type FieldsetHTMLAttributes } from 'react';
 import { clsx } from '@/utils/clsx';
 import shared from '../_shared/OptionGroup.module.css';
+import { FieldError } from '../_shared/FieldError';
+import { OptionText } from '../_shared/OptionText';
+import type { NameProps, OptionBase } from '../_shared/types';
 import styles from './Radio.module.css';
 
-export interface RadioOption {
-  value: string;
-  label: string;
-  /** Secondary line under the label, linked to the input with aria-describedby. */
-  description?: string;
-  /** Not clickable, not focusable, dimmed. Uses the native `disabled` attribute. */
-  isDisabled?: boolean;
-}
-
-// A group with no visible label must still have an accessible name
-type NameProps =
-  | { label: string }
-  | { label?: undefined; 'aria-label': string }
-  | { label?: undefined; 'aria-labelledby': string };
+export type RadioOption = OptionBase;
 
 export type RadioProps = Omit<
   FieldsetHTMLAttributes<HTMLFieldSetElement>,
@@ -118,28 +108,19 @@ export const Radio = forwardRef<HTMLFieldSetElement, RadioProps>(function Radio(
                 />
                 <span className={clsx(shared.mark, styles.dot)} aria-hidden="true" />
               </span>
-              <span className={shared.text}>
-                <span>{option.label}</span>
-                {option.description && (
-                  <span id={descriptionId} className={shared.description}>
-                    {option.description}
-                  </span>
-                )}
-              </span>
+              <OptionText
+                label={option.label}
+                description={option.description}
+                descriptionId={descriptionId}
+              />
             </label>
           );
         })}
       </div>
       {hasError && (
-        <p id={errorId} className={shared.error}>
-          {/* Color alone can't carry the state, so the message also gets an icon */}
-          <svg className={shared.errorIcon} viewBox="0 0 16 16" aria-hidden="true">
-            <circle cx="8" cy="8" r="7" fill="currentColor" />
-            <path d="M8 4.25v4.5" stroke="Canvas" strokeWidth="1.75" strokeLinecap="round" />
-            <circle cx="8" cy="11.5" r="1" fill="Canvas" />
-          </svg>
-          <span>{error}</span>
-        </p>
+        <FieldError id={errorId} className={shared.error}>
+          {error}
+        </FieldError>
       )}
     </fieldset>
   );

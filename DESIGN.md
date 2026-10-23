@@ -92,7 +92,7 @@ export function isVariant(value: ScaleProp): value is Variant {
 
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button), and a single faint fill each for TextField, Checkbox and Radio**. No palettes, no
+Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button), and one faint field fill (`--color-field-background*`) that TextField, Checkbox and Radio alias**. No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -120,6 +120,11 @@ actually needs one.
   /* ...heavier --elevation-* shadows */
 }
 ```
+
+A recipe is defined once, as a shared token (`--color-field-background*`, and `--color-on-primary` for a
+mark drawn on the brand color), and each component's own token aliases it
+(`--color-radio-background: var(--color-field-background)`). Components stay customisable on their
+own without repeating the expression; `src/theme/tokens.test.ts` enforces it.
 
 Page text and background use the browser's system colors (`CanvasText` / `Canvas`), so dark mode
 needs no text/background variables of its own.
@@ -510,8 +515,8 @@ raised on hover like a Button: lift, a small scale (1.02, gentler than Button's 
 a shadow that appears only on hover (options rest flat, like TextField), the sheen, and a pressed
 state that settles back. The box keeps a visible border
 (WCAG 1.4.11) and fills with the brand color when checked, with a tick that is
-black or white, whichever contrasts more with `--color-primary` (`--color-checkbox-check`, derived
-with `contrast-color()` and an OKLCH fallback, so a different primary adapts on its own). The error state is the same fill in `--color-danger` plus an icon.
+black or white, whichever contrasts more with `--color-primary` (`--color-checkbox-check`, an alias of
+`--color-on-primary`, derived with `contrast-color()` and an OKLCH fallback, so a different primary adapts on its own). The error state is the same fill in `--color-danger` plus an icon.
 
 The group, option row, raised hover and error state are shared with Radio in
 `components/_shared/OptionGroup.module.css`. A component sets `--option-background*` on its root from
@@ -554,10 +559,10 @@ uncontrolled. `onChange` fires only when the selection changes. A user can't cle
 clearing is the caller's job (`value={null}`). There is no `minChecked` / `maxChecked` and no
 blocked (`aria-disabled`) state: only native `disabled` applies.
 
-**Look.** Same option rows as Checkbox (`--color-radio-*` tokens, identical values). The control is a
+**Look.** Same option rows as Checkbox (`--color-radio-*` tokens, aliases of the same `--color-field-*` values). The control is a
 circle with a visible border (WCAG 1.4.11) that fills with the brand color when selected, with a dot
 that scales in. The dot is black or white, whichever contrasts more with `--color-primary`
-(`--color-radio-dot`, derived like Checkbox's tick).
+(`--color-radio-dot`, an alias of `--color-on-primary` like Checkbox's tick).
 
 ### Textarea, Select
 Not built yet. `Textarea` should share TextField's look and label/error wiring.
@@ -719,7 +724,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # CSS shared by several components (OptionGroup: Checkbox + Radio)
+│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio; FieldError, types: all fields; OptionText: options)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
