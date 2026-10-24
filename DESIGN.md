@@ -468,7 +468,12 @@ Based on NN/g and GOV.UK guidance: visible label above the field, no placeholder
 required fields marked, error specific and below the field, validated when the user leaves the field
 rather than on every keystroke (the component doesn't validate; see the `ValidateOnBlur` story).
 
-**Not yet:** hint text (probably alongside a Tooltip), adornments, multiline (`Textarea`), `type="number"`.
+**Not yet:** hint text (probably alongside a Tooltip), adornments, `type="number"`. Multiline is a separate
+component, `Textarea`, not a mode of this one.
+
+TextField renders only the `<input>`. The frame around it (root, `size`, label, error message, id and
+`aria-describedby` wiring) and the look of the field are `_shared/TextFieldFrame`, shared with Textarea;
+`--color-textfield-*` are set as the `--field-*` hooks that module reads.
 **Open:** a borderless faint fill may not meet WCAG 1.4.11 (3:1 for the control's boundary); check it
 in Storybook, and add a stronger bottom edge if it needs one.
 
@@ -564,8 +569,29 @@ circle with a visible border (WCAG 1.4.11) that fills with the brand color when 
 that scales in. The dot is black or white, whichever contrasts more with `--color-primary`
 (`--color-radio-dot`, an alias of `--color-on-primary` like Checkbox's tick).
 
-### Textarea, Select
-Not built yet. `Textarea` should share TextField's look and label/error wiring.
+### Textarea
+```tsx
+interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>,
+  'color' | 'disabled' | 'readOnly' | 'required'> {
+  size?: ScaleProp;              // font-size on the root, as TextField
+  rows?: number;                 // visible rows; default 3
+  resize?: 'none' | 'vertical';  // default 'vertical'; horizontal is left out, the field fills its container
+  label?: string;                // as TextField
+  error?: string;
+  isDisabled?: boolean;
+  isReadOnly?: boolean;
+  isRequired?: boolean;
+}
+```
+A separate component from TextField because the element, its `ref` type and its props differ (`rows`,
+`resize`, no `type`). Everything else is the same, and shared through `_shared/TextFieldFrame`: the
+look (fill, hover, focus border, read-only, disabled, error), the label and error wiring, `size`, and
+`className`/`style` on the root. Its tokens, `--color-textarea-*`, alias the shared field fill.
+
+**Not yet:** auto-grow (`field-sizing: content`), character counter.
+
+### Select
+Not built yet.
 
 ---
 
@@ -724,7 +750,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio; FieldError, FieldLabel, types: all fields; OptionText: options)
+│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio; TextFieldFrame: TextField + Textarea; FieldError, FieldLabel, types: all fields; OptionText: options)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -892,7 +918,8 @@ export const EscapeHatch: Story = {
 - [x] `Checkbox` — options, orientation, minChecked/maxChecked, label, error, isDisabled (no `size`)
 - [x] `Radio` — options, orientation, label, error, isDisabled, isRequired (no `size`); shares `_shared/OptionGroup` with Checkbox
 - [ ] `Select` — Compound component pattern
-- [ ] `Textarea`, `Toggle` — Form controls
+- [x] `Textarea` — size, rows, resize, label, error, isDisabled, isReadOnly, isRequired; shares `_shared/TextFieldFrame` with TextField
+- [ ] `Toggle` — Form control
 - [ ] `Badge`, `Alert`, `Icon` — Display
 - [ ] `Card` — Only once it adds more than Box (slots, interactive variant, semantic element)
 

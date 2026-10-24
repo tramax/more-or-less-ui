@@ -3,6 +3,7 @@ import { afterEach, describe, it, expect, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import { TextField } from './TextField';
 import styles from './TextField.module.css';
+import frameStyles from '../_shared/TextFieldFrame.module.css';
 import labelStyles from '../_shared/FieldLabel.module.css';
 import errorStyles from '../_shared/FieldError.module.css';
 
@@ -47,7 +48,7 @@ describe('TextField', () => {
 
     it('adds only the default classes and no styles when no scale props are set', () => {
       const { root } = renderField();
-      expect([...root.classList]).toEqual([styles.root, styles.sizeNormal]);
+      expect([...root.classList]).toEqual([frameStyles.root, frameStyles.sizeNormal, styles.root]);
       expect(root.getAttribute('style')).toBeFalsy();
     });
 
@@ -86,7 +87,7 @@ describe('TextField', () => {
   describe('variants', () => {
     // Guards against the prop list and TextField.module.css drifting apart
     it.each(VARIANTS)('size="%s" applies its class and no inline style', (variant) => {
-      const className = styles[`size${cap(variant)}`];
+      const className = frameStyles[`size${cap(variant)}`];
       expect(className).toBeTruthy();
 
       const { root } = renderField({ size: variant });
@@ -96,8 +97,8 @@ describe('TextField', () => {
 
     it('replaces the default when a variant is given', () => {
       const { root } = renderField({ size: 'more' });
-      expect(root.classList.contains(styles.sizeMore as string)).toBe(true);
-      expect(root.classList.contains(styles.sizeNormal as string)).toBe(false);
+      expect(root.classList.contains(frameStyles.sizeMore as string)).toBe(true);
+      expect(root.classList.contains(frameStyles.sizeNormal as string)).toBe(false);
     });
   });
 
@@ -105,7 +106,7 @@ describe('TextField', () => {
     it('writes size to font-size on the root', () => {
       const { root } = renderField({ size: '1.5rem' });
       expect(root.style.fontSize).toBe('1.5rem');
-      expect(root.classList.contains(styles.sizeNormal as string)).toBe(false);
+      expect(root.classList.contains(frameStyles.sizeNormal as string)).toBe(false);
     });
 
     it('treats numbers as pixels', () => {
@@ -117,7 +118,7 @@ describe('TextField', () => {
     it('go on the root, merged with the variant classes', () => {
       const { root, input } = renderField({ className: 'mine', size: 'more' });
       expect(root.classList.contains('mine')).toBe(true);
-      expect(root.classList.contains(styles.sizeMore as string)).toBe(true);
+      expect(root.classList.contains(frameStyles.sizeMore as string)).toBe(true);
       expect(input.classList.contains('mine')).toBe(false);
     });
 
@@ -160,13 +161,13 @@ describe('TextField', () => {
     it('sets the native disabled attribute and dims the field', () => {
       const { root, input } = renderField({ isDisabled: true });
       expect(input.disabled).toBe(true);
-      expect(root.classList.contains(styles.disabled as string)).toBe(true);
+      expect(root.classList.contains(frameStyles.disabled as string)).toBe(true);
     });
 
     it('is off by default', () => {
       const { root, input } = renderField();
       expect(input.disabled).toBe(false);
-      expect(root.classList.contains(styles.disabled as string)).toBe(false);
+      expect(root.classList.contains(frameStyles.disabled as string)).toBe(false);
     });
   });
 
@@ -200,7 +201,7 @@ describe('TextField', () => {
       expect(message?.textContent).toBe('Enter your name');
       expect(input.getAttribute('aria-invalid')).toBe('true');
       expect(input.getAttribute('aria-describedby')).toBe(message?.id);
-      expect(root.classList.contains(styles.invalid as string)).toBe(true);
+      expect(root.classList.contains(frameStyles.invalid as string)).toBe(true);
     });
 
     it('gives the message an icon hidden from assistive tech', () => {

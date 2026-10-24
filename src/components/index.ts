@@ -8,3 +8,5 @@ export { Radio } from './Radio';
 export type { RadioProps, RadioOption } from './Radio';
 export { TextField } from './TextField';
 export type { TextFieldProps } from './TextField';
+export { Textarea } from './Textarea';
+export type { TextareaProps } from './Textarea';

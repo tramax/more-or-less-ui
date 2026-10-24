@@ -1,0 +1,21 @@
+/*
+ * Textarea: the frame, the `size` scale and the look of the field are shared with TextField
+ * (_shared/TextFieldFrame). What is here is the Textarea's colors, set as the hooks that module reads
+ * from this class, and the resize handle.
+ */
+
+.root {
+  --field-background: var(--color-textarea-background);
+  --field-background-hover: var(--color-textarea-background-hover);
+  --field-background-error: var(--color-textarea-background-error);
+  --field-background-error-hover: var(--color-textarea-background-error-hover);
+}
+
+/* Horizontal resizing is left out: the field is as wide as its container, so dragging wider would
+   break the layout. */
+.resizeVertical {
+  resize: vertical;
+}
+.resizeNone {
+  resize: none;
+}

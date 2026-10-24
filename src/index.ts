@@ -27,7 +27,7 @@ export type { ClassValue } from '@/utils/clsx';
 export {} from '@/styles.css';
 
 // Components
-export { Box, Button, Checkbox, Radio, TextField } from '@/components';
+export { Box, Button, Checkbox, Radio, TextField, Textarea } from '@/components';
 export type {
   BoxProps,
   ButtonProps,
@@ -36,6 +36,7 @@ export type {
   RadioProps,
   RadioOption,
   TextFieldProps,
+  TextareaProps,
 } from '@/components';
 
 // Components (to be implemented)

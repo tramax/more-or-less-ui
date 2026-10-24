@@ -36,6 +36,10 @@ same recipe is defined under two names.
 
 - `components/_shared/` holds CSS shared by several components (`OptionGroup`: Checkbox + Radio).
 - Components set `--option-*` style hooks on their root from their own tokens, and shape only their control.
+- `_shared/TextFieldFrame` is the frame of a text-entry field (TextField, Textarea): root, `size`,
+  label, error message, and the id / `aria-invalid` / `aria-describedby` wiring. A component passes it
+  its props and renders only its control (`<input>`, `<textarea>`) from what the frame hands back; it
+  sets the `--field-*` color hooks from its own tokens on its root class.
 - `_shared/FieldError` is the error message + icon for every field and group. Pass spacing through
   `className`; a new input component renders it rather than its own `<p>` and `<svg>`.
 - `_shared/FieldLabel` is the visible name (a `<label>` for TextField, a `<legend>` for groups) with
@@ -48,13 +52,13 @@ same recipe is defined under two names.
     callback that hides each component's input in another file, and only two components would use
     it. Extract it when a third option-group component appears, and not before. Until then, keep the
     two in step: a fix to one is a fix to the other.
-  - The `size*` classes in Button and TextField, which `resolveScaleProps` looks up in each
-    component's own CSS module.
+  - The `size*` classes in Button and `_shared/TextFieldFrame`, which `resolveScaleProps` looks up in
+    each component's own CSS module.
 
 ## Before you finish
 
 Run `pnpm test`, `pnpm typecheck`, `pnpm lint` and `pnpm check:dup`. `check:dup` has a ceiling set at
-the current level, 2.4% (`.jscpd.json`, clones under 10 lines are ignored); if you add duplication it fails. Remove the duplication rather than
+the current level, 2.1% (`.jscpd.json`, clones under 10 lines are ignored); if you add duplication it fails. Remove the duplication rather than
 raising the ceiling. Lower the ceiling when you remove some. Note that `jscpd` can't see the same
 value under different names, which is what the tokens test is for.
 

@@ -1,93 +1,12 @@
 /*
- * TextField: base styles first (background, border radius and font weight are fixed here, not
- * props), then one class per `size` variant, named size<Variant> (looked up by resolveScaleProps).
- * The base has no scale values: `normal` is a real class too, and `size` gets it from
- * TEXTFIELD_DEFAULTS in TextField.tsx.
- *
- * `size` is set on the root and only sets font-size. Everything else (padding, gaps, the error
- * icon) is in em, so it follows, and so does an escape-hatch size such as size="1.5rem".
- *
- * The field is a block of faint color, not a bordered box (see --color-textfield-background in
- * theme/tokens.css). The fill is the brand color at low alpha, so it sits on any surface.
+ * TextField: the frame, the `size` scale and the look of the field are shared with Textarea
+ * (_shared/TextFieldFrame). What is here is the TextField's colors, set as the hooks that module
+ * reads from this class.
  */
 
 .root {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375em;
-  align-items: stretch;
-}
-
-.input {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 0.75em 1em;
-  border: 0;
-  /* Fixed, not props. Placeholders on the `normal` tokens, as in Button. corner-shape: squircle
-     gives smoother corners than circular arcs. */
-  border-radius: var(--radius-less);
-  corner-shape: squircle;
-  background: var(--color-textfield-background);
-  color: CanvasText;
-  font: inherit;
-  line-height: 1.25;
-  /* The focus border is an inset shadow, so it takes no space and follows the corners. It exists at
-     rest too, just transparent: the same shadow in every state means only its color transitions,
-     which is what makes it fade in and out. */
-  --textfield-focus-color: var(--color-primary);
-  box-shadow: inset 0 0 0 2px transparent;
-  /* No outline, but a transparent one: forced-colors mode (Windows high contrast) drops box-shadow
-     and paints the outline in a system color, so the focus state still shows there. */
-  outline: 2px solid transparent;
-  transition:
-    background-color 150ms ease,
-    box-shadow 250ms ease;
-}
-
-.input::placeholder {
-  color: color-mix(in oklab, CanvasText 55%, transparent);
-}
-
-@media (hover: hover) {
-  .input:hover:not(:disabled, [readonly]) {
-    background: var(--color-textfield-background-hover);
-  }
-}
-
-/* The fill is too faint to mark focus on its own, so a border in the brand color carries it */
-.input:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--textfield-focus-color);
-}
-
-/* No fill: it reads as text, not as something to type into. Stays focusable and selectable. */
-.input[readonly] {
-  background: transparent;
-}
-
-.input:disabled {
-  cursor: not-allowed;
-}
-.disabled {
-  opacity: 0.5;
-}
-
-/* The same fill, in the error color. The message and icon carry the state too, not color alone. */
-.invalid .input {
-  background: var(--color-textfield-background-error);
-  --textfield-focus-color: var(--color-danger);
-}
-@media (hover: hover) {
-  .invalid .input:hover:not(:disabled, [readonly]) {
-    background: var(--color-textfield-background-error-hover);
-  }
-}
-
-.sizeLess {
-  font-size: var(--size-less);
-}
-.sizeNormal {
-  font-size: var(--size-normal);
-}
-.sizeMore {
-  font-size: var(--size-more);
+  --field-background: var(--color-textfield-background);
+  --field-background-hover: var(--color-textfield-background-hover);
+  --field-background-error: var(--color-textfield-background-error);
+  --field-background-error-hover: var(--color-textfield-background-error-hover);
 }
