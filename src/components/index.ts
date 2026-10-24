@@ -10,3 +10,5 @@ export { TextField } from './TextField';
 export type { TextFieldProps } from './TextField';
 export { Textarea } from './Textarea';
 export type { TextareaProps } from './Textarea';
+export { Toggle } from './Toggle';
+export type { ToggleProps } from './Toggle';

@@ -92,7 +92,7 @@ export function isVariant(value: ScaleProp): value is Variant {
 
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button), and one faint field fill (`--color-field-background*`) that TextField, Checkbox and Radio alias**. No palettes, no
+Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button), and one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio and Toggle alias**. No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -569,6 +569,51 @@ circle with a visible border (WCAG 1.4.11) that fills with the brand color when 
 that scales in. The dot is black or white, whichever contrasts more with `--color-primary`
 (`--color-radio-dot`, an alias of `--color-on-primary` like Checkbox's tick).
 
+### Toggle
+```tsx
+interface ToggleProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
+  'type' | 'role' | 'checked' | 'defaultChecked' | 'onChange' | 'disabled' | 'value' | 'defaultValue'
+  | 'required' | 'readOnly' | 'size' | 'color' | 'children'> {
+  label?: string;                // the text beside the switch; without it aria-label/aria-labelledby is required
+  description?: string;          // second line, linked with aria-describedby
+  checked?: boolean;             // controlled
+  defaultChecked?: boolean;      // uncontrolled
+  onChange?: (checked: boolean) => void;
+  name?: string;                 // submitted while on
+  value?: string;                // submitted while on; the browser's `on` by default
+  isDisabled?: boolean;          // native `disabled`, dimmed
+}
+```
+
+One setting that takes effect as soon as it is flipped: a native `<input type="checkbox" role="switch">`,
+so keyboard (Space), form submission and screen readers come for free, announced as on / off.
+**Single boolean on purpose.** For a choice that waits for Save or Submit, or for picking several from
+a list, use Checkbox. A settings page is several Toggles; there is no `ToggleGroup`.
+
+**Where the props go.** `ref`, `id` and the rest go on the `<input>`, as in TextField; `className` and
+`style` go on the root `<label>`. No scale props, same as Checkbox and Radio.
+
+**No `error` and no `isRequired`.** A switch is never "unanswered" or "wrong", and an error on one would
+suggest it is a form value to validate. That is a Checkbox's job.
+
+**Look.** Not the Checkbox / Radio option row: a Toggle is one setting, not a choice in a list, so
+there is no surface behind it and the row doesn't lift. Hover answers on the control only: the thumb
+grows and lifts, and an empty track warms up (`--color-toggle-background-hover`). The control is a pill
+track with a visible border (WCAG 1.4.11) and a thumb that slides across it with the same spring as
+Radio's dot. With `prefers-reduced-motion` the thumb jumps and doesn't grow.
+
+**On and off are never a guess.** The state is said four ways, so no one has to read it from color:
+position (thumb at the start / at the end), fill (empty track / brand-colored track), an icon on the
+thumb (a cross when off, a tick when on), and the `switch` role, which a screen reader announces as
+on / off. The thumb and its icon swap between `--color-primary` and `--color-toggle-thumb` (an alias of
+`--color-on-primary`), so the icon always contrasts with the thumb it sits on.
+
+The text beside it is `_shared/OptionText`, and the control is the same `.control` / `.input` /
+`.mark` recipe in `_shared/OptionGroup.module.css` that Checkbox and Radio draw, resized; the
+`.option` row is not used.
+
+**Open:** the thumb moves with `translateX`, so it is not mirrored in right-to-left layouts.
+
 ### Textarea
 ```tsx
 interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>,
@@ -750,7 +795,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio; TextFieldFrame: TextField + Textarea; FieldError, FieldLabel, types: all fields; OptionText: options)
+│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea; FieldError, FieldLabel, types: all fields; OptionText: options)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -919,7 +964,7 @@ export const EscapeHatch: Story = {
 - [x] `Radio` — options, orientation, label, error, isDisabled, isRequired (no `size`); shares `_shared/OptionGroup` with Checkbox
 - [ ] `Select` — Compound component pattern
 - [x] `Textarea` — size, rows, resize, label, error, isDisabled, isReadOnly, isRequired; shares `_shared/TextFieldFrame` with TextField
-- [ ] `Toggle` — Form control
+- [x] `Toggle` — label, description, checked/defaultChecked, isDisabled (single boolean, no `size`, no `error`); no option row, on / off shown by position, fill and icon
 - [ ] `Badge`, `Alert`, `Icon` — Display
 - [ ] `Card` — Only once it adds more than Box (slots, interactive variant, semantic element)
 

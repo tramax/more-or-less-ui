@@ -3,7 +3,7 @@
  *
  * - Scale tokens: 3 values per property (less/normal/more), 15 CSS variables (5 scales × 3)
  * - Color tokens: deliberately minimal. One brand color, an error color, a background scale for Box
- *   and one for Button, and one faint field fill that TextField, Textarea, Checkbox and Radio alias.
+ *   and one for Button, and one faint field fill that TextField, Textarea, Checkbox, Radio and Toggle alias.
  */
 
 :root {
@@ -107,6 +107,12 @@
   --color-radio-background-error: var(--color-field-background-error);
   --color-radio-background-error-hover: var(--color-field-background-error-hover);
   --color-radio-dot: var(--color-on-primary);
+
+  /* The empty track and its hover. No error pair: a Toggle has no error state. */
+  --color-toggle-background: var(--color-field-background);
+  --color-toggle-background-hover: var(--color-field-background-hover);
+  /* The thumb when on, and the cross on it when off; both sit against --color-primary */
+  --color-toggle-thumb: var(--color-on-primary);
 }
 
 @supports (color: contrast-color(red)) {
