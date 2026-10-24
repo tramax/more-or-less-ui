@@ -167,10 +167,11 @@ describe('Textarea', () => {
       expect(root.classList.contains(frameStyles.disabled as string)).toBe(true);
     });
 
-    it('isReadOnly sets the native attribute and stays focusable', () => {
+    it('isReadOnly sets the native attribute and leaves the tab order', () => {
       const { textarea } = renderField({ isReadOnly: true });
       expect(textarea.readOnly).toBe(true);
       expect(textarea.disabled).toBe(false);
+      expect(textarea.tabIndex).toBe(-1);
     });
 
     it('isRequired sets native required and shows an asterisk hidden from assistive tech', () => {

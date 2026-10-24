@@ -448,7 +448,7 @@ interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
   label?: string;                // visible, above the field; without it aria-label/aria-labelledby is required
   error?: string;                // invalid state + message below the field; the caller decides when
   isDisabled?: boolean;          // native `disabled`, dimmed
-  isReadOnly?: boolean;          // focusable, not editable, no fill
+  isReadOnly?: boolean;          // not editable, plain text: no fill, padding or focus border; tabIndex -1
   isRequired?: boolean;          // native `required` + an aria-hidden asterisk after the label
 }
 ```
@@ -579,7 +579,7 @@ interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>
   label?: string;                // as TextField
   error?: string;
   isDisabled?: boolean;
-  isReadOnly?: boolean;
+  isReadOnly?: boolean;          // as TextField, and the resize handle is dropped
   isRequired?: boolean;
 }
 ```

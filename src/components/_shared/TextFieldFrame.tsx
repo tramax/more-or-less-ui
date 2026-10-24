@@ -27,6 +27,8 @@ export interface TextFieldControlProps {
   className: string;
   disabled: boolean;
   readOnly: boolean;
+  /** -1 when read-only, so Tab skips it. Absent otherwise, so the consumer's own `tabIndex` stands. */
+  tabIndex?: -1;
   required: boolean;
   'aria-invalid': true | undefined;
   'aria-describedby': string | undefined;
@@ -118,6 +120,7 @@ export function TextFieldFrame<P extends TextFieldFrameOwnProps>({
           className: styles.control as string,
           disabled: isDisabled,
           readOnly: isReadOnly,
+          ...(isReadOnly && { tabIndex: -1 as const }),
           required: isRequired,
           'aria-invalid': hasError || undefined,
           'aria-describedby': clsx(describedBy, hasError && errorId) || undefined,

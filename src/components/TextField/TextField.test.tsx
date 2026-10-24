@@ -172,10 +172,11 @@ describe('TextField', () => {
   });
 
   describe('isReadOnly', () => {
-    it('sets the native readonly attribute and stays focusable', () => {
+    it('sets the native readonly attribute and leaves the tab order', () => {
       const { input } = renderField({ isReadOnly: true });
       expect(input.readOnly).toBe(true);
       expect(input.disabled).toBe(false);
+      expect(input.tabIndex).toBe(-1);
     });
   });
 

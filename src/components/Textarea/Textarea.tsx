@@ -27,7 +27,10 @@ export type TextareaProps = Omit<
     error?: string;
     /** Not editable, not focusable, dimmed. Uses the native `disabled` attribute. */
     isDisabled?: boolean;
-    /** Focusable and submitted with the form, but not editable. Drops the fill. */
+    /**
+     * Not editable, but submitted with the form and selectable. Reads as plain text: no fill, no
+     * padding, no resize handle, and Tab skips it.
+     */
     isReadOnly?: boolean;
     /** Native `required`, plus an asterisk after the label. */
     isRequired?: boolean;
