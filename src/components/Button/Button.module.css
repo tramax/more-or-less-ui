@@ -33,7 +33,8 @@
   --button-shadow-strength: 0.35;
   --button-shadow-contact: calc(22% * var(--button-shadow-strength) * var(--button-shadow-boost));
   --button-shadow-ambient: calc(16% * var(--button-shadow-strength) * var(--button-shadow-boost));
-  --button-elevation-less: 0 1px 2px
+  --button-elevation-less:
+    0 1px 2px
       color-mix(
         in oklab,
         var(--button-shadow-color) calc(var(--button-shadow-contact) * 0.75),
@@ -45,11 +46,13 @@
         var(--button-shadow-color) calc(var(--button-shadow-ambient) * 0.5),
         transparent
       );
-  --button-elevation-normal: 0 2px 4px
+  --button-elevation-normal:
+    0 2px 4px
       color-mix(in oklab, var(--button-shadow-color) var(--button-shadow-contact), transparent),
     0 8px 16px
       color-mix(in oklab, var(--button-shadow-color) var(--button-shadow-ambient), transparent);
-  --button-elevation-more: 0 4px 8px
+  --button-elevation-more:
+    0 4px 8px
       color-mix(
         in oklab,
         var(--button-shadow-color) calc(var(--button-shadow-contact) * 1.25),
@@ -81,7 +84,9 @@
   /* Same function list (translateY, scale) in every state, so the transitions interpolate each
      function separately instead of falling back to matrix interpolation. */
   transform: translateY(0) scale(1);
-  transition: transform 400ms var(--button-ease-leave), box-shadow 400ms var(--button-ease-leave),
+  transition:
+    transform 400ms var(--button-ease-leave),
+    box-shadow 400ms var(--button-ease-leave),
     opacity 150ms ease;
 }
 
@@ -97,7 +102,9 @@
        the scale's timing but doesn't need to bounce. */
     box-shadow: var(--button-elevation-more);
     z-index: 1;
-    transition: transform 500ms var(--button-ease-enter), box-shadow 500ms var(--button-ease-leave),
+    transition:
+      transform 500ms var(--button-ease-enter),
+      box-shadow 500ms var(--button-ease-leave),
       opacity 150ms ease;
   }
   /* Pressed: settle back to full size and resting position, quickly and without overshoot.
@@ -106,7 +113,9 @@
     transform: translateY(0) scale(1);
     /* Below the resting elevation, as if pushed in */
     box-shadow: var(--button-elevation-less);
-    transition: transform 200ms var(--button-ease-leave), box-shadow 200ms var(--button-ease-leave),
+    transition:
+      transform 200ms var(--button-ease-leave),
+      box-shadow 200ms var(--button-ease-leave),
       opacity 150ms ease;
   }
 }

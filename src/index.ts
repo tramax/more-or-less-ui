@@ -27,7 +27,7 @@ export type { ClassValue } from '@/utils/clsx';
 export {} from '@/styles.css';
 
 // Components
-export { Box, Button, Checkbox, Radio, TextField, Textarea } from '@/components';
+export { Box, Button, Checkbox, Radio, Select, TextField, Textarea } from '@/components';
 export type {
   BoxProps,
   ButtonProps,
@@ -35,6 +35,8 @@ export type {
   CheckboxOption,
   RadioProps,
   RadioOption,
+  SelectProps,
+  SelectOption,
   TextFieldProps,
   TextareaProps,
 } from '@/components';
@@ -45,5 +47,3 @@ export type {
 // export { Grid } from '@/components/Grid';
 // export { Text } from '@/components/Text';
 // export { Card } from '@/components/Card';
-// export { Textarea } from '@/components/Textarea';
-// export { Select } from '@/components/Select';

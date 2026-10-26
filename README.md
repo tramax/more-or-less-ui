@@ -67,7 +67,7 @@ function App() {
 @import 'more-or-less-ui/styles.css';
 
 :root {
-  --color-primary: #ec4899;      /* Your brand color */
+  --color-primary: #ec4899; /* Your brand color */
   --size-less: 0.75rem;
   --size-normal: 1rem;
   --size-more: 1.5rem;
@@ -106,7 +106,7 @@ function App() {
 function Header() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   return (
-    <select value={theme} onChange={e => setTheme(e.target.value)}>
+    <select value={theme} onChange={(e) => setTheme(e.target.value)}>
       <option value="light">Light</option>
       <option value="dark">Dark</option>
       <option value="system">System</option>
@@ -119,14 +119,14 @@ function Header() {
 
 Every component accepts these props with `ScaleProp` type (`'less' | 'normal' | 'more' | string | number | undefined`):
 
-| Prop | CSS Property | Description |
-|------|--------------|-------------|
-| `size` | `fontSize` + `padding` + `gap` | Compound: text size + spacing |
-| `borderRadius` | `borderRadius` | Corner roundness |
-| `fontWeight` | `fontWeight` | Text weight |
-| `boxShadow` | `boxShadow` | Elevation/depth |
-| `padding` | `padding` | Internal spacing |
-| `margin` | `margin` | External spacing |
+| Prop           | CSS Property                   | Description                   |
+| -------------- | ------------------------------ | ----------------------------- |
+| `size`         | `fontSize` + `padding` + `gap` | Compound: text size + spacing |
+| `borderRadius` | `borderRadius`                 | Corner roundness              |
+| `fontWeight`   | `fontWeight`                   | Text weight                   |
+| `boxShadow`    | `boxShadow`                    | Elevation/depth               |
+| `padding`      | `padding`                      | Internal spacing              |
+| `margin`       | `margin`                       | External spacing              |
 
 ### Defaults
 

@@ -22,7 +22,7 @@ const meta: Meta<typeof Radio> = {
   args: { label: 'Contact me by', options: OPTIONS },
   decorators: [
     (Story) => (
-      <div style={{ maxWidth: '28rem', padding: '1rem' }}>
+      <div style={{ width: '28rem', maxWidth: '100%', padding: '1rem' }}>
         <Story />
       </div>
     ),

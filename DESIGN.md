@@ -24,21 +24,23 @@
 ## Architecture Decisions
 
 ### Build & Tooling
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| **Build Tool** | `tsup` | Zero-config, dual ESM/CJS, fast (esbuild), built-in `--dts` |
-| **Package Manager** | `pnpm` | Disk-efficient, fast, strict dependency resolution |
-| **Testing** | `Vitest` + React Testing Library | Native ESM, TypeScript, shares config with Vite/tsup |
-| **Component Explorer** | **Storybook** | Mature ecosystem, Chromatic integration, team familiarity |
-| **Styling** | **CSS Modules + CSS Variables** | Zero runtime, native theming, SSR-safe, escape hatch via inline styles |
-| **CSS Modules naming** | `*.module.css` | Required for Vite (Storybook/Vitest) and esbuild (tsup) to treat a file as a CSS Module. tsup emits component CSS into `dist/styles.css` (single consumer import) via a small plugin in `tsup.config.ts` |
-| **Publishing** | Public npm + Changesets | Standard versioning, automated releases |
+
+| Decision               | Choice                           | Rationale                                                                                                                                                                                                |
+| ---------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Build Tool**         | `tsup`                           | Zero-config, dual ESM/CJS, fast (esbuild), built-in `--dts`                                                                                                                                              |
+| **Package Manager**    | `pnpm`                           | Disk-efficient, fast, strict dependency resolution                                                                                                                                                       |
+| **Testing**            | `Vitest` + React Testing Library | Native ESM, TypeScript, shares config with Vite/tsup                                                                                                                                                     |
+| **Component Explorer** | **Storybook**                    | Mature ecosystem, Chromatic integration, team familiarity                                                                                                                                                |
+| **Styling**            | **CSS Modules + CSS Variables**  | Zero runtime, native theming, SSR-safe, escape hatch via inline styles                                                                                                                                   |
+| **CSS Modules naming** | `*.module.css`                   | Required for Vite (Storybook/Vitest) and esbuild (tsup) to treat a file as a CSS Module. tsup emits component CSS into `dist/styles.css` (single consumer import) via a small plugin in `tsup.config.ts` |
+| **Publishing**         | Public npm + Changesets          | Standard versioning, automated releases                                                                                                                                                                  |
 
 ### Theming System
-| Decision | Choice |
-|----------|--------|
-| **Mechanism** | CSS Variables (native) |
-| **Theme Switching** | Both: CSS-first (`[data-theme]`) + optional React `ThemeProvider` |
+
+| Decision            | Choice                                                                |
+| ------------------- | --------------------------------------------------------------------- |
+| **Mechanism**       | CSS Variables (native)                                                |
+| **Theme Switching** | Both: CSS-first (`[data-theme]`) + optional React `ThemeProvider`     |
 | **Token Structure** | 3 values per property (less/normal/more) — **15 CSS variables total** |
 
 ---
@@ -63,14 +65,14 @@ export function isVariant(value: ScaleProp): value is Variant {
 /* theme/tokens.css */
 :root {
   /* Size scale */
-  --size-less: 0.875rem;    /* 14px */
-  --size-normal: 1rem;      /* 16px */
-  --size-more: 1.25rem;     /* 20px */
+  --size-less: 0.875rem; /* 14px */
+  --size-normal: 1rem; /* 16px */
+  --size-more: 1.25rem; /* 20px */
 
   /* Radius scale */
-  --radius-less: 0.5rem;    /* 8px */
+  --radius-less: 0.5rem; /* 8px */
   --radius-normal: 1.25rem; /* 20px */
-  --radius-more: 2rem;      /* 32px */
+  --radius-more: 2rem; /* 32px */
 
   /* Weight scale */
   --weight-less: 300;
@@ -78,21 +80,20 @@ export function isVariant(value: ScaleProp): value is Variant {
   --weight-more: 600;
 
   /* Spacing scale */
-  --space-less: 0.5rem;     /* 8px */
-  --space-normal: 1rem;     /* 16px */
-  --space-more: 1.5rem;     /* 24px */
+  --space-less: 0.5rem; /* 8px */
+  --space-normal: 1rem; /* 16px */
+  --space-more: 1.5rem; /* 24px */
 
   /* Elevation scale */
   --elevation-less: 0 1px 2px rgb(0 0 0 / 0.05);
   --elevation-normal: 0 4px 6px rgb(0 0 0 / 0.07);
   --elevation-more: 0 10px 15px rgb(0 0 0 / 0.1);
 }
-
 ```
 
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button), and one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio and Toggle alias**. No palettes, no
+Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button), and one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio, Toggle and Select alias**. No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -113,7 +114,7 @@ actually needs one.
 }
 
 /* theme/themes.css */
-[data-theme="dark"] {
+[data-theme='dark'] {
   color-scheme: dark; /* flips system colors: Canvas, CanvasText, form controls, scrollbars */
   --color-box-background-more: #4a3f33; /* umber */
   --color-button-background-more: #4a3f33; /* umber */
@@ -141,27 +142,27 @@ needs no text/background variables of its own.
 
 Use standard CSS property names (camelCase) for direct mappings — **no translation layer**.
 
-| Prop Name | CSS Property | Type |
-|-----------|--------------|------|
-| `borderRadius` | `border-radius` | `ScaleProp` |
-| `fontWeight` | `font-weight` | `ScaleProp` |
-| `boxShadow` | `box-shadow` | `ScaleProp` |
-| `padding` | `padding` | `ScaleProp` |
-| `paddingLeft` | `padding-left` | `ScaleProp` |
-| `paddingRight` | `padding-right` | `ScaleProp` |
-| `paddingTop` | `padding-top` | `ScaleProp` |
+| Prop Name       | CSS Property     | Type        |
+| --------------- | ---------------- | ----------- |
+| `borderRadius`  | `border-radius`  | `ScaleProp` |
+| `fontWeight`    | `font-weight`    | `ScaleProp` |
+| `boxShadow`     | `box-shadow`     | `ScaleProp` |
+| `padding`       | `padding`        | `ScaleProp` |
+| `paddingLeft`   | `padding-left`   | `ScaleProp` |
+| `paddingRight`  | `padding-right`  | `ScaleProp` |
+| `paddingTop`    | `padding-top`    | `ScaleProp` |
 | `paddingBottom` | `padding-bottom` | `ScaleProp` |
-| `margin` | `margin` | `ScaleProp` |
-| `marginLeft` | `margin-left` | `ScaleProp` |
-| `marginRight` | `margin-right` | `ScaleProp` |
-| `marginTop` | `margin-top` | `ScaleProp` |
-| `marginBottom` | `margin-bottom` | `ScaleProp` |
+| `margin`        | `margin`         | `ScaleProp` |
+| `marginLeft`    | `margin-left`    | `ScaleProp` |
+| `marginRight`   | `margin-right`   | `ScaleProp` |
+| `marginTop`     | `margin-top`     | `ScaleProp` |
+| `marginBottom`  | `margin-bottom`  | `ScaleProp` |
 
 ### Semantic/Compound Props (Multiple CSS Properties)
 
-| Prop Name | Affects | Type |
-|-----------|---------|------|
-| `size` | `fontSize` + `padding` + `gap` | `ScaleProp` |
+| Prop Name | Affects                        | Type        |
+| --------- | ------------------------------ | ----------- |
+| `size`    | `fontSize` + `padding` + `gap` | `ScaleProp` |
 
 ---
 
@@ -193,17 +194,33 @@ Use standard CSS property names (camelCase) for direct mappings — **no transla
   gap: var(--space-more);
 }
 
-.borderRadiusLess { border-radius: var(--radius-less); }
-.borderRadiusMore { border-radius: var(--radius-more); }
+.borderRadiusLess {
+  border-radius: var(--radius-less);
+}
+.borderRadiusMore {
+  border-radius: var(--radius-more);
+}
 
-.fontWeightLess { font-weight: var(--weight-less); }
-.fontWeightMore { font-weight: var(--weight-more); }
+.fontWeightLess {
+  font-weight: var(--weight-less);
+}
+.fontWeightMore {
+  font-weight: var(--weight-more);
+}
 
-.boxShadowLess { box-shadow: var(--elevation-less); }
-.boxShadowMore { box-shadow: var(--elevation-more); }
+.boxShadowLess {
+  box-shadow: var(--elevation-less);
+}
+.boxShadowMore {
+  box-shadow: var(--elevation-more);
+}
 
-.paddingLess { padding: calc(var(--space-less) * 0.5) var(--space-less); }
-.paddingMore { padding: calc(var(--space-more) * 0.5) var(--space-more); }
+.paddingLess {
+  padding: calc(var(--space-less) * 0.5) var(--space-less);
+}
+.paddingMore {
+  padding: calc(var(--space-more) * 0.5) var(--space-more);
+}
 ```
 
 ```tsx
@@ -241,7 +258,7 @@ function getInlineStyle(prop: string, value: ScaleProp): React.CSSProperties | u
   if (value !== undefined && !isVariant(value)) {
     const cssValue = typeof value === 'number' ? `${value}px` : value;
     // Direct mapping: prop name = CSS property name
-    const cssProp = prop;  // Direct mapping: prop name = CSS property name
+    const cssProp = prop; // Direct mapping: prop name = CSS property name
     return { [cssProp]: cssValue };
   }
   return undefined;
@@ -260,9 +277,9 @@ export const Component = forwardRef<HTMLDivElement, ComponentProps>(
 
     // Inline styles ONLY for escape hatch
     const inlineStyles = [
-      getInlineStyle('fontSize', size),     // size escape → fontSize
-      getInlineStyle('padding', size),      // size escape → padding
-      getInlineStyle('gap', size),          // size escape → gap
+      getInlineStyle('fontSize', size), // size escape → fontSize
+      getInlineStyle('padding', size), // size escape → padding
+      getInlineStyle('gap', size), // size escape → gap
       getInlineStyle('borderRadius', borderRadius),
       getInlineStyle('fontWeight', fontWeight),
       getInlineStyle('boxShadow', boxShadow),
@@ -277,7 +294,7 @@ export const Component = forwardRef<HTMLDivElement, ComponentProps>(
         {...props}
       />
     );
-  }
+  },
 );
 ```
 
@@ -286,6 +303,7 @@ export const Component = forwardRef<HTMLDivElement, ComponentProps>(
 ## Usage Examples
 
 ### Standard Variants (90% of cases)
+
 ```tsx
 <Button />                                    // All normal
 <Button size="more" />                        // Larger text + padding + gap
@@ -294,17 +312,18 @@ export const Component = forwardRef<HTMLDivElement, ComponentProps>(
 <Button boxShadow="less" />                   // Flatter
 <Button padding="less" />                     // Tighter padding
 
-<Box 
-  padding="more" 
-  margin="less" 
+<Box
+  padding="more"
+  margin="less"
   borderRadius="more"
   boxShadow="less"
 />
 ```
 
 ### Escape Hatch (10% of cases)
+
 ```tsx
-<Button 
+<Button
   size="1.5rem"                    // Exact font size
   borderRadius="50%"               // Full circle
   fontWeight={700}                 // Bold (number = px for fontWeight)
@@ -357,7 +376,14 @@ interface FlexProps extends BoxProps {
   direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
   wrap?: 'nowrap' | 'wrap' | 'wrap-reverse';
   align?: 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline';
-  justify?: 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly';
+  justify?:
+    | 'stretch'
+    | 'center'
+    | 'flex-start'
+    | 'flex-end'
+    | 'space-between'
+    | 'space-around'
+    | 'space-evenly';
   gap?: ScaleProp;
 }
 
@@ -369,7 +395,7 @@ interface StackProps extends BoxProps {
 
 // components/Grid/Grid.tsx
 interface GridProps extends BoxProps {
-  columns?: number | ScaleProp;      // Can use ScaleProp for escape hatch
+  columns?: number | ScaleProp; // Can use ScaleProp for escape hatch
   rows?: number | ScaleProp;
   gap?: ScaleProp;
 }
@@ -380,15 +406,16 @@ interface GridProps extends BoxProps {
 ## Higher-Level Components
 
 ### Button
+
 ```tsx
 interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'color' | 'disabled'> {
   // Scale props (all optional, default = normal)
-  size?: ScaleProp;              // font-size; padding and gap are in em, so they follow it
-  background?: ScaleProp;        // --color-button-background-* tokens; normal is the primary color mixed with Canvas
+  size?: ScaleProp; // font-size; padding and gap are in em, so they follow it
+  background?: ScaleProp; // --color-button-background-* tokens; normal is the primary color mixed with Canvas
 
-  isDisabled?: boolean;          // native `disabled`: not clickable, not focusable
-  isLoading?: boolean;           // spinner + aria-busy + aria-disabled; ignores clicks, stays focusable
-  type?: 'button' | 'submit' | 'reset';  // defaults to 'button'
+  isDisabled?: boolean; // native `disabled`: not clickable, not focusable
+  isLoading?: boolean; // spinner + aria-busy + aria-disabled; ignores clicks, stays focusable
+  type?: 'button' | 'submit' | 'reset'; // defaults to 'button'
   onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 ```
@@ -403,12 +430,13 @@ Boolean props use the `is*` prefix. While `isLoading`, the content stays in the 
 so the button keeps its width and its accessible name.
 
 ### Card
+
 ```tsx
 interface CardProps {
-  size?: ScaleProp;              // Affects internal padding, font sizes
+  size?: ScaleProp; // Affects internal padding, font sizes
   borderRadius?: ScaleProp;
   boxShadow?: ScaleProp;
-  padding?: ScaleProp;           // Content padding
+  padding?: ScaleProp; // Content padding
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -416,6 +444,7 @@ interface CardProps {
 ```
 
 **Default appearance:**
+
 ```css
 .card {
   background: var(--color-card-bg);
@@ -426,6 +455,7 @@ interface CardProps {
 ```
 
 **Consumer creates variants via CSS:**
+
 ```css
 .my-outlined-card {
   --color-card-bg: transparent;
@@ -440,16 +470,19 @@ interface CardProps {
 ```
 
 ### TextField
+
 ```tsx
-interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
-  'size' | 'color' | 'disabled' | 'readOnly' | 'required' | 'type'> {
-  size?: ScaleProp;              // font-size on the root; padding and gaps are in em, so they follow
+interface TextFieldProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'size' | 'color' | 'disabled' | 'readOnly' | 'required' | 'type'
+> {
+  size?: ScaleProp; // font-size on the root; padding and gaps are in em, so they follow
   type?: 'text' | 'email' | 'password' | 'search' | 'tel' | 'url';
-  label?: string;                // visible, above the field; without it aria-label/aria-labelledby is required
-  error?: string;                // invalid state + message below the field; the caller decides when
-  isDisabled?: boolean;          // native `disabled`, dimmed
-  isReadOnly?: boolean;          // not editable, plain text: no fill, padding or focus border; tabIndex -1
-  isRequired?: boolean;          // native `required` + an aria-hidden asterisk after the label
+  label?: string; // visible, above the field; without it aria-label/aria-labelledby is required
+  error?: string; // invalid state + message below the field; the caller decides when
+  isDisabled?: boolean; // native `disabled`, dimmed
+  isReadOnly?: boolean; // not editable, plain text: no fill, padding or focus border; tabIndex -1
+  isRequired?: boolean; // native `required` + an aria-hidden asterisk after the label
 }
 ```
 
@@ -478,27 +511,30 @@ TextField renders only the `<input>`. The frame around it (root, `size`, label, 
 in Storybook, and add a stronger bottom edge if it needs one.
 
 ### Checkbox
+
 ```tsx
 interface CheckboxOption {
   value: string;
   label: string;
-  description?: string;          // second line, linked with aria-describedby
-  isDisabled?: boolean;          // native `disabled` on that option
+  description?: string; // second line, linked with aria-describedby
+  isDisabled?: boolean; // native `disabled` on that option
 }
 
-interface CheckboxProps extends Omit<FieldsetHTMLAttributes<HTMLFieldSetElement>,
-  'onChange' | 'disabled' | 'name' | 'defaultValue' | 'color'> {
+interface CheckboxProps extends Omit<
+  FieldsetHTMLAttributes<HTMLFieldSetElement>,
+  'onChange' | 'disabled' | 'name' | 'defaultValue' | 'color'
+> {
   options: CheckboxOption[];
-  value?: string[];              // controlled
-  defaultValue?: string[];       // uncontrolled
-  onChange?: (value: string[]) => void;  // values in `options` order, not click order
-  name?: string;                 // each checked input is submitted under it
-  orientation?: 'horizontal' | 'vertical';  // defaults to 'vertical'
+  value?: string[]; // controlled
+  defaultValue?: string[]; // uncontrolled
+  onChange?: (value: string[]) => void; // values in `options` order, not click order
+  name?: string; // each checked input is submitted under it
+  orientation?: 'horizontal' | 'vertical'; // defaults to 'vertical'
   minChecked?: number;
   maxChecked?: number;
-  label?: string;                // the <legend>; without it aria-label/aria-labelledby is required
-  error?: string;                // invalid state + message below the group; the caller decides when
-  isDisabled?: boolean;          // every option disabled, group dimmed
+  label?: string; // the <legend>; without it aria-label/aria-labelledby is required
+  error?: string; // invalid state + message below the group; the caller decides when
+  isDisabled?: boolean; // every option disabled, group dimmed
 }
 ```
 
@@ -531,26 +567,29 @@ its own `--color-<component>-*` tokens, and shapes the control itself.
 scale and shadow strength want tuning in Storybook.
 
 ### Radio
+
 ```tsx
 interface RadioOption {
   value: string;
   label: string;
-  description?: string;          // second line, linked with aria-describedby
-  isDisabled?: boolean;          // native `disabled` on that option
+  description?: string; // second line, linked with aria-describedby
+  isDisabled?: boolean; // native `disabled` on that option
 }
 
-interface RadioProps extends Omit<FieldsetHTMLAttributes<HTMLFieldSetElement>,
-  'onChange' | 'disabled' | 'name' | 'defaultValue' | 'color' | 'role'> {
+interface RadioProps extends Omit<
+  FieldsetHTMLAttributes<HTMLFieldSetElement>,
+  'onChange' | 'disabled' | 'name' | 'defaultValue' | 'color' | 'role'
+> {
   options: RadioOption[];
-  value?: string | null;         // controlled; null = controlled with nothing selected
-  defaultValue?: string;         // uncontrolled
+  value?: string | null; // controlled; null = controlled with nothing selected
+  defaultValue?: string; // uncontrolled
   onChange?: (value: string) => void;
-  name?: string;                 // shared by the inputs; generated when left out
-  orientation?: 'horizontal' | 'vertical';  // defaults to 'vertical'
-  label?: string;                // the <legend>; without it aria-label/aria-labelledby is required
-  error?: string;                // invalid state + message below the group; the caller decides when
-  isDisabled?: boolean;          // every option disabled, group dimmed
-  isRequired?: boolean;          // native `required` on the inputs + an aria-hidden asterisk after the label
+  name?: string; // shared by the inputs; generated when left out
+  orientation?: 'horizontal' | 'vertical'; // defaults to 'vertical'
+  label?: string; // the <legend>; without it aria-label/aria-labelledby is required
+  error?: string; // invalid state + message below the group; the caller decides when
+  isDisabled?: boolean; // every option disabled, group dimmed
+  isRequired?: boolean; // native `required` on the inputs + an aria-hidden asterisk after the label
 }
 ```
 
@@ -570,18 +609,32 @@ that scales in. The dot is black or white, whichever contrasts more with `--colo
 (`--color-radio-dot`, an alias of `--color-on-primary` like Checkbox's tick).
 
 ### Toggle
+
 ```tsx
-interface ToggleProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
-  'type' | 'role' | 'checked' | 'defaultChecked' | 'onChange' | 'disabled' | 'value' | 'defaultValue'
-  | 'required' | 'readOnly' | 'size' | 'color' | 'children'> {
-  label?: string;                // the text beside the switch; without it aria-label/aria-labelledby is required
-  description?: string;          // second line, linked with aria-describedby
-  checked?: boolean;             // controlled
-  defaultChecked?: boolean;      // uncontrolled
+interface ToggleProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  | 'type'
+  | 'role'
+  | 'checked'
+  | 'defaultChecked'
+  | 'onChange'
+  | 'disabled'
+  | 'value'
+  | 'defaultValue'
+  | 'required'
+  | 'readOnly'
+  | 'size'
+  | 'color'
+  | 'children'
+> {
+  label?: string; // the text beside the switch; without it aria-label/aria-labelledby is required
+  description?: string; // second line, linked with aria-describedby
+  checked?: boolean; // controlled
+  defaultChecked?: boolean; // uncontrolled
   onChange?: (checked: boolean) => void;
-  name?: string;                 // submitted while on
-  value?: string;                // submitted while on; the browser's `on` by default
-  isDisabled?: boolean;          // native `disabled`, dimmed
+  name?: string; // submitted while on
+  value?: string; // submitted while on; the browser's `on` by default
+  isDisabled?: boolean; // native `disabled`, dimmed
 }
 ```
 
@@ -615,19 +668,23 @@ The text beside it is `_shared/OptionText`, and the control is the same `.contro
 **Open:** the thumb moves with `translateX`, so it is not mirrored in right-to-left layouts.
 
 ### Textarea
+
 ```tsx
-interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>,
-  'color' | 'disabled' | 'readOnly' | 'required'> {
-  size?: ScaleProp;              // font-size on the root, as TextField
-  rows?: number;                 // visible rows; default 3
-  resize?: 'none' | 'vertical';  // default 'vertical'; horizontal is left out, the field fills its container
-  label?: string;                // as TextField
+interface TextareaProps extends Omit<
+  TextareaHTMLAttributes<HTMLTextAreaElement>,
+  'color' | 'disabled' | 'readOnly' | 'required'
+> {
+  size?: ScaleProp; // font-size on the root, as TextField
+  rows?: number; // visible rows; default 3
+  resize?: 'none' | 'vertical'; // default 'vertical'; horizontal is left out, the field fills its container
+  label?: string; // as TextField
   error?: string;
   isDisabled?: boolean;
-  isReadOnly?: boolean;          // as TextField, and the resize handle is dropped
+  isReadOnly?: boolean; // as TextField, and the resize handle is dropped
   isRequired?: boolean;
 }
 ```
+
 A separate component from TextField because the element, its `ref` type and its props differ (`rows`,
 `resize`, no `type`). Everything else is the same, and shared through `_shared/TextFieldFrame`: the
 look (fill, hover, focus border, read-only, disabled, error), the label and error wiring, `size`, and
@@ -636,7 +693,103 @@ look (fill, hover, focus border, read-only, disabled, error), the label and erro
 **Not yet:** auto-grow (`field-sizing: content`), character counter.
 
 ### Select
-Not built yet.
+
+```tsx
+type SelectOption = OptionBase; // value, label, description?, isDisabled?
+
+type SelectProps = Omit<HTMLAttributes<HTMLElement>, 'onChange' | 'defaultValue' | 'color' | 'role' | 'children'> &
+  NameProps & {
+    options: SelectOption[];
+    name?: string; // hidden input(s) submit the value(s) under it
+    size?: ScaleProp; // font-size on the root, as TextField
+    label?: string; // without it aria-label/aria-labelledby is required
+    error?: string; // invalid state + message below the field; the caller decides when
+    placeholder?: string; // shown while nothing is selected; not a label or a hint
+    isSearchable?: boolean; // the control is an input that filters the options
+    isDisabled?: boolean;
+    isRequired?: boolean; // aria-required + an aria-hidden asterisk; NOT native `required`
+  } & (
+    | {
+        isMultiple?: false;
+        value?: string | null; // controlled; null = controlled with nothing selected
+        defaultValue?: string;
+        onChange?: (value: string) => void; // only when the selection changes
+      }
+    | {
+        isMultiple: true;
+        value?: string[]; // controlled
+        defaultValue?: string[];
+        onChange?: (value: string[]) => void; // values in `options` order, not click order
+      }
+  );
+```
+
+**One component, not a Select and an Autocomplete.** Other libraries split them and leave developers to
+guess which to use. The line that matters is whether the value is **constrained to the options** or
+**free text** (the W3C APG separates a select-only combobox from an editable one on exactly that), not
+whether the user can search. So `Select` keeps the value one of the options in every mode, and search
+is `isSearchable`: the typed text only filters, and goes back to the selected label when the list
+closes. Fewer than about 5 options are better as a `Radio` (or a `Checkbox` group for several); where
+search starts to pay off is reported anywhere from 8 to 15 options, so no threshold is built in.
+
+**Two switches, four shapes.** `ref` goes to the combobox element: a `<button role="combobox">` for a
+plain single Select, an `<input role="combobox">` when searchable. A multiple Select is a box (the
+control, with the field's fill) holding the chips and an `<input role="combobox">` that is read-only
+unless `isSearchable` (`inputMode="none"`, so no touch keyboard). A chip's remove button can't live
+inside a `<button>`, and the input gives the label, `aria-activedescendant` and the placeholder one
+home. `className` and `style` go on the root, as TextField; the other native props go to the combobox
+element.
+
+**Keyboard** (APG): ArrowDown / ArrowUp open and move the active option, skipping disabled ones, and
+stop at the ends; Home / End (not when searchable, which keeps them for the caret); Escape closes
+without changing anything; blur closes. Not searchable: typing jumps to the label that starts with the
+typed text (the buffer resets after 500 ms; a repeated first letter cycles); Enter or Space commits
+and closes (a multiple one toggles and stays open); Tab commits a single one, as APG select-only does.
+Searchable: typing filters ("contains", ignoring case and diacritics) and the first match is active;
+Enter commits. A multiple one clears the query after each pick. In a multiple one, Backspace in an
+empty input removes the last chip that can be removed. Chip buttons are out of the tab order, so the
+field is one Tab stop.
+
+**Value.** Like Radio (`null` is the explicit empty value) for a single one, like Checkbox (`string[]`,
+options order) for a multiple one. The user can't clear a single Select; clearing is the caller's
+(`value={null}`). `name` renders hidden inputs, since there is no native control: one for a single,
+one per value for a multiple. Only values that are options count.
+
+**Popup.** A `popover="manual"` element in the top layer, so no ancestor's `overflow` clips it and no
+`z-index` is needed, placed with CSS anchor positioning: under the field, as wide as it, flipped above
+when there is no room. It is rendered only while open. It stays a DOM child of the root, so `size`
+reaches it. Light dismiss is ours (blur, Escape), so focus never leaves the control, and a mousedown
+in the popup is cancelled. Everything that knows it is a popover is in `Select/useSelectPopup.ts` and
+the marked "Positioning" section of `Select.module.css`; changing how it is placed replaces those two
+and nothing else. There is no fallback for a browser without the Popover API and anchor positioning.
+
+**Look.** The TextField's fill block (`--color-select-*`, aliases of the shared field fill) with a
+chevron that turns when open. The popup is an opaque `--color-select-popup` surface with
+`--elevation-more`; the active option uses `--color-select-option-active`. A selected option in a
+single Select has a tick after its text; in a multiple one each option is a Checkbox-style box with a
+tick (`--color-select-check`), so selection is never color alone. A chip is a `--color-select-chip` pill
+with a remove button (`aria-label="Remove <label>"`).
+
+Shared with TextField and Textarea through `_shared/TextFieldFrame`: root, `size`, label, error, the
+id / `aria-invalid` / `aria-describedby` wiring and the look of the control. The frame's focus border
+also matches `:has(:focus-visible)`, so the multiple box shows it when its input is focused. The
+option text is `_shared/OptionText`, and `SelectOption` is `OptionBase`. The list navigation
+(`useListboxNavigation`) and `SelectChip` stay in `Select/` until a second component needs them; the
+chip becomes the shared Badge when that is built.
+
+**Not yet:** a clear button, `minSelected` / `maxSelected` (Checkbox has `minChecked` / `maxChecked`),
+option groups, async options (an `onSearch`) and creating an option, a custom `filter`,
+localisation of "No results" and "Remove <label>".
+
+**Open:**
+
+- `isRequired` is `aria-required` only: a form's own validation (`checkValidity()`) doesn't see it.
+  A visually hidden native input or `ElementInternals` would.
+- "No results" is a `role="status"` that appears with the popup, which screen readers may not
+  announce; check in a screen reader pass. The same goes for announcing a chip's removal.
+- Check support for the Popover API and anchor positioning before release; the library already
+  relies on `corner-shape` and `contrast-color()`.
+- The borderless fill and WCAG 1.4.11, as TextField.
 
 ---
 
@@ -647,13 +800,13 @@ Not built yet.
 interface ThemeProviderProps {
   children: React.ReactNode;
   defaultTheme?: 'light' | 'dark' | 'system';
-  storageKey?: string;           // localStorage key
-  enableSystem?: boolean;        // Watch prefers-color-scheme
+  storageKey?: string; // localStorage key
+  enableSystem?: boolean; // Watch prefers-color-scheme
   disableTransitionOnChange?: boolean;
 }
 
-export function ThemeProvider({ 
-  children, 
+export function ThemeProvider({
+  children,
   defaultTheme = 'system',
   storageKey,
   enableSystem = true,
@@ -664,7 +817,7 @@ export function ThemeProvider({
   // 3. Watch for system changes (if enableSystem)
   // 4. Persist user choice (if storageKey)
   // 5. Provide context for useTheme() hook
-  
+
   return (
     <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
       {children}
@@ -795,7 +948,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea; FieldError, FieldLabel, types: all fields; OptionText: options)
+│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText: options)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -846,6 +999,7 @@ export type { ButtonProps } from './components/Button';
 ## Consumer Theming Guide
 
 ### 1. Override Design Tokens (Global)
+
 ```css
 /* globals.css */
 @import 'more-or-less-ui/styles.css';
@@ -864,6 +1018,7 @@ export type { ButtonProps } from './components/Button';
 ```
 
 ### 2. Light/Dark Mode (CSS)
+
 ```css
 /* globals.css */
 @media (prefers-color-scheme: dark) {
@@ -876,6 +1031,7 @@ export type { ButtonProps } from './components/Button';
 ```
 
 ### 3. Programmatic Theme Switching (React)
+
 ```tsx
 import { ThemeProvider, useTheme } from 'more-or-less-ui';
 
@@ -890,7 +1046,7 @@ function App() {
 function Header() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   return (
-    <select value={theme} onChange={e => setTheme(e.target.value)}>
+    <select value={theme} onChange={(e) => setTheme(e.target.value)}>
       <option value="light">Light</option>
       <option value="dark">Dark</option>
       <option value="system">System</option>
@@ -927,13 +1083,13 @@ export const Default: Story = { args: { children: 'Button' } };
 export const SizeMore: Story = { args: { size: 'more', children: 'Large Button' } };
 export const SizeLess: Story = { args: { size: 'less', children: 'Small Button' } };
 export const RadiusMore: Story = { args: { borderRadius: 'more', children: 'Rounded' } };
-export const EscapeHatch: Story = { 
-  args: { 
-    size: '1.5rem', 
-    borderRadius: '50%', 
+export const EscapeHatch: Story = {
+  args: {
+    size: '1.5rem',
+    borderRadius: '50%',
     fontWeight: 700,
-    children: 'Custom' 
-  } 
+    children: 'Custom',
+  },
 };
 ```
 
@@ -942,6 +1098,7 @@ export const EscapeHatch: Story = {
 ## Implementation Checklist
 
 ### Phase 1: Foundation
+
 - [ ] `types/scale.ts` — `ScaleProp`, `Variant`, `isVariant`
 - [ ] `theme/tokens.css` — 15 scale CSS variables
 - [x] Color tokens in `theme/tokens.css` — Minimal: one primary color + Box and Button background scales
@@ -951,6 +1108,7 @@ export const EscapeHatch: Story = {
 - [ ] `src/styles.css` — Global entry point
 
 ### Phase 2: Primitives
+
 - [ ] `Box` — Full `ScaleProp` support on all props
 - [ ] `Flex` — Layout helpers
 - [ ] `Stack` — Vertical/horizontal with divider
@@ -958,17 +1116,19 @@ export const EscapeHatch: Story = {
 - [ ] `Text` — Typography with `size`, `weight`, `color` props
 
 ### Phase 3: Components
+
 - [x] `Button` — size, background, isDisabled, isLoading
 - [x] `TextField` — size, label, error, isDisabled, isReadOnly, isRequired
 - [x] `Checkbox` — options, orientation, minChecked/maxChecked, label, error, isDisabled (no `size`)
 - [x] `Radio` — options, orientation, label, error, isDisabled, isRequired (no `size`); shares `_shared/OptionGroup` with Checkbox
-- [ ] `Select` — Compound component pattern
+- [x] `Select` — options, isSearchable, isMultiple (chips), placeholder, label, error, isDisabled, isRequired, size; one component for select and autocomplete; shares `_shared/TextFieldFrame` with TextField
 - [x] `Textarea` — size, rows, resize, label, error, isDisabled, isReadOnly, isRequired; shares `_shared/TextFieldFrame` with TextField
 - [x] `Toggle` — label, description, checked/defaultChecked, isDisabled (single boolean, no `size`, no `error`); no option row, on / off shown by position, fill and icon
 - [ ] `Badge`, `Alert`, `Icon` — Display
 - [ ] `Card` — Only once it adds more than Box (slots, interactive variant, semantic element)
 
 ### Phase 4: Developer Experience
+
 - [x] Storybook 10 configured (react-vite, docs + a11y addons, light/dark toolbar toggle)
 - [ ] Stories for every component
 - [ ] Vitest + React Testing Library setup
@@ -977,6 +1137,7 @@ export const EscapeHatch: Story = {
 - [ ] Documentation site (or Storybook docs)
 
 ### Phase 5: Polish
+
 - [ ] TypeScript strict mode
 - [ ] Bundle size analysis
 - [ ] Accessibility audit

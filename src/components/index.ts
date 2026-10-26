@@ -6,6 +6,8 @@ export { Checkbox } from './Checkbox';
 export type { CheckboxProps, CheckboxOption } from './Checkbox';
 export { Radio } from './Radio';
 export type { RadioProps, RadioOption } from './Radio';
+export { Select } from './Select';
+export type { SelectProps, SelectOption } from './Select';
 export { TextField } from './TextField';
 export type { TextFieldProps } from './TextField';
 export { Textarea } from './Textarea';

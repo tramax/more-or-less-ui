@@ -1,0 +1,246 @@
+/*
+ * Select: the frame, the `size` scale and the look of the control are shared with TextField and
+ * Textarea (_shared/TextFieldFrame). What is here is the Select's colors, set as the hooks that module
+ * reads from this class, and what only a Select has: the chevron, the multiple field's box and chips,
+ * and the popup with its options.
+ *
+ * Everything is in em, so `size` (font-size on the root) reaches the popup too: it is a DOM child of
+ * the root, even though the Popover API shows it in the top layer.
+ */
+
+.root {
+  --field-background: var(--color-select-background);
+  --field-background-hover: var(--color-select-background-hover);
+  --field-background-error: var(--color-select-background-error);
+  --field-background-error-hover: var(--color-select-background-error-hover);
+}
+
+/* The anchor the popup is positioned against, and the containing block of the chevron */
+.field {
+  position: relative;
+  anchor-name: var(--select-anchor);
+}
+
+/* The control is the frame's `.control` (padding, fill, focus border); this leaves room for the
+   chevron */
+.input {
+  padding-inline-end: 2.5em;
+}
+
+/* A button as the control: it centers its text, which a field doesn't */
+.trigger {
+  display: block;
+  overflow: hidden;
+  text-align: start;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* Dimmed like the frame's placeholder */
+.placeholder,
+.bare::placeholder {
+  color: color-mix(in oklab, CanvasText 55%, transparent);
+}
+
+/*
+ * Multiple: the box is the control (the frame's `.control`), holding the chips and a bare input.
+ * Padding is smaller than a TextField's so the 1.5em chips and the empty 1.5em input make it the
+ * same height (1.25em line + 2 * 0.625em = 2.75em, as a TextField).
+ */
+.box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375em;
+  padding-block: 0.625em;
+  padding-inline-end: 2.5em;
+  cursor: pointer;
+}
+.box:has(input:disabled) {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* The input inside the box: the box carries the fill and the focus border */
+.bare {
+  flex: 1 1 4em;
+  min-width: 4em;
+  box-sizing: border-box;
+  height: 1.5em;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1.25;
+  outline: none;
+}
+/* Not searchable: the input is only the focus target, so there is nothing to type */
+.readOnly {
+  caret-color: transparent;
+  cursor: pointer;
+  /* Nothing to type, so no room is needed: it takes what the chips leave and never wraps onto a row
+     of its own. Empty, it is the only item and fills the box (for the placeholder). */
+  flex-basis: 0;
+  min-width: 0;
+}
+
+/* Centered on the first line of text, whether the field is one line or several */
+.chevron {
+  position: absolute;
+  inset-inline-end: 1em;
+  top: 1.375em;
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: transform 150ms ease;
+}
+.field[data-open] .chevron {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+/* --- Positioning ---------------------------------------------------------------------------------
+ * The only CSS that knows the popup is a Popover API element placed with anchor positioning (see
+ * useSelectPopup.ts). To position it another way, replace these and that hook.
+ * The popover's own defaults centre it in the viewport (inset: 0; margin: auto); this puts it under
+ * the field, as wide as the field, and flips it above when there is no room below.
+ */
+.popup {
+  position-anchor: var(--select-anchor);
+  position-area: block-end span-inline-end;
+  position-try-fallbacks: flip-block;
+  inset: auto;
+  margin: 0.375em 0;
+  width: anchor-size(width);
+  max-height: 20em;
+}
+/* --- End of positioning ------------------------------------------------------------------------ */
+
+.popup {
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding: 0.375em;
+  border: 0;
+  border-radius: var(--radius-less);
+  corner-shape: squircle;
+  background: var(--color-select-popup);
+  color: CanvasText;
+  box-shadow: var(--elevation-more);
+  font: inherit;
+  line-height: 1.25;
+}
+
+@media (forced-colors: active) {
+  /* box-shadow is dropped there, so the popup needs a border to be seen */
+  .popup {
+    border: 1px solid CanvasText;
+  }
+}
+
+.listbox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.empty {
+  margin: 0;
+  padding: 0.625em 0.75em;
+  color: color-mix(in oklab, CanvasText 70%, transparent);
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75em;
+  padding: 0.625em 0.75em;
+  border-radius: var(--radius-less);
+  corner-shape: squircle;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* The text takes the room the tick or box leaves, and a word wider than that breaks rather than
+   running under it (a narrow field makes a narrow popup) */
+.optionText {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The active option is the one the keyboard (or the pointer) is on, not the selected one */
+.option[data-active] {
+  background: var(--color-select-option-active);
+}
+@media (forced-colors: active) {
+  .option[data-active] {
+    outline: 2px solid Highlight;
+  }
+}
+
+.option[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* The selected option in a single Select: a tick after the text, so it isn't color alone */
+.tick {
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+  margin-inline-start: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* In a multiple Select each option reads as a toggle: the Checkbox's box, with the same tick */
+.checkbox {
+  flex: none;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 1.25em;
+  height: 1.25em;
+  margin-top: 0.0625em;
+  /* The boundary a non-text control needs against its surface (WCAG 1.4.11), kept when selected */
+  border: 2px solid var(--color-primary);
+  border-radius: 0.25em;
+  color: var(--color-select-check);
+  transition: background-color 150ms ease;
+}
+.option[aria-selected='true'] .checkbox {
+  background: var(--color-primary);
+}
+.checkboxTick {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+.option[aria-selected='true'] .checkboxTick {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron,
+  .checkbox {
+    transition: none;
+  }
+}

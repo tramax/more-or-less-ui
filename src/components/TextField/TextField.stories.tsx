@@ -45,7 +45,7 @@ const meta: Meta<typeof TextField> = {
   parameters: { docs: { source: { transform: omitDefaults } } },
   decorators: [
     (Story) => (
-      <div style={{ maxWidth: '24rem', padding: '1rem' }}>
+      <div style={{ width: '24rem', maxWidth: '100%', padding: '1rem' }}>
         <Story />
       </div>
     ),

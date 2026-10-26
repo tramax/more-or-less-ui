@@ -6,8 +6,8 @@ import { FieldError } from './FieldError';
 import { FieldLabel } from './FieldLabel';
 import styles from './TextFieldFrame.module.css';
 
-// Exported for Storybook, which can't see defaults that aren't destructuring defaults. TextField and
-// Textarea re-export it under their own names.
+// Exported for Storybook, which can't see defaults that aren't destructuring defaults. TextField,
+// Textarea and Select re-export it under their own names.
 export const TEXT_FIELD_DEFAULTS = {
   size: 'normal',
 } as const;
@@ -61,11 +61,12 @@ type TextFieldFrameProps<P> = P & {
 };
 
 /**
- * The frame of a text-entry field (TextField, Textarea): the root, the `size` scale, the label, the
- * error message, and the id, `aria-invalid` and `aria-describedby` wiring that ties them to the
- * control. Pass it the field's props as they came in; it takes the ones above and hands the rest to
- * `children` with the control's props. The component renders only the control, so each keeps its own
- * element and `ref` type.
+ * The frame of a single-control field (TextField, Textarea, Select): the root, the `size` scale, the
+ * label, the error message, and the id, `aria-invalid` and `aria-describedby` wiring that ties them
+ * to the control. Pass it the field's props as they came in; it takes the ones above and hands the
+ * rest to `children` with the control's props. The component renders only the control, so each keeps
+ * its own element and `ref` type. A control that doesn't take some of them (Select has no `readOnly`)
+ * ignores those.
  */
 export function TextFieldFrame<P extends TextFieldFrameOwnProps>({
   rootClassName,

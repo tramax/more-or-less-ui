@@ -3,7 +3,7 @@
  *
  * - Scale tokens: 3 values per property (less/normal/more), 15 CSS variables (5 scales × 3)
  * - Color tokens: deliberately minimal. One brand color, an error color, a background scale for Box
- *   and one for Button, and one faint field fill that TextField, Textarea, Checkbox, Radio and Toggle alias.
+ *   and one for Button, and one faint field fill that TextField, Textarea, Checkbox, Radio, Toggle and Select alias.
  */
 
 :root {
@@ -113,6 +113,17 @@
   --color-toggle-background-hover: var(--color-field-background-hover);
   /* The thumb when on, and the cross on it when off; both sit against --color-primary */
   --color-toggle-thumb: var(--color-on-primary);
+
+  --color-select-background: var(--color-field-background);
+  --color-select-background-hover: var(--color-field-background-hover);
+  --color-select-background-error: var(--color-field-background-error);
+  --color-select-background-error-hover: var(--color-field-background-error-hover);
+  /* The option the keyboard or pointer is on, and a chip's remove button on hover */
+  --color-select-option-active: var(--color-field-background-hover);
+  /* Opaque, unlike the field fill: the popup lies over page content */
+  --color-select-popup: Canvas;
+  --color-select-chip: Canvas;
+  --color-select-check: var(--color-on-primary);
 }
 
 @supports (color: contrast-color(red)) {
