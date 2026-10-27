@@ -209,6 +209,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
         rest,
       ) => {
         // The frame hands over text-field props (readOnly, required, tabIndex) that don't apply
+        const controlProps = rest as HTMLAttributes<HTMLElement>;
         const combobox = {
           ...rest,
           id: comboId,
@@ -223,11 +224,11 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
           'aria-invalid': invalid,
           'aria-describedby': describedBy,
           onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
-            rest.onKeyDown?.(event);
+            controlProps.onKeyDown?.(event);
             if (!event.defaultPrevented) nav.onKeyDown(event);
           },
           onBlur: (event: FocusEvent<HTMLElement>) => {
-            rest.onBlur?.(event);
+            controlProps.onBlur?.(event);
             nav.dismiss();
           },
         } as const;
@@ -294,7 +295,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
               placeholder={placeholder}
               onChange={(event) => nav.type(event.target.value)}
               onClick={(event) => {
-                rest.onClick?.(event);
+                rawProps.onClick?.(event);
                 if (!isOpen) nav.show();
               }}
             />
@@ -307,7 +308,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
               type="button"
               className={clsx(className, styles.input, styles.trigger)}
               onClick={(event) => {
-                rest.onClick?.(event);
+                rawProps.onClick?.(event);
                 if (event.defaultPrevented) return;
                 // Safari doesn't focus a button on click, and the blur handler needs the focus
                 event.currentTarget.focus();
@@ -315,7 +316,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
               }}
               // Space activates a button on keyup; keydown already handled it
               onKeyUp={(event) => {
-                rest.onKeyUp?.(event);
+                rawProps.onKeyUp?.(event);
                 if (event.key === ' ') event.preventDefault();
               }}
             >
@@ -361,8 +362,8 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                     role="listbox"
                     className={styles.listbox}
                     aria-multiselectable={isMultiple || undefined}
-                    aria-label={rest['aria-label'] ?? frameProps.label}
-                    aria-labelledby={rest['aria-labelledby']}
+                    aria-label={rawProps['aria-label'] ?? frameProps.label}
+                    aria-labelledby={rawProps['aria-labelledby']}
                   >
                     {listed.map((option) => {
                       const isSelected = selectedValues.includes(option.value);
