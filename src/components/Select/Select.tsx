@@ -256,7 +256,8 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                 }
               }}
               onClick={(event: MouseEvent) => {
-                if ((event.target as Element).closest('button')) return;
+                // A removable chip handled this click (and marked it so)
+                if (event.defaultPrevented) return;
                 if (!isSearchable) toggle();
                 else if (!isOpen) nav.show();
               }}

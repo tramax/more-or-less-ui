@@ -501,6 +501,15 @@ describe('Select (multiple)', () => {
     expect(options()).toHaveLength(0);
   });
 
+  it('removes a value when its chip is clicked anywhere, not only on the button', () => {
+    const onChange = vi.fn();
+    const { container } = renderSelect({ isMultiple: true, defaultValue: ['a', 'd'], onChange });
+    fireEvent.click(screen.getByText('Apple'));
+    expect(onChange).toHaveBeenCalledExactlyOnceWith(['d']);
+    expect(chips(container)).toEqual(['Remove Date']);
+    expect(options()).toHaveLength(0);
+  });
+
   it('removes the last value with Backspace, but not a disabled one', () => {
     const onChange = vi.fn();
     const { container } = renderSelect({

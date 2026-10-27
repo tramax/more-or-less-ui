@@ -758,8 +758,9 @@ typed text (the buffer resets after 500 ms; a repeated first letter cycles); Ent
 and closes (a multiple one toggles and stays open); Tab commits a single one, as APG select-only does.
 Searchable: typing filters ("contains", ignoring case and diacritics) and the first match is active;
 Enter commits. A multiple one clears the query after each pick. In a multiple one, Backspace in an
-empty input removes the last chip that can be removed. Chip buttons are out of the tab order, so the
-field is one Tab stop.
+empty input removes the last chip that can be removed. A click anywhere on a removable chip removes it
+(the whole chip is the hover target: it takes `--color-select-chip-hover` and the × scales up); its button is the accessible name and is out of the tab order, so
+the field is one Tab stop.
 
 **Value.** Like Radio (`null` is the explicit empty value) for a single one, like Checkbox (`string[]`,
 options order) for a multiple one. The user can't clear a single Select; clearing is the caller's
@@ -802,7 +803,7 @@ chevron that turns when open. The popup is an opaque `--color-select-popup` surf
 `--elevation-more`; the active option uses `--color-select-option-active`. A selected option in a
 single Select has a tick after its text; in a multiple one each option is a Checkbox-style box with a
 tick (`--color-select-check`), so selection is never color alone. A chip is a `--color-select-chip` pill
-with a remove button (`aria-label="Remove <label>"`).
+(`--color-select-chip-hover` on hover) with a remove button (`aria-label="Remove <label>"`).
 
 Shared with TextField and Textarea through `_shared/TextFieldFrame`: root, `size`, label, error, the
 id / `aria-invalid` / `aria-describedby` wiring and the look of the control. The frame's focus border

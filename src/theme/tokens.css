@@ -126,11 +126,14 @@
   --color-select-background-hover: var(--color-field-background-hover);
   --color-select-background-error: var(--color-field-background-error);
   --color-select-background-error-hover: var(--color-field-background-error-hover);
-  /* The option the keyboard or pointer is on, and a chip's remove button on hover */
+  /* The option the keyboard or pointer is on */
   --color-select-option-active: var(--color-field-background-hover);
   /* Opaque, unlike the field fill: the popup lies over page content */
   --color-select-popup: Canvas;
   --color-select-chip: Canvas;
+  /* A removable chip on hover: a light brand tint on the canvas, opaque so the field fill under the
+     chip doesn't show through and darken it */
+  --color-select-chip-hover: color-mix(in oklab, var(--color-primary) 12%, Canvas);
   --color-select-check: var(--color-on-primary);
 }
 

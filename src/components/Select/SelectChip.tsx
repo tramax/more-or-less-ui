@@ -1,3 +1,4 @@
+import { clsx } from '@/utils/clsx';
 import styles from './SelectChip.module.css';
 
 interface SelectChipProps {
@@ -11,18 +12,30 @@ interface SelectChipProps {
 /** One selected value in a multiple Select's field. */
 export function SelectChip({ label, onRemove }: SelectChipProps) {
   return (
-    <span className={styles.chip}>
+    // The whole chip is the target, so a click anywhere on it removes. The button inside is its
+    // accessible name and what assistive tech activates; its click bubbles up to here. mousedown is
+    // cancelled so the input keeps focus. The click is marked handled (preventDefault) so the
+    // field around the chip doesn't also open its popup.
+    <span
+      className={clsx(styles.chip, onRemove && styles.removable)}
+      onMouseDown={onRemove && ((event) => event.preventDefault())}
+      onClick={
+        onRemove &&
+        ((event) => {
+          event.preventDefault();
+          onRemove();
+        })
+      }
+    >
       <span className={styles.label}>{label}</span>
       {onRemove && (
         // Out of the tab order so the field is one Tab stop; Backspace in the input removes the last
-        // chip from the keyboard. mousedown is cancelled so the input keeps focus.
+        // chip from the keyboard.
         <button
           type="button"
           tabIndex={-1}
           className={styles.remove}
           aria-label={`Remove ${label}`}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={onRemove}
         >
           <svg viewBox="0 0 16 16" aria-hidden="true" className={styles.icon}>
             <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" />
