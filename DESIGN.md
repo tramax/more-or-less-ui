@@ -91,6 +91,14 @@ export function isVariant(value: ScaleProp): value is Variant {
 }
 ```
 
+### Motion Tokens (Separate from Scale)
+
+Three easing curves, each defined once in `theme/tokens.css` and used by every component that moves:
+`--ease-enter` (overshoots its target by a few percent and settles: springy), `--ease-leave` (no
+overshoot, so nothing dips below its resting value once the pointer has gone) and `--ease-pop` (a
+gentler overshoot, for small marks: Radio's dot, Toggle's thumb, Select's chevron). Button, the
+Checkbox / Radio options (`_shared/OptionGroup.module.css`) and the Select popup are on the first two. A new moving component uses these, not its own `cubic-bezier()`.
+
 ### Color Tokens (Separate from Scale)
 
 Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button), and one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio, Toggle and Select alias**. No palettes, no
@@ -563,8 +571,8 @@ The group, option row, raised hover and error state are shared with Radio in
 `components/_shared/OptionGroup.module.css`. A component sets `--option-background*` on its root from
 its own `--color-<component>-*` tokens, and shapes the control itself.
 
-**Open:** the raised-hover CSS is still a copy of Button's motion (as `--option-*` variables). The hover
-scale and shadow strength want tuning in Storybook.
+**Open:** the raised-hover CSS is still a copy of Button's motion (as `--option-*` variables, on the
+shared `--ease-*` curves). The hover scale and shadow strength want tuning in Storybook.
 
 ### Radio
 
@@ -697,7 +705,10 @@ look (fill, hover, focus border, read-only, disabled, error), the label and erro
 ```tsx
 type SelectOption = OptionBase; // value, label, description?, isDisabled?
 
-type SelectProps = Omit<HTMLAttributes<HTMLElement>, 'onChange' | 'defaultValue' | 'color' | 'role' | 'children'> &
+type SelectProps = Omit<
+  HTMLAttributes<HTMLElement>,
+  'onChange' | 'defaultValue' | 'color' | 'role' | 'children'
+> &
   NameProps & {
     options: SelectOption[];
     name?: string; // hidden input(s) submit the value(s) under it
@@ -757,11 +768,34 @@ one per value for a multiple. Only values that are options count.
 
 **Popup.** A `popover="manual"` element in the top layer, so no ancestor's `overflow` clips it and no
 `z-index` is needed, placed with CSS anchor positioning: under the field, as wide as it, flipped above
-when there is no room. It is rendered only while open. It stays a DOM child of the root, so `size`
-reaches it. Light dismiss is ours (blur, Escape), so focus never leaves the control, and a mousedown
+when there is no room. It is rendered while open and for 200 ms after (see Motion), so it can animate
+out. It stays a DOM child of the root, so `size` reaches it. Light dismiss is ours (blur, Escape), so focus never leaves the control, and a mousedown
 in the popup is cancelled. Everything that knows it is a popover is in `Select/useSelectPopup.ts` and
 the marked "Positioning" section of `Select.module.css`; changing how it is placed replaces those two
 and nothing else. There is no fallback for a browser without the Popover API and anchor positioning.
+
+**Motion.** The same organic principle as Button (springy on the way in, no overshoot on the way
+out; `--ease-enter` / `--ease-leave` in `theme/tokens.css`):
+
+- **The popup** grows out of the field: it starts at 0.94 scale and 0.5em toward the field (the other
+  way when it flips above, from the bottom edge; `useSelectPopup` sets `data-side`), overshoots its
+  size by about 3% and settles in 450 ms while its shadow lifts from `--elevation-less` to `-more`.
+  Opacity has its own plain 150 ms fade, so it doesn't follow the overshoot. Closing is a quicker
+  150 ms (to 0.97 scale, no overshoot) and the popup is `aria-hidden` while it leaves.
+- **The active option** (pointer or keyboard) fills in over 60 ms, fades out over 140 ms, and grows by
+  1.5% on the springy `--ease-enter` (300 ms; it overshoots by a hair and settles), shrinking back
+  without overshoot on `--ease-leave` (200 ms). That is Button's hover motion at a fraction of the size:
+  no lift and no shadow, since a row in a list isn't a card of its own as a Checkbox option is, and
+  small enough to stay inside the popup's padding. Pure CSS (the transition that runs is the
+  destination state's). Quick in so the row answers the pointer as it arrives; slower out so the row it
+  left fades behind it, a short trail. Tried and dropped: a 150 ms fade-in trails the pointer and feels
+  sluggish; a hard cut in with a 220 ms trail dazzles when sweeping; one highlight gliding between rows
+  keeps travelling after the pointer stops, which feels like overshooting, and needs a script to
+  measure the rows; a full Checkbox-style raise (lift, 1.02 scale, shadow, sheen) is too much when
+  moving over several options. Under `prefers-reduced-motion` the fill is the only cue.
+- **The chevron** turns with the gentler `--ease-pop` overshoot when opening and settles when closing.
+- `prefers-reduced-motion`: the popup only fades (100 ms), nothing scales or lifts, and the chevron
+  jumps.
 
 **Look.** The TextField's fill block (`--color-select-*`, aliases of the shared field fill) with a
 chevron that turns when open. The popup is an opaque `--color-select-popup` surface with

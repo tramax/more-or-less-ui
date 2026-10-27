@@ -79,8 +79,8 @@
   /* 16/15, the "minor second" step of the musical/modular scale, the smallest standard ratio */
   --button-hover-scale: 1.0667;
   --button-hover-lift: -2px;
-  --button-ease-enter: cubic-bezier(0.34, 2.56, 0.64, 1);
-  --button-ease-leave: cubic-bezier(0.22, 1, 0.36, 1);
+  --button-ease-enter: var(--ease-enter);
+  --button-ease-leave: var(--ease-leave);
   /* Same function list (translateY, scale) in every state, so the transitions interpolate each
      function separately instead of falling back to matrix interpolation. */
   transform: translateY(0) scale(1);

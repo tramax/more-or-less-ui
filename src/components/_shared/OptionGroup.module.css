@@ -1,7 +1,8 @@
 /*
  * Shared by Checkbox and Radio: a fieldset of options, each a faint surface that is raised on hover
  * like a Button: lift, scale, a shadow (none at rest, like the other inputs) and a sheen. The motion
- * is copied from Button.module.css on purpose, with its own --option-* variables.
+ * is copied from Button.module.css on purpose, with its own --option-* variables, on the shared
+ * --ease-* curves (theme/tokens.css).
  *
  * There are no scale props (no `size`): everything is in em, so the group follows the font-size it
  * inherits.
@@ -70,8 +71,8 @@
      crowd its neighbours. Entering overshoots a little and settles; leaving doesn't. */
   --option-hover-scale: 1.02;
   --option-hover-lift: -2px;
-  --option-ease-enter: cubic-bezier(0.34, 2.56, 0.64, 1);
-  --option-ease-leave: cubic-bezier(0.22, 1, 0.36, 1);
+  --option-ease-enter: var(--ease-enter);
+  --option-ease-leave: var(--ease-leave);
   /* Same function list in every state, so transform interpolates each function separately */
   transform: translateY(0) scale(1);
   transition:

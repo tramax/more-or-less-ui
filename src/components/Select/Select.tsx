@@ -178,6 +178,12 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
     popupRef: popup.popupRef,
   });
 
+  // While the popup animates out, keep listing what it listed: closing resets the query, which
+  // would otherwise make a filtered list grow back as it fades
+  const lastVisible = useRef(nav.visible);
+  if (isOpen) lastVisible.current = nav.visible;
+  const listed = isOpen ? nav.visible : lastVisible.current;
+
   const comboRef = useRef<HTMLElement | null>(null);
   const setComboRef = (node: HTMLElement | null) => {
     comboRef.current = node;
@@ -333,16 +339,19 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
               selectedValues.map((v) => (
                 <input key={v} type="hidden" name={name} value={v} disabled={disabled} />
               ))}
-            {isOpen && (
+            {popup.isPresent && (
               <div
                 ref={popup.popupRef}
                 // `manual`: we close it ourselves, so focus never leaves the control
                 {...{ popover: 'manual' }}
                 className={styles.popup}
+                data-state={isOpen ? 'open' : 'closed'}
+                // Leaving: still on screen for its exit animation, but no longer there for anyone else
+                aria-hidden={!isOpen || undefined}
                 // Keeps focus on the control: a click in the popup isn't a blur
                 onMouseDown={(event) => event.preventDefault()}
               >
-                {nav.visible.length === 0 ? (
+                {listed.length === 0 ? (
                   <p role="status" className={styles.empty}>
                     No results
                   </p>
@@ -355,7 +364,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                     aria-label={rest['aria-label'] ?? frameProps.label}
                     aria-labelledby={rest['aria-labelledby']}
                   >
-                    {nav.visible.map((option) => {
+                    {listed.map((option) => {
                       const isSelected = selectedValues.includes(option.value);
                       const descriptionId = option.description
                         ? `${optionId(option)}-description`
@@ -369,7 +378,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                           aria-selected={isSelected}
                           aria-disabled={option.isDisabled || undefined}
                           aria-describedby={descriptionId}
-                          data-active={option === nav.active || undefined}
+                          data-active={(isOpen && option === nav.active) || undefined}
                           onClick={() => nav.commit(option)}
                           onMouseMove={() => {
                             if (option !== nav.active && !option.isDisabled)

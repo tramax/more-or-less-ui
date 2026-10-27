@@ -100,10 +100,12 @@
   stroke-linejoin: round;
   transform: translateY(-50%);
   pointer-events: none;
-  transition: transform 150ms ease;
+  /* Turns over with a slight overshoot when opening, and settles without one when closing */
+  transition: transform 400ms var(--ease-leave);
 }
 .field[data-open] .chevron {
   transform: translateY(-50%) rotate(180deg);
+  transition: transform 500ms var(--ease-pop);
 }
 
 /* --- Positioning ---------------------------------------------------------------------------------
@@ -135,6 +137,58 @@
   box-shadow: var(--elevation-more);
   font: inherit;
   line-height: 1.25;
+}
+
+/*
+ * Opening and closing. The popup grows out of the field: it starts a little small and a little
+ * toward it (--popup-shift; the other way when it flips above, data-side is set by useSelectPopup),
+ * and enters with the springy --ease-enter, so it overshoots its size by a few percent and settles,
+ * as a Button does on hover. Its shadow lifts from the small to the full elevation as it lands.
+ * Leaving is quicker and doesn't overshoot (--ease-leave). It is kept mounted for that
+ * (data-state="closed", see useSelectPopup). Opacity has its own, plain animation: it must not
+ * follow the overshoot.
+ */
+.popup {
+  transform-origin: 50% 0;
+  --popup-shift: -0.5em;
+}
+.popup[data-side='top'] {
+  transform-origin: 50% 100%;
+  --popup-shift: 0.5em;
+}
+.popup[data-state='open'] {
+  animation:
+    popup-in 450ms var(--ease-enter) both,
+    popup-fade-in 150ms ease both;
+}
+.popup[data-state='closed'] {
+  animation:
+    popup-out 150ms var(--ease-leave) both,
+    popup-fade-out 150ms ease both;
+  pointer-events: none;
+}
+
+@keyframes popup-in {
+  from {
+    transform: translateY(var(--popup-shift)) scale(0.94);
+    box-shadow: var(--elevation-less);
+  }
+}
+@keyframes popup-out {
+  to {
+    transform: translateY(calc(var(--popup-shift) / 2)) scale(0.97);
+    box-shadow: var(--elevation-less);
+  }
+}
+@keyframes popup-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes popup-fade-out {
+  to {
+    opacity: 0;
+  }
 }
 
 @media (forced-colors: active) {
@@ -178,9 +232,38 @@
   overflow-wrap: anywhere;
 }
 
-/* The active option is the one the keyboard (or the pointer) is on, not the selected one */
+/*
+ * The active option is the one the keyboard (or the pointer) is on, not the selected one.
+ *
+ * Fill: it comes in quickly and fades out a little slower. Quick in (60 ms): the row answers the
+ * pointer as it arrives, where a 150 ms fade-in trails it and feels sluggish. But not a hard cut:
+ * sweeping the pointer down the list would then flash every row at full strength, which dazzles.
+ * Slower out (140 ms): the row it just left fades behind it, a short trail that reads as movement,
+ * kept short so that a sweep doesn't leave several rows lit at once.
+ *
+ * Shape: the row grows a little, with the springy --ease-enter, so it overshoots its size by a hair and
+ * settles; leaving it shrinks back without overshoot (--ease-leave). That is Button's hover motion at
+ * a fraction of the size: no lift and no shadow (a row in a list isn't a card of its own, as a
+ * Checkbox option is), and the scale is small enough (1.015, a Button's is 1.0667) to stay inside the
+ * popup's padding and not crowd the rows around it. The scale, unlike a gliding highlight, is on the
+ * row itself, so nothing is still moving after the pointer stops, beyond the settle.
+ *
+ * Pure CSS: the transition that runs is the destination state's, so the first lists below are
+ * [data-active]'s (in) and the base rule's (out).
+ */
+.option {
+  background-color: transparent;
+  transform: scale(1);
+  transition:
+    background-color 140ms var(--ease-leave),
+    transform 200ms var(--ease-leave);
+}
 .option[data-active] {
-  background: var(--color-select-option-active);
+  background-color: var(--color-select-option-active);
+  transform: scale(1.015);
+  transition:
+    background-color 60ms var(--ease-leave),
+    transform 300ms var(--ease-enter);
 }
 @media (forced-colors: active) {
   .option[data-active] {
@@ -240,7 +323,20 @@
 
 @media (prefers-reduced-motion: reduce) {
   .chevron,
-  .checkbox {
+  .field[data-open] .chevron,
+  .checkbox,
+  .option {
     transition: none;
+  }
+  /* No growing; the fill is the cue */
+  .option[data-active] {
+    transform: none;
+  }
+  /* A fade only: no growing, no shift */
+  .popup[data-state='open'] {
+    animation: popup-fade-in 100ms ease both;
+  }
+  .popup[data-state='closed'] {
+    animation: popup-fade-out 100ms ease both;
   }
 }

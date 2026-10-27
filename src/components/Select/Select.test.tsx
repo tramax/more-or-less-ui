@@ -1,6 +1,6 @@
 import { createRef, useState, type ComponentProps } from 'react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { render, fireEvent, cleanup, screen } from '@testing-library/react';
+import { act, render, fireEvent, cleanup, screen } from '@testing-library/react';
 import { Select, type SelectOption } from './Select';
 import { filterOptions, findByPrefix, stepEnabled } from './useListboxNavigation';
 import frameStyles from '../_shared/TextFieldFrame.module.css';
@@ -149,6 +149,35 @@ describe('Select (single)', () => {
       expect(onChange).not.toHaveBeenCalled();
     });
 
+    it('keeps the popup for its exit animation, hidden from assistive tech, then removes it', () => {
+      vi.useFakeTimers();
+      try {
+        renderSelect();
+        fireEvent.click(combo());
+        const popup = screen.getByRole('listbox').parentElement as HTMLElement;
+        expect(popup.dataset.state).toBe('open');
+        key('Escape');
+        expect(combo().getAttribute('aria-expanded')).toBe('false');
+        // Still in the DOM while it animates out, but not for anyone else
+        expect(popup.isConnected).toBe(true);
+        expect(popup.dataset.state).toBe('closed');
+        expect(popup.getAttribute('aria-hidden')).toBe('true');
+        expect(options()).toHaveLength(0);
+        act(() => {
+          vi.advanceTimersByTime(250);
+        });
+        expect(popup.isConnected).toBe(false);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('does not bring the popup back when a closed Select blurs', () => {
+      renderSelect();
+      fireEvent.blur(combo());
+      expect(document.querySelector('[data-state]')).toBeNull();
+    });
+
     it('does not open when disabled', () => {
       renderSelect({ isDisabled: true });
       expect((combo() as HTMLButtonElement).disabled).toBe(true);
@@ -179,6 +208,15 @@ describe('Select (single)', () => {
       expect(activeLabel()).toBe('Élderberry');
       key('Home');
       expect(activeLabel()).toBe('Apple');
+    });
+
+    it('marks exactly one option active', () => {
+      renderSelect();
+      key('ArrowDown');
+      expect(options().filter((o) => o.hasAttribute('data-active'))).toHaveLength(1);
+      key('ArrowDown');
+      expect(options().filter((o) => o.hasAttribute('data-active'))).toHaveLength(1);
+      expect(options()).toHaveLength(5);
     });
 
     it('selects the active option with Enter and closes', () => {

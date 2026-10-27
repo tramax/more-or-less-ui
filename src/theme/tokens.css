@@ -27,6 +27,14 @@
   --space-normal: 1rem; /* 16px — comfortable */
   --space-more: 1.5rem; /* 24px — spacious */
 
+  /* Motion curves. Entering overshoots its target by a few percent and settles, which reads as
+     springy rather than mechanical. Leaving doesn't overshoot, so nothing dips below its resting
+     value and wobbles once the pointer has gone. `pop` is the gentler overshoot, for small marks
+     (a dot, a thumb, a chevron). Each is defined here once; components use them directly. */
+  --ease-enter: cubic-bezier(0.34, 2.56, 0.64, 1);
+  --ease-leave: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+
   /* Brand color */
   --color-primary: #c6b18b;
 
