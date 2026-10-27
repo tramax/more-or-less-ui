@@ -1,4 +1,5 @@
 import { clsx } from '@/utils/clsx';
+import { CrossIcon } from './CrossIcon';
 import styles from './SelectChip.module.css';
 
 interface SelectChipProps {
@@ -37,9 +38,7 @@ export function SelectChip({ label, onRemove }: SelectChipProps) {
           className={styles.remove}
           aria-label={`Remove ${label}`}
         >
-          <svg viewBox="0 0 16 16" aria-hidden="true" className={styles.icon}>
-            <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" />
-          </svg>
+          <CrossIcon className={styles.icon} />
         </button>
       )}
     </span>

@@ -148,6 +148,23 @@ export const Multiple: Story = {
   },
 };
 
+/**
+ * `isClearable` adds a button that empties the field (`onChange` gets `null`, or `[]` for a multiple
+ * one). Backspace does too, when there is nothing to type. Hidden while required or disabled.
+ */
+export const Clearable: Story = {
+  args: { isClearable: true, placeholder: 'Choose a fruit', defaultValue: 'banana' },
+};
+
+export const ClearableMultiple: Story = {
+  args: {
+    isMultiple: true,
+    isClearable: true,
+    placeholder: 'Choose fruit',
+    defaultValue: ['banana', 'fig'],
+  },
+};
+
 export const MultipleSearchable: Story = {
   args: {
     isMultiple: true,
@@ -182,7 +199,7 @@ const ControlledSelect = () => {
   );
 };
 
-/** `null` is the explicit "nothing selected"; the user can't clear a single Select. */
+/** `null` is the explicit "nothing selected"; the user can't clear a single Select without `isClearable`. */
 export const Controlled: Story = {
   parameters: { controls: { disable: true } },
   render: () => <ControlledSelect />,

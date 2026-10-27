@@ -15,6 +15,7 @@ import type { ScaleProp } from '@/types/scale';
 import { TextFieldFrame } from '../_shared/TextFieldFrame';
 import { OptionText } from '../_shared/OptionText';
 import type { NameProps, OptionBase } from '../_shared/types';
+import { CrossIcon } from './CrossIcon';
 import { SelectChip } from './SelectChip';
 import { useListboxNavigation } from './useListboxNavigation';
 import { useSelectPopup } from './useSelectPopup';
@@ -61,16 +62,35 @@ export type SelectProps = SelectFieldProps &
   (
     | {
         isMultiple?: false;
+        isClearable?: false;
         /** Selected value (controlled). `null` is controlled with nothing selected. */
         value?: string | null;
         /** Selected value at the start (uncontrolled). Nothing is selected without it. */
         defaultValue?: string;
-        /** Called with the newly selected value. The user can't clear a single Select. */
+        /** Called with the newly selected value. The user can't clear it unless `isClearable`. */
         onChange?: (value: string) => void;
+      }
+    | {
+        isMultiple?: false;
+        /**
+         * A button clears the value (Backspace does too, when not searchable; clearing the text of a
+         * searchable one does). Not shown while `isRequired` or `isDisabled`, or when the selected
+         * option is disabled.
+         */
+        isClearable: true;
+        value?: string | null;
+        defaultValue?: string;
+        /** Called with the newly selected value, or `null` when the user clears it. */
+        onChange?: (value: string | null) => void;
       }
     | {
         /** Pick any number of options, shown as chips. The popup stays open between picks. */
         isMultiple: true;
+        /**
+         * A button removes every chip that can be removed at once. Not shown while `isRequired` or
+         * `isDisabled`.
+         */
+        isClearable?: boolean;
         /** Selected values (controlled). */
         value?: string[];
         /** Selected values at the start (uncontrolled). */
@@ -84,9 +104,10 @@ export type SelectProps = SelectFieldProps &
 // union that makes `value` and `onChange` follow `isMultiple`.
 type SelectImplProps = SelectFieldProps & {
   isMultiple?: boolean;
+  isClearable?: boolean;
   value?: string | string[] | null;
   defaultValue?: string | string[];
-  onChange?: (value: string | string[]) => void;
+  onChange?: (value: string | string[] | null) => void;
 };
 
 const toValues = (value: string | string[] | null | undefined): string[] =>
@@ -119,6 +140,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
     placeholder,
     isSearchable = false,
     isMultiple = false,
+    isClearable = false,
     isDisabled = false,
     isRequired = false,
     id,
@@ -141,7 +163,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
 
   const update = (next: string[]) => {
     if (value === undefined) setUncontrolled(next);
-    onChange?.(isMultiple ? next : (next[0] as string));
+    onChange?.(isMultiple ? next : (next[0] ?? null));
   };
   const choose = (optionValue: string) => {
     if (!isMultiple) {
@@ -162,6 +184,19 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
     const last = [...selectedOptions].reverse().find((option) => !option.isDisabled);
     if (last) remove(last.value);
   };
+  // The field keeps room for the button whenever it could appear, so the text doesn't shift when a
+  // value is picked. The button itself shows only while there is something to clear.
+  const canClear = isClearable && !isRequired;
+  const clearable = canClear && !isDisabled && selectedOptions.some((option) => !option.isDisabled);
+  // A disabled option can't be removed, so it stays, as it does for Backspace
+  const clear = () => {
+    if (clearable) update(selectedOptions.filter((o) => o.isDisabled).map((o) => o.value));
+  };
+  const onBackspace = () => {
+    if (isMultiple) removeLast();
+    // A searchable input's Backspace edits its text
+    else if (!isSearchable) clear();
+  };
 
   const popup = useSelectPopup();
   const { isOpen } = popup;
@@ -174,7 +209,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
     open: popup.open,
     close: popup.close,
     choose,
-    removeLast,
+    onBackspace,
     popupRef: popup.popupRef,
   });
 
@@ -294,7 +329,11 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
               className={clsx(className, styles.input)}
               value={nav.query ?? selectedLabel}
               placeholder={placeholder}
-              onChange={(event) => nav.type(event.target.value)}
+              onChange={(event) => {
+                nav.type(event.target.value);
+                // Emptying the text clears the value, the keyboard route to the clear button
+                if (!event.target.value) clear();
+              }}
               onClick={(event) => {
                 rawProps.onClick?.(event);
                 if (!isOpen) nav.show();
@@ -333,9 +372,27 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
           <div
             className={styles.field}
             data-open={isOpen || undefined}
+            data-clearable={canClear || undefined}
             style={{ '--select-anchor': anchorName } as CSSProperties}
           >
             {control}
+            {clearable && (
+              // Out of the tab order like a chip's: the keyboard clears with Backspace. mousedown is
+              // cancelled so the control keeps focus.
+              <button
+                type="button"
+                tabIndex={-1}
+                className={styles.clear}
+                aria-label="Clear"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  clear();
+                  comboRef.current?.focus();
+                }}
+              >
+                <CrossIcon className={styles.clearIcon} />
+              </button>
+            )}
             <Chevron />
             {name &&
               selectedValues.map((v) => (

@@ -722,12 +722,21 @@ type SelectProps = Omit<
   } & (
     | {
         isMultiple?: false;
+        isClearable?: false;
         value?: string | null; // controlled; null = controlled with nothing selected
         defaultValue?: string;
         onChange?: (value: string) => void; // only when the selection changes
       }
     | {
+        isMultiple?: false;
+        isClearable: true; // a button clears the value; hidden while required or disabled
+        value?: string | null;
+        defaultValue?: string;
+        onChange?: (value: string | null) => void; // null = the user cleared it
+      }
+    | {
         isMultiple: true;
+        isClearable?: boolean; // a button removes every chip that can be removed
         value?: string[]; // controlled
         defaultValue?: string[];
         onChange?: (value: string[]) => void; // values in `options` order, not click order
@@ -762,9 +771,18 @@ empty input removes the last chip that can be removed. A click anywhere on a rem
 (the whole chip is the hover target: it takes `--color-select-chip-hover` and the × scales up); its button is the accessible name and is out of the tab order, so
 the field is one Tab stop.
 
+**Clearable.** Off by default, as in most libraries: a plain single Select is expected to always have a
+value, and a required one must not offer to empty itself, so `isRequired` and `isDisabled` hide the
+button. It sits beside the chevron (`aria-label="Clear"`, out of the tab order like a chip's button,
+× scales up on hover), and the field keeps room for it whether or not it is showing, so text doesn't
+shift when a value is picked. It clears what can be cleared: a disabled option stays, as for
+Backspace. Keyboard: Backspace with nothing typed clears a non-searchable single Select (a multiple
+one already removes the last chip); a searchable single one clears when its text is emptied. The ×
+is `Select/CrossIcon`, shared with the chip.
+
 **Value.** Like Radio (`null` is the explicit empty value) for a single one, like Checkbox (`string[]`,
-options order) for a multiple one. The user can't clear a single Select; clearing is the caller's
-(`value={null}`). `name` renders hidden inputs, since there is no native control: one for a single,
+options order) for a multiple one. The user can't clear a single Select unless `isClearable`, which
+reports `null`; otherwise clearing is the caller's (`value={null}`). `name` renders hidden inputs, since there is no native control: one for a single,
 one per value for a multiple. Only values that are options count.
 
 **Popup.** A `popover="manual"` element in the top layer, so no ancestor's `overflow` clips it and no
@@ -795,6 +813,8 @@ out; `--ease-enter` / `--ease-leave` in `theme/tokens.css`):
   measure the rows; a full Checkbox-style raise (lift, 1.02 scale, shadow, sheen) is too much when
   moving over several options. Under `prefers-reduced-motion` the fill is the only cue.
 - **The chevron** turns with the gentler `--ease-pop` overshoot when opening and settles when closing.
+  It also grows (`--scale-icon-hover`, `--ease-pop`) while the pointer is over the control. The chips' and
+  the clear button's × grow by the same token when they are hovered.
 - `prefers-reduced-motion`: the popup only fades (100 ms), nothing scales or lifts, and the chevron
   jumps.
 
@@ -1156,7 +1176,7 @@ export const EscapeHatch: Story = {
 - [x] `TextField` — size, label, error, isDisabled, isReadOnly, isRequired
 - [x] `Checkbox` — options, orientation, minChecked/maxChecked, label, error, isDisabled (no `size`)
 - [x] `Radio` — options, orientation, label, error, isDisabled, isRequired (no `size`); shares `_shared/OptionGroup` with Checkbox
-- [x] `Select` — options, isSearchable, isMultiple (chips), placeholder, label, error, isDisabled, isRequired, size; one component for select and autocomplete; shares `_shared/TextFieldFrame` with TextField
+- [x] `Select` — options, isSearchable, isMultiple (chips), isClearable, placeholder, label, error, isDisabled, isRequired, size; one component for select and autocomplete; shares `_shared/TextFieldFrame` with TextField
 - [x] `Textarea` — size, rows, resize, label, error, isDisabled, isReadOnly, isRequired; shares `_shared/TextFieldFrame` with TextField
 - [x] `Toggle` — label, description, checked/defaultChecked, isDisabled (single boolean, no `size`, no `error`); no option row, on / off shown by position, fill and icon
 - [ ] `Badge`, `Alert`, `Icon` — Display

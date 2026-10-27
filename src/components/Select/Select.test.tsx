@@ -575,6 +575,80 @@ describe('Select (multiple)', () => {
   });
 });
 
+describe('Select (isClearable)', () => {
+  const clearButton = () => screen.queryByRole('button', { name: 'Clear', hidden: true });
+
+  it('has no clear button unless asked, or with nothing to clear', () => {
+    renderSelect({ defaultValue: 'a' });
+    expect(clearButton()).toBeNull();
+    cleanup();
+    renderSelect({ isClearable: true });
+    expect(clearButton()).toBeNull();
+  });
+
+  it('clears a single value, reports null, and keeps focus on the control', () => {
+    const onChange = vi.fn();
+    const { container } = renderSelect({
+      isClearable: true,
+      defaultValue: 'a',
+      name: 'fruit',
+      onChange,
+    });
+    fireEvent.click(clearButton() as HTMLElement);
+    expect(onChange).toHaveBeenCalledExactlyOnceWith(null);
+    expect(combo().textContent?.trim()).toBe('');
+    expect(hiddenValues(container)).toEqual([]);
+    expect(clearButton()).toBeNull();
+    expect(document.activeElement).toBe(combo());
+    expect(options()).toHaveLength(0);
+  });
+
+  it('clears a single value with Backspace', () => {
+    const onChange = vi.fn();
+    renderSelect({ isClearable: true, defaultValue: 'a', onChange });
+    key('Backspace');
+    expect(onChange).toHaveBeenCalledExactlyOnceWith(null);
+  });
+
+  it('clears a searchable single value when its text is emptied', () => {
+    const onChange = vi.fn();
+    renderSelect({ isClearable: true, isSearchable: true, defaultValue: 'a', onChange });
+    // Backspace edits the text rather than clearing
+    key('Backspace');
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.change(combo(), { target: { value: '' } });
+    expect(onChange).toHaveBeenCalledExactlyOnceWith(null);
+  });
+
+  it('is not offered when required, disabled, or the selection is disabled', () => {
+    renderSelect({ isClearable: true, defaultValue: 'a', isRequired: true });
+    expect(clearButton()).toBeNull();
+    cleanup();
+    renderSelect({ isClearable: true, defaultValue: 'a', isDisabled: true });
+    expect(clearButton()).toBeNull();
+    cleanup();
+    renderSelect({ isClearable: true, defaultValue: 'c' });
+    expect(clearButton()).toBeNull();
+  });
+
+  it('removes every chip that can be removed from a multiple Select', () => {
+    const onChange = vi.fn();
+    renderSelect({ isMultiple: true, isClearable: true, defaultValue: ['a', 'c', 'd'], onChange });
+    fireEvent.click(clearButton() as HTMLElement);
+    // Cherry is disabled, so it stays
+    expect(onChange).toHaveBeenCalledExactlyOnceWith(['c']);
+    expect(clearButton()).toBeNull();
+  });
+
+  it('follows `value` when controlled', () => {
+    const onChange = vi.fn();
+    renderSelect({ isClearable: true, value: 'a', onChange });
+    fireEvent.click(clearButton() as HTMLElement);
+    expect(onChange).toHaveBeenCalledExactlyOnceWith(null);
+    expect(combo().textContent).toContain('Apple');
+  });
+});
+
 describe('Select types', () => {
   it('types value and onChange by isMultiple', () => {
     // Never called: only compiled, so `pnpm typecheck` checks the union

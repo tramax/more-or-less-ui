@@ -44,8 +44,8 @@ interface Params<O extends OptionBase> {
   close: () => void;
   /** Selects the option (single) or toggles it (multiple). */
   choose: (value: string) => void;
-  /** Removes the last selected option that can be removed (multiple). */
-  removeLast: () => void;
+  /** Backspace with nothing typed: removes the last chip (multiple) or clears the value. */
+  onBackspace: () => void;
   /** The popup, to scroll the active option into view. */
   popupRef: RefObject<HTMLElement>;
 }
@@ -68,7 +68,7 @@ export function useListboxNavigation<O extends OptionBase>({
   open,
   close,
   choose,
-  removeLast,
+  onBackspace,
   popupRef,
 }: Params<O>) {
   const [query, setQuery] = useState<string | null>(null);
@@ -169,7 +169,7 @@ export function useListboxNavigation<O extends OptionBase>({
       if (isOpen && !isSearchable && !isMultiple) commit(active);
       else if (isOpen) dismiss();
     } else if (key === 'Backspace') {
-      if (isMultiple && !query) removeLast();
+      if (!query) onBackspace();
     } else if (key.length === 1 && !event.altKey && !isSearchable) {
       // Type-ahead: jump to the label that starts with what was typed
       event.preventDefault();

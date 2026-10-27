@@ -37,6 +37,11 @@
   cursor: pointer;
 }
 
+/* A clearable field leaves room for the clear button as well as the chevron */
+.field[data-clearable] :is(.input, .box) {
+  padding-inline-end: 4.25em;
+}
+
 /* Dimmed like the frame's placeholder */
 .placeholder,
 .bare::placeholder {
@@ -86,11 +91,13 @@
   min-width: 0;
 }
 
-/* Centered on the first line of text, whether the field is one line or several */
+/* Centered on the first line of text (1.375em down), whether the field is one line or several. Placed
+   by `top`, not a translate: a translate in `transform` would be scaled along with the caret on
+   hover, and the caret would drift upward. */
 .chevron {
   position: absolute;
   inset-inline-end: 1em;
-  top: 1.375em;
+  top: 0.875em;
   width: 1em;
   height: 1em;
   fill: none;
@@ -98,14 +105,55 @@
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transform: translateY(-50%);
   pointer-events: none;
   /* Turns over with a slight overshoot when opening, and settles without one when closing */
-  transition: transform 400ms var(--ease-leave);
+  transition:
+    transform 400ms var(--ease-leave),
+    scale 300ms var(--ease-pop);
 }
 .field[data-open] .chevron {
-  transform: translateY(-50%) rotate(180deg);
-  transition: transform 500ms var(--ease-pop);
+  transform: rotate(180deg);
+  transition:
+    transform 500ms var(--ease-pop),
+    scale 300ms var(--ease-pop);
+}
+/* Hovering the control grows the caret by the same amount as a × grows. `scale` is its own property,
+   so it doesn't fight the rotation. The caret ignores the pointer, so it is the control under it
+   that is hovered. */
+@media (hover: hover) {
+  .field:has(> :is(.input, .box):hover) .chevron {
+    scale: var(--scale-icon-hover);
+  }
+}
+
+/* Beside the chevron, centered on the same line */
+.clear {
+  position: absolute;
+  inset-inline-end: 2.25em;
+  top: 1.375em;
+  display: grid;
+  place-items: center;
+  width: 1.5em;
+  height: 1.5em;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  /* A button doesn't inherit the font size, and everything here is in em of the field's */
+  font: inherit;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+/* The same hover as a chip's remove button: the × grows */
+.clearIcon {
+  width: 0.875em;
+  height: 0.875em;
+  transition: transform 300ms var(--ease-pop);
+}
+@media (hover: hover) {
+  .clear:hover .clearIcon {
+    transform: scale(var(--scale-icon-hover));
+  }
 }
 
 /* --- Positioning ---------------------------------------------------------------------------------
@@ -324,6 +372,7 @@
 @media (prefers-reduced-motion: reduce) {
   .chevron,
   .field[data-open] .chevron,
+  .clearIcon,
   .checkbox,
   .option {
     transition: none;
