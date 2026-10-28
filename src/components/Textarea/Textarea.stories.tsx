@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { omitDefaults, showCode } from '../../../.storybook/snippet';
 import { Textarea, TEXTAREA_DEFAULTS } from './Textarea';
 
 // Escape-hatch values are free-form, so a select can't show them
@@ -27,22 +28,13 @@ const Column = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
-// Drop props that are at their default from the code snippet, so a bare `<Textarea>` shows as such
-const omitDefaults = (code: string) =>
-  Object.entries(TEXTAREA_DEFAULTS)
-    .reduce(
-      (c, [prop, value]) => c.replace(new RegExp(String.raw`\s+${prop}="${value}"`, 'g'), ''),
-      code,
-    )
-    .replace(/<Textarea\s+\/>/g, '<Textarea />');
-
 const meta: Meta<typeof Textarea> = {
   title: 'Inputs/Textarea',
   component: Textarea,
   tags: ['autodocs'],
   // Start the controls at the component's defaults
   args: { ...TEXTAREA_DEFAULTS, label: 'Notes' },
-  parameters: { docs: { source: { transform: omitDefaults } } },
+  parameters: { docs: { source: { transform: omitDefaults(TEXTAREA_DEFAULTS) } } },
   decorators: [
     (Story) => (
       <div style={{ width: '24rem', maxWidth: '100%', padding: '1rem' }}>
@@ -99,6 +91,28 @@ export const Invalid: Story = {
   args: { defaultValue: 'x', error: 'Notes must be 10 characters or more' },
 };
 
+const ControlledTextarea = () => {
+  const [value, setValue] = useState('Ada Lovelace wrote the first program.');
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start', gap: '1rem' }}>
+      <Textarea label="Notes" value={value} onChange={(e) => setValue(e.target.value)} />
+      <button type="button" onClick={() => setValue('')}>
+        Clear
+      </button>
+      <output>value: {JSON.stringify(value)}</output>
+    </div>
+  );
+};
+
+/** `value` and `onChange` make the field controlled. The caller owns the text, so it can also set it. */
+export const Controlled: Story = {
+  parameters: showCode(`const [value, setValue] = useState('Ada Lovelace wrote the first program.');
+
+<Textarea label="Notes" value={value} onChange={(e) => setValue(e.target.value)} />
+<button onClick={() => setValue('')}>Clear</button>`),
+  render: () => <ControlledTextarea />,
+};
+
 const NotesField = () => {
   const [value, setValue] = useState('');
   const [error, setError] = useState<string>();
@@ -120,7 +134,20 @@ const NotesField = () => {
 // Shows the pattern the error prop expects: validate when the user leaves the field, not on every
 // keystroke, and clear the message as soon as the value is fixed
 export const ValidateOnBlur: Story = {
-  parameters: { controls: { disable: true } },
+  parameters: showCode(`const [value, setValue] = useState('');
+const [error, setError] = useState<string>();
+
+<Textarea
+  label="Notes"
+  isRequired
+  value={value}
+  error={error}
+  onChange={(e) => {
+    setValue(e.target.value);
+    if (error && e.target.validity.valid) setError(undefined);
+  }}
+  onBlur={(e) => setError(e.target.validity.valid ? undefined : 'Add a note')}
+/>`),
   render: () => <NotesField />,
 };
 

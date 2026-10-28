@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { omitDefaults } from '../../../.storybook/snippet';
 import { Box, BOX_DEFAULTS } from './Box';
 
 // Storybook only reads defaults from destructuring, so state them for the Default column
@@ -46,23 +47,13 @@ const Variants = ({ prop }: { prop: VariantProp }) => (
   </Row>
 );
 
-// The controls get BOX_DEFAULTS as args, but users don't have to write them: drop props that are at
-// their default from the code snippet, so a bare `<Box>` shows as `<Box>`
-const omitDefaults = (code: string) =>
-  Object.entries(BOX_DEFAULTS)
-    .reduce(
-      (c, [prop, value]) => c.replace(new RegExp(String.raw`\s+${prop}="${value}"`, 'g'), ''),
-      code,
-    )
-    .replace(/<Box\s+>/g, '<Box>');
-
 const meta: Meta<typeof Box> = {
   title: 'Layout and surfaces/Box',
   component: Box,
   tags: ['autodocs'],
   // Start the controls at the component's defaults
   args: BOX_DEFAULTS,
-  parameters: { docs: { source: { transform: omitDefaults } } },
+  parameters: { docs: { source: { transform: omitDefaults(BOX_DEFAULTS) } } },
   argTypes: {
     padding: scaleControl('padding'),
     margin: scaleControl('margin'),

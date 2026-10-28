@@ -1,5 +1,6 @@
 import { useState, type ComponentProps } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { showCode, withoutActions } from '../../../.storybook/snippet';
 import { Radio, type RadioOption } from './Radio';
 
 const OPTIONS: RadioOption[] = [
@@ -19,6 +20,7 @@ const meta: Meta<typeof Radio> = {
   title: 'Inputs/Radio',
   component: Radio,
   tags: ['autodocs'],
+  parameters: { docs: { source: { transform: withoutActions } } },
   args: { label: 'Contact me by', options: OPTIONS },
   decorators: [
     (Story) => (
@@ -74,6 +76,13 @@ const ControlledGroup = (args: ComponentProps<typeof Radio>) => {
 };
 
 export const Controlled: Story = {
+  parameters: showCode(
+    `const [value, setValue] = useState<string | null>('sms');
+
+<Radio label="Contact me by" options={options} value={value} onChange={setValue} />
+<button onClick={() => setValue(null)}>Clear</button>`,
+    { hasControls: true },
+  ),
   render: (args) => <ControlledGroup {...args} />,
 };
 
@@ -95,6 +104,19 @@ const InvalidGroup = (args: ComponentProps<typeof Radio>) => {
 };
 
 export const Invalid: Story = {
+  parameters: showCode(
+    `const [value, setValue] = useState<string | null>(null);
+
+<Radio
+  label="Contact me by"
+  options={options}
+  isRequired
+  value={value}
+  error={value === null ? 'Choose a way to contact you' : undefined}
+  onChange={setValue}
+/>`,
+    { hasControls: true },
+  ),
   args: { error: 'Choose a way to contact you', isRequired: true },
   render: (args) => <InvalidGroup {...args} />,
 };

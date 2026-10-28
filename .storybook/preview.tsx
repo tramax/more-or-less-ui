@@ -33,6 +33,8 @@ const preview: Preview = {
   parameters: {
     layout: 'centered',
     controls: { expanded: true },
+    // A Code tab next to Controls, so each story's code is there without going to the Docs page
+    docs: { codePanel: true },
     // Sidebar groups are organised by what the user is trying to do, not by how a component is built.
     // Groups not listed here (and stories within a group) fall back to alphabetical order.
     options: {

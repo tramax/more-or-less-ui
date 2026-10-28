@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { omitDefaults } from '../../../.storybook/snippet';
 import { Button, BUTTON_DEFAULTS } from './Button';
 
 // Storybook only reads defaults from destructuring, so state them for the Default column
@@ -48,22 +49,13 @@ const Variants = ({ prop }: { prop: VariantProp }) => (
   </Row>
 );
 
-// Drop props that are at their default from the code snippet, so a bare `<Button>` shows as `<Button>`
-const omitDefaults = (code: string) =>
-  Object.entries(BUTTON_DEFAULTS)
-    .reduce(
-      (c, [prop, value]) => c.replace(new RegExp(String.raw`\s+${prop}="${value}"`, 'g'), ''),
-      code,
-    )
-    .replace(/<Button\s+>/g, '<Button>');
-
 const meta: Meta<typeof Button> = {
   title: 'Actions/Button',
   component: Button,
   tags: ['autodocs'],
   // Start the controls at the component's defaults
   args: BUTTON_DEFAULTS,
-  parameters: { docs: { source: { transform: omitDefaults } } },
+  parameters: { docs: { source: { transform: omitDefaults(BUTTON_DEFAULTS) } } },
   argTypes: {
     size: scaleControl('size'),
     background: scaleControl('background'),

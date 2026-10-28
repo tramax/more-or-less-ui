@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { omitDefaults, showCode } from '../../../.storybook/snippet';
 import { Select, SELECT_DEFAULTS, type SelectOption } from './Select';
 
 // Escape-hatch values are free-form, so a select can't show them
@@ -77,20 +78,13 @@ const Column = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
-// Drop props that are at their default from the code snippet, so a bare `<Select>` shows as such
-const omitDefaults = (code: string) =>
-  Object.entries(SELECT_DEFAULTS).reduce(
-    (c, [prop, value]) => c.replace(new RegExp(String.raw`\s+${prop}="${value}"`, 'g'), ''),
-    code,
-  );
-
 const meta: Meta<typeof Select> = {
   title: 'Inputs/Select',
   component: Select,
   tags: ['autodocs'],
   // Start the controls at the component's defaults
   args: { ...SELECT_DEFAULTS, label: 'Fruit', options: FRUITS },
-  parameters: { docs: { source: { transform: omitDefaults } } },
+  parameters: { docs: { source: { transform: omitDefaults(SELECT_DEFAULTS) } } },
   decorators: [
     (Story) => (
       <div style={{ width: '18rem', maxWidth: '100%', padding: '1rem', minHeight: '22rem' }}>
@@ -201,7 +195,10 @@ const ControlledSelect = () => {
 
 /** `null` is the explicit "nothing selected"; the user can't clear a single Select without `isClearable`. */
 export const Controlled: Story = {
-  parameters: { controls: { disable: true } },
+  parameters: showCode(`const [value, setValue] = useState<string | null>('cherry');
+
+<Select label="Fruit" options={options} value={value} onChange={setValue} />
+<button onClick={() => setValue(null)}>Clear</button>`),
   render: () => <ControlledSelect />,
 };
 
@@ -299,7 +296,19 @@ const AsyncSelect = () => {
  * Debounce and abort are the caller's, here in `useSearch`; `isLoading` shows "Loading…".
  */
 export const AsyncSearch: Story = {
-  parameters: { controls: { disable: true } },
+  parameters:
+    showCode(`// useSearch is the caller's: debounce, abort and isLoading (see the story source)
+const search = useSearch(suggestions);
+const [value, setValue] = useState<string | null>(null);
+
+<Select
+  label="Assignee"
+  placeholder="Search people…"
+  isClearable
+  {...search} // options, isLoading, onSearch
+  value={value}
+  onChange={setValue}
+/>`),
   render: () => <AsyncSelect />,
 };
 
@@ -327,7 +336,17 @@ const AsyncMultipleSelect = () => {
  * option is in the first list: a value selected on first render needs that.
  */
 export const AsyncSearchMultiple: Story = {
-  parameters: { controls: { disable: true } },
+  parameters: showCode(`const search = useSearch(suggestions);
+const [value, setValue] = useState<string[]>(['ada']);
+
+<Select
+  label="Reviewers"
+  placeholder="Search people…"
+  isMultiple
+  {...search} // options, isLoading, onSearch
+  value={value}
+  onChange={setValue}
+/>`),
   render: () => <AsyncMultipleSelect />,
 };
 

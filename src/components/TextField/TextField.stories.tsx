@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { omitDefaults, showCode } from '../../../.storybook/snippet';
 import { TextField, TEXTFIELD_DEFAULTS } from './TextField';
 
 // Escape-hatch values are free-form, so a select can't show them
@@ -27,22 +28,13 @@ const Column = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
-// Drop props that are at their default from the code snippet, so a bare `<TextField>` shows as such
-const omitDefaults = (code: string) =>
-  Object.entries(TEXTFIELD_DEFAULTS)
-    .reduce(
-      (c, [prop, value]) => c.replace(new RegExp(String.raw`\s+${prop}="${value}"`, 'g'), ''),
-      code,
-    )
-    .replace(/<TextField\s+\/>/g, '<TextField />');
-
 const meta: Meta<typeof TextField> = {
   title: 'Inputs/TextField',
   component: TextField,
   tags: ['autodocs'],
   // Start the controls at the component's defaults
   args: { ...TEXTFIELD_DEFAULTS, label: 'Name' },
-  parameters: { docs: { source: { transform: omitDefaults } } },
+  parameters: { docs: { source: { transform: omitDefaults(TEXTFIELD_DEFAULTS) } } },
   decorators: [
     (Story) => (
       <div style={{ width: '24rem', maxWidth: '100%', padding: '1rem' }}>
@@ -90,6 +82,28 @@ export const Invalid: Story = {
   args: { defaultValue: 'x', error: 'Name must be 2 characters or more' },
 };
 
+const ControlledTextField = () => {
+  const [value, setValue] = useState('Ada');
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start', gap: '1rem' }}>
+      <TextField label="Name" value={value} onChange={(e) => setValue(e.target.value)} />
+      <button type="button" onClick={() => setValue('')}>
+        Clear
+      </button>
+      <output>value: {JSON.stringify(value)}</output>
+    </div>
+  );
+};
+
+/** `value` and `onChange` make the field controlled. The caller owns the text, so it can also set it. */
+export const Controlled: Story = {
+  parameters: showCode(`const [value, setValue] = useState('Ada');
+
+<TextField label="Name" value={value} onChange={(e) => setValue(e.target.value)} />
+<button onClick={() => setValue('')}>Clear</button>`),
+  render: () => <ControlledTextField />,
+};
+
 const EmailField = () => {
   const [value, setValue] = useState('');
   const [error, setError] = useState<string>();
@@ -111,7 +125,20 @@ const EmailField = () => {
 // Shows the pattern the error prop expects: validate when the user leaves the field, not on every
 // keystroke, and clear the message as soon as the value is fixed
 export const ValidateOnBlur: Story = {
-  parameters: { controls: { disable: true } },
+  parameters: showCode(`const [value, setValue] = useState('');
+const [error, setError] = useState<string>();
+
+<TextField
+  label="Email"
+  type="email"
+  value={value}
+  error={error}
+  onChange={(e) => {
+    setValue(e.target.value);
+    if (error && e.target.validity.valid) setError(undefined);
+  }}
+  onBlur={(e) => setError(e.target.validity.valid ? undefined : 'Enter an email address')}
+/>`),
   render: () => <EmailField />,
 };
 
