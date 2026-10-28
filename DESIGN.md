@@ -423,11 +423,13 @@ interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'col
   size?: ScaleProp; // font-size; padding and gap are in em, so they follow it
   background?: ScaleProp; // --color-button-background-* tokens; normal is the primary color mixed with Canvas
 
+  icon?: ReactNode; // shown before the children; with no children, the button is icon-only
   isDisabled?: boolean; // native `disabled`: not clickable, not focusable
   isLoading?: boolean; // spinner + aria-busy + aria-disabled; ignores clicks, stays focusable
   type?: 'button' | 'submit' | 'reset'; // defaults to 'button'
   onClick?: MouseEventHandler<HTMLButtonElement>;
 }
+// An `icon` with no children also requires `aria-label` or `aria-labelledby` (a type error without)
 ```
 
 No `variant` and no `color` prop: every prop has exactly three predefined values plus the escape
@@ -445,6 +447,16 @@ module (currently placeholders on the `normal` tokens).
 Boolean props use the `is*` prefix. While `isLoading`, the content stays in the layout (transparent)
 so the button keeps its width and its accessible name. The spinner is `_shared/Spinner`, also used by
 Select; Button only centers it.
+
+**Icons.** `icon` (a `ReactNode`: an inline `<svg>`, an emoji, an `<img>`) goes in `_shared/OptionIcon`,
+the same decorative `aria-hidden` square Select uses for an option's icon (1.25em, the height of a
+line of text, with `currentColor` svgs following the button's text color). With children, it sits
+before them, one `gap` away. Without children the button is **icon-only**: the horizontal padding
+equals the vertical, so it is a square exactly as tall as a button with text, and every `size` and
+`background` works as usual. Because an icon is decorative, the types require `aria-label` or
+`aria-labelledby` on an icon-only button (the name is what the content would have been). The icon
+slot's small downward nudge, which lines it up with a label, is turned off when there is no label.
+There is no tooltip: a consumer who wants one wraps the button.
 
 ### Card
 
@@ -1065,7 +1077,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options; Spinner: Button + Select)
+│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, and Button's icon; Spinner: Button + Select)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -1234,7 +1246,7 @@ export const EscapeHatch: Story = {
 
 ### Phase 3: Components
 
-- [x] `Button` — size, background, isDisabled, isLoading
+- [x] `Button` — size, background, icon (icon-only without children), isDisabled, isLoading
 - [x] `TextField` — size, label, error, isDisabled, isReadOnly, isRequired
 - [x] `Checkbox` — options, orientation, minChecked/maxChecked, label, error, isDisabled (no `size`)
 - [x] `Radio` — options, orientation, label, error, isDisabled, isRequired (no `size`); shares `_shared/OptionGroup` with Checkbox

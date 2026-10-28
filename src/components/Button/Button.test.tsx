@@ -133,6 +133,70 @@ describe('Button', () => {
     });
   });
 
+  describe('icon', () => {
+    const star = <svg data-testid="star" />;
+
+    it('shows the icon before the children, hidden from assistive tech', () => {
+      const el = renderButton({ icon: star, children: 'Save' });
+      const slot = el.querySelector('[aria-hidden="true"]');
+      expect(slot?.querySelector('[data-testid="star"]')).not.toBeNull();
+      expect(slot?.nextSibling?.textContent).toBe('Save');
+      expect(el.textContent).toBe('Save');
+    });
+
+    it('is a normal button when it has text next to the icon', () => {
+      expect(
+        renderButton({ icon: star, children: 'Save' }).classList.contains(
+          styles.iconOnly as string,
+        ),
+      ).toBe(false);
+    });
+
+    it('is an icon-only button without children, named by aria-label', () => {
+      const { getByRole } = render(<Button icon={star} aria-label="Favourite" />);
+      const el = getByRole('button', { name: 'Favourite' });
+      expect(el.classList.contains(styles.iconOnly as string)).toBe(true);
+    });
+
+    it('can be named by aria-labelledby', () => {
+      const { getByRole } = render(
+        <>
+          <span id="n">Favourite</span>
+          <Button icon={star} aria-labelledby="n" />
+        </>,
+      );
+      expect(getByRole('button', { name: 'Favourite' })).not.toBeNull();
+    });
+
+    it('treats empty children as none', () => {
+      const el = renderButton({ icon: star, children: false as never, 'aria-label': 'x' });
+      expect(el.classList.contains(styles.iconOnly as string)).toBe(true);
+    });
+
+    it('renders no slot without an icon, and does not leak the prop to the DOM', () => {
+      const el = renderButton({ children: 'Save' });
+      expect(el.querySelector('[aria-hidden="true"]')).toBeNull();
+      expect(renderButton({ icon: star, children: 'Save' }).hasAttribute('icon')).toBe(false);
+    });
+
+    it('still shows the spinner when loading, and keeps its name', () => {
+      const { getByRole } = render(<Button icon={star} aria-label="Favourite" isLoading />);
+      const el = getByRole('button', { name: 'Favourite' });
+      expect(el.querySelector(`.${styles.spinner}`)).not.toBeNull();
+    });
+
+    it('needs a name when there is no text (type-level)', () => {
+      render(
+        <>
+          {/* @ts-expect-error an icon-only button needs aria-label or aria-labelledby */}
+          <Button icon={star} />
+          <Button icon={star} aria-label="ok" />
+          <Button icon={star}>ok</Button>
+        </>,
+      );
+    });
+  });
+
   describe('isLoading', () => {
     it('shows a spinner hidden from assistive tech, and marks the button busy', () => {
       const el = renderButton({ isLoading: true, children: 'Save' });

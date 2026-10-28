@@ -170,6 +170,18 @@
   transition: opacity 150ms ease;
 }
 
+/* The icon itself is _shared/OptionIcon, the same slot as Select's. It sits 1.25em tall, the height
+   of a line of text, so an icon-only button is as tall as one with text: just the vertical padding
+   again on the sides makes it square. */
+.iconOnly {
+  padding: 0.75em;
+}
+/* OptionIcon nudges its slot down to line up with a label beside it; alone there is nothing to
+   line up with. `.iconOnly .icon` outranks the shared single-class rule whatever the CSS order. */
+.iconOnly .icon {
+  translate: none;
+}
+
 .loading {
   cursor: progress;
 }

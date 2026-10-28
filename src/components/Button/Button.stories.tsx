@@ -14,6 +14,12 @@ const scaleControl = (prop: keyof typeof BUTTON_DEFAULTS) =>
 // Escape-hatch values are free-form, so a select can't show them
 const textControl = { control: 'text' } as const;
 
+const StarIcon = () => (
+  <svg viewBox="0 0 16 16" fill="currentColor">
+    <path d="m8 1.5 2 4.2 4.5.6-3.3 3.1.8 4.5L8 11.7 4 13.9l.8-4.5L1.5 6.3 6 5.7z" />
+  </svg>
+);
+
 const VARIANTS = ['less', 'normal', 'more'] as const;
 
 type VariantProp = 'size' | 'background';
@@ -77,6 +83,15 @@ export const Size: Story = {
 export const Background: Story = {
   parameters: comparison('background'),
   render: () => <Variants prop="background" />,
+};
+
+export const WithIcon: Story = {
+  args: { icon: <StarIcon />, children: 'Favourite' },
+};
+
+// Without children the button is a square, and needs an aria-label (or aria-labelledby)
+export const IconOnly: Story = {
+  args: { icon: <StarIcon />, children: undefined, 'aria-label': 'Favourite' },
 };
 
 export const Disabled: Story = {

@@ -4,8 +4,8 @@ import shared from './OptionGroup.module.css';
 
 /**
  * An option's `icon` (a flag, an avatar), in the square slot every place that shows it uses: the
- * option row, Select's field and its chips. Decorative: the option's label is its name. Position it
- * with `className`.
+ * option row, Select's field and its chips, and Button's `icon`. Decorative: the label (or an
+ * icon-only button's `aria-label`) is its name. Position it with `className`.
  */
 export function OptionIcon({ children, className }: { children: ReactNode; className?: string }) {
   return (
