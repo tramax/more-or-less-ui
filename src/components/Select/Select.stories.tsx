@@ -24,6 +24,38 @@ const WITH_DESCRIPTIONS: SelectOption[] = [
   { value: 'legacy', label: 'Legacy', description: 'No longer offered', isDisabled: true },
 ];
 
+// An option's `icon` is any node; an svg or an img fills its square. A coloured disc with initials
+// stands in for an avatar image here.
+const Avatar = ({ name, hue }: { name: string; hue: number }) => (
+  <svg viewBox="0 0 20 20" role="img" aria-label="">
+    <circle cx="10" cy="10" r="10" fill={`oklch(0.62 0.15 ${hue})`} />
+    <text x="10" y="10" textAnchor="middle" dominantBaseline="central" fontSize="8" fill="white">
+      {name
+        .split(' ')
+        .map((part) => part[0])
+        .join('')}
+    </text>
+  </svg>
+);
+
+const PEOPLE: SelectOption[] = [
+  { value: 'ada', label: 'Ada Lovelace', description: 'ada@analytical.example' },
+  { value: 'alan', label: 'Alan Turing', description: 'alan@bletchley.example' },
+  { value: 'grace', label: 'Grace Hopper', description: 'grace@navy.example' },
+  { value: 'katherine', label: 'Katherine Johnson', description: 'kj@nasa.example' },
+  { value: 'margaret', label: 'Margaret Hamilton', description: 'margaret@apollo.example' },
+  { value: 'edsger', label: 'Edsger Dijkstra', description: 'ewd@tue.example' },
+  { value: 'barbara', label: 'Barbara Liskov', description: 'liskov@mit.example' },
+  { value: 'donald', label: 'Donald Knuth', description: 'knuth@stanford.example' },
+  { value: 'hedy', label: 'Hedy Lamarr', description: 'hedy@spread-spectrum.example' },
+  { value: 'tim', label: 'Tim Berners-Lee', description: 'timbl@cern.example' },
+];
+
+const PEOPLE_WITH_AVATARS: SelectOption[] = PEOPLE.map((person, i) => ({
+  ...person,
+  icon: <Avatar name={person.label} hue={i * 47} />,
+}));
+
 const COUNTRIES = [
   'Argentina',
   'Australia',
@@ -110,6 +142,34 @@ export const Default: Story = {
 
 export const WithDescriptions: Story = {
   args: { label: 'Plan', options: WITH_DESCRIPTIONS, defaultValue: 'team' },
+};
+
+/**
+ * An option's `icon` is shown before its text: in the list, in the closed field, and on a chip. It
+ * is decorative (hidden from assistive tech), so `label` is still the name. Checkbox and Radio
+ * options take `icon` too.
+ */
+export const WithIcons: Story = {
+  args: { label: 'Assignee', options: PEOPLE_WITH_AVATARS, defaultValue: 'grace' },
+};
+
+/** The icon sits over the input and goes while the user types, since the text no longer names it. */
+export const WithIconsSearchable: Story = {
+  args: {
+    label: 'Assignee',
+    options: PEOPLE_WITH_AVATARS,
+    isSearchable: true,
+    defaultValue: 'ada',
+  },
+};
+
+export const WithIconsMultiple: Story = {
+  args: {
+    label: 'Assignees',
+    options: PEOPLE_WITH_AVATARS,
+    isMultiple: true,
+    defaultValue: ['ada', 'alan'],
+  },
 };
 
 export const Size: Story = {
@@ -201,19 +261,6 @@ export const Controlled: Story = {
 <button onClick={() => setValue(null)}>Clear</button>`),
   render: () => <ControlledSelect />,
 };
-
-const PEOPLE: SelectOption[] = [
-  { value: 'ada', label: 'Ada Lovelace', description: 'ada@analytical.example' },
-  { value: 'alan', label: 'Alan Turing', description: 'alan@bletchley.example' },
-  { value: 'grace', label: 'Grace Hopper', description: 'grace@navy.example' },
-  { value: 'katherine', label: 'Katherine Johnson', description: 'kj@nasa.example' },
-  { value: 'margaret', label: 'Margaret Hamilton', description: 'margaret@apollo.example' },
-  { value: 'edsger', label: 'Edsger Dijkstra', description: 'ewd@tue.example' },
-  { value: 'barbara', label: 'Barbara Liskov', description: 'liskov@mit.example' },
-  { value: 'donald', label: 'Donald Knuth', description: 'knuth@stanford.example' },
-  { value: 'hedy', label: 'Hedy Lamarr', description: 'hedy@spread-spectrum.example' },
-  { value: 'tim', label: 'Tim Berners-Lee', description: 'timbl@cern.example' },
-];
 
 // Stands in for a request. Matches the name or the email, as a server would, so a result's label
 // needn't contain what was typed.

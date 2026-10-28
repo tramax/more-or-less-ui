@@ -9,10 +9,12 @@ import {
   type HTMLAttributes,
   type KeyboardEvent,
   type MouseEvent,
+  type ReactNode,
 } from 'react';
 import { clsx } from '@/utils/clsx';
 import type { ScaleProp } from '@/types/scale';
 import { TextFieldFrame } from '../_shared/TextFieldFrame';
+import { OptionIcon } from '../_shared/OptionIcon';
 import { OptionText } from '../_shared/OptionText';
 import { Spinner } from '../_shared/Spinner';
 import type { NameProps, OptionBase } from '../_shared/types';
@@ -25,7 +27,15 @@ import styles from './Select.module.css';
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
 export { TEXT_FIELD_DEFAULTS as SELECT_DEFAULTS } from '../_shared/TextFieldFrame';
 
-export type SelectOption = OptionBase;
+export type SelectOption = OptionBase & {
+  /**
+   * A flag, an avatar, a logo: shown before the text, in the list, the field and on a chip.
+   * Decorative, so it is hidden from assistive tech and `label` stays the name. It fills a 1.25em
+   * square (`--option-icon-size`), so pass an `<img>`, an `<svg>` or an emoji and let it be sized by
+   * that.
+   */
+  icon?: ReactNode;
+};
 
 type SelectFieldProps = Omit<
   HTMLAttributes<HTMLElement>,
@@ -206,6 +216,9 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
   }
   const selectedValues = selectedOptions.map((option) => option.value);
   const selectedLabel = selectedOptions[0]?.label ?? '';
+  // Only a single Select shows the selected option's icon in the field; a multiple one's are on its chips
+  const selectedIcon = isMultiple ? undefined : selectedOptions[0]?.icon;
+  const hasSelectedIcon = selectedIcon != null && selectedIcon !== false;
 
   const update = (next: string[]) => {
     if (value === undefined) setUncontrolled(next);
@@ -335,6 +348,8 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
           spellCheck: false,
         } as const;
 
+        const showInputIcon = isSearchable && hasSelectedIcon && nav.query == null;
+
         const toggle = () => (isOpen ? nav.dismiss() : nav.show());
 
         let control;
@@ -360,6 +375,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                 <SelectChip
                   key={option.value}
                   label={option.label}
+                  icon={option.icon}
                   onRemove={
                     disabled || option.isDisabled
                       ? undefined
@@ -419,7 +435,10 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                 if (event.key === ' ') event.preventDefault();
               }}
             >
-              <span className={clsx(!selectedOptions.length && styles.placeholder)}>
+              {hasSelectedIcon && <OptionIcon>{selectedIcon}</OptionIcon>}
+              <span
+                className={clsx(styles.triggerText, !selectedOptions.length && styles.placeholder)}
+              >
                 {/* A non-breaking space keeps the field's height when there is no text */}
                 {selectedLabel || placeholder || ' '}
               </span>
@@ -433,9 +452,17 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
             data-open={isOpen || undefined}
             data-clearable={canClear || undefined}
             data-loading={isLoading || undefined}
+            data-has-icon={showInputIcon || undefined}
             style={{ '--select-anchor': anchorName } as CSSProperties}
           >
             {control}
+            {/* Over the input, which can't hold it. Gone while the user types (and the room for it
+                with it): the text no longer says what is selected. */}
+            {showInputIcon && (
+              <span className={styles.inputIcon}>
+                <OptionIcon>{selectedIcon}</OptionIcon>
+              </span>
+            )}
             {clearable && (
               // Out of the tab order like a chip's: the keyboard clears with Backspace. mousedown is
               // cancelled so the control keeps focus.
@@ -516,6 +543,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                               label={option.label}
                               description={option.description}
                               descriptionId={descriptionId}
+                              icon={option.icon}
                             />
                           </span>
                           {!isMultiple && isSelected && <Tick className={styles.tick} />}

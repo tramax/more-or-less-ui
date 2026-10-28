@@ -1,9 +1,13 @@
+import type { ReactNode } from 'react';
 import { clsx } from '@/utils/clsx';
+import { OptionIcon } from '../_shared/OptionIcon';
 import { CrossIcon } from './CrossIcon';
 import styles from './SelectChip.module.css';
 
 interface SelectChipProps {
   label: string;
+  /** The option's icon, before the label. */
+  icon?: ReactNode;
   /** Without it the chip has no remove button (a disabled option, or a disabled Select). */
   onRemove?: () => void;
 }
@@ -11,7 +15,7 @@ interface SelectChipProps {
 // Private to Select for now. When a Badge is built (DESIGN.md lists one), this becomes that, in
 // `_shared/`, and Select imports it.
 /** One selected value in a multiple Select's field. */
-export function SelectChip({ label, onRemove }: SelectChipProps) {
+export function SelectChip({ label, icon, onRemove }: SelectChipProps) {
   return (
     // The whole chip is the target, so a click anywhere on it removes. The button inside is its
     // accessible name and what assistive tech activates; its click bubbles up to here. mousedown is
@@ -28,6 +32,7 @@ export function SelectChip({ label, onRemove }: SelectChipProps) {
         })
       }
     >
+      {icon != null && icon !== false && <OptionIcon className={styles.leading}>{icon}</OptionIcon>}
       <span className={styles.label}>{label}</span>
       {onRemove && (
         // Out of the tab order so the field is one Tab stop; Backspace in the input removes the last

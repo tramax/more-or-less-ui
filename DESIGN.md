@@ -704,7 +704,7 @@ look (fill, hover, focus border, read-only, disabled, error), the label and erro
 ### Select
 
 ```tsx
-type SelectOption = OptionBase; // value, label, description?, isDisabled?
+type SelectOption = OptionBase & { icon?: ReactNode }; // value, label, description?, icon?, isDisabled?
 
 type SelectProps = Omit<
   HTMLAttributes<HTMLElement>,
@@ -870,6 +870,20 @@ also matches `:has(:focus-visible)`, so the multiple box shows it when its input
 option text is `_shared/OptionText`, and `SelectOption` is `OptionBase`. The list navigation
 (`useListboxNavigation`) and `SelectChip` stay in `Select/` until a second component needs them; the
 chip becomes the shared Badge when that is built.
+
+**Option icons.** `SelectOption.icon` (a `ReactNode`: a flag, an avatar, a logo) is shown before the
+option's text, in the three places a Select shows an option: the popup row, the closed field of a
+single Select and a chip. It is decorative: `_shared/OptionIcon` wraps it in an `aria-hidden` square
+(`--option-icon-size`, 1.25em; a chip sets 1em), so `label` stays the accessible name and a row's name
+doesn't change. An `<img>` or `<svg>` child fills the square; round or otherwise shaped images are the
+caller's own `border-radius`. Only Select has it: Checkbox and Radio options are `OptionBase`, and
+adding `icon` there is one prop passed to `OptionText`. In
+a searchable single Select the field is an `<input>`, which can't hold an element, so the icon is
+positioned over it (the input gets a start padding while it is shown) and is removed, with the
+padding, while the text is being typed, since it no longer names the selection.
+There is no `renderOption`: a row is always `OptionText` (label, description, icon) so the `option`
+semantics and `aria-activedescendant` can't be broken by custom content. Add one if an icon isn't
+enough (a badge on the right, say), replacing only the row's content.
 
 **Not yet:** a clear button, `minSelected` / `maxSelected` (Checkbox has `minChecked` / `maxChecked`),
 option groups, creating an option, a custom `filter`, loading options when the list opens (not by
@@ -1043,7 +1057,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText: options; Spinner: Button + Select)
+│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options; Spinner: Button + Select)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx

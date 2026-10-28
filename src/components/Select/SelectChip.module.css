@@ -32,6 +32,11 @@
   }
 }
 
+/* The option's icon (OptionIcon), a little smaller than in the popup so the chip keeps its height */
+.leading {
+  --option-icon-size: 1em;
+}
+
 /* A long label gives way before the remove button does */
 .label {
   min-width: 0;

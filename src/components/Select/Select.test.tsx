@@ -364,6 +364,51 @@ describe('Select (single)', () => {
   });
 });
 
+describe('Select (icons)', () => {
+  const ICONS: SelectOption[] = [
+    { value: 'a', label: 'Apple', icon: <svg data-testid="apple-icon" /> },
+    { value: 'b', label: 'Banana', description: 'Yellow', icon: <svg data-testid="banana-icon" /> },
+    { value: 'd', label: 'Date' },
+  ];
+  const icons = (el: Element) => el.querySelectorAll('[aria-hidden="true"] > svg');
+
+  it("shows an option's icon in the list, hidden from assistive tech, and leaves the name alone", () => {
+    renderSelect({ options: ICONS });
+    fireEvent.click(combo());
+    const banana = options()[1] as HTMLElement;
+    expect(icons(banana)).toHaveLength(1);
+    expect(screen.getByRole('option', { name: 'Banana Yellow' })).toBe(banana);
+    expect(icons(options()[2] as HTMLElement)).toHaveLength(0);
+  });
+
+  it("shows the selected option's icon in the field, and none for one without", () => {
+    renderSelect({ options: ICONS, defaultValue: 'a' });
+    expect(icons(combo())).toHaveLength(1);
+    cleanup();
+    renderSelect({ options: ICONS, defaultValue: 'd' });
+    expect(icons(combo())).toHaveLength(0);
+  });
+
+  it('shows it over a searchable input, until the user types', () => {
+    const { container } = renderSelect({ options: ICONS, isSearchable: true, defaultValue: 'a' });
+    expect(container.querySelectorAll('[data-testid="apple-icon"]')).toHaveLength(1);
+    fireEvent.change(combo(), { target: { value: 'ban' } });
+    expect(container.querySelectorAll('[data-testid="apple-icon"]')).toHaveLength(0);
+    // The popup's own row for Apple is gone (filtered), and Banana's is not the field's icon
+    expect(container.querySelector('.' + 'inputIcon')).toBeNull();
+  });
+
+  it("puts each chip's icon on the chip", () => {
+    const { container } = renderSelect({
+      options: ICONS,
+      isMultiple: true,
+      defaultValue: ['a', 'd'],
+    });
+    expect(container.querySelectorAll('[data-testid="apple-icon"]')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Remove Apple', hidden: true })).toBeTruthy();
+  });
+});
+
 describe('Select (searchable)', () => {
   const type = (text: string) => fireEvent.change(combo(), { target: { value: text } });
 

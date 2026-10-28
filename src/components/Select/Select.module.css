@@ -27,14 +27,36 @@
   padding-inline-end: 2.5em;
 }
 
-/* A button as the control: it centers its text, which a field doesn't */
+/* A button as the control: a row of the option's icon, if it has one, and its text */
 .trigger {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.625em;
   overflow: hidden;
   text-align: start;
-  text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
+}
+
+/* The trigger's selected text: gives way to the icon with an ellipsis */
+.triggerText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A searchable single Select's icon sits over its input, which has no room for one: the input gives
+   it a start padding instead, only while the icon is shown. Centered on the first line, like the
+   chevron. A wrapper, so that these are in the field's em and not the icon slot's own. */
+.inputIcon {
+  position: absolute;
+  inset-inline-start: 1em;
+  top: 0.75em;
+  display: flex;
+  pointer-events: none;
+}
+.field[data-has-icon] input.input {
+  padding-inline-start: 2.875em;
 }
 
 /* A clearable field leaves room for the clear button as well as the chevron */
