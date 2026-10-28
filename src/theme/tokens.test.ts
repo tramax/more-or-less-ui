@@ -56,4 +56,11 @@ describe('theme/themes.css', () => {
     expect(css.includes('--color-button-background-more:')).toBe(true);
     expect(css.includes('--color-button-text-more:')).toBe(true);
   });
+
+  it('overrides the Banner `more` text whenever it overrides its background', () => {
+    // Same reason as Button's: --color-banner-text-more follows --color-primary, not the background
+    const css = readFileSync(resolve(process.cwd(), 'src/theme/themes.css'), 'utf8');
+    expect(css.includes('--color-banner-background-more:')).toBe(true);
+    expect(css.includes('--color-banner-text-more:')).toBe(true);
+  });
 });

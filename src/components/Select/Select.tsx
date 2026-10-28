@@ -18,7 +18,7 @@ import { OptionIcon } from '../_shared/OptionIcon';
 import { OptionText } from '../_shared/OptionText';
 import { Spinner } from '../_shared/Spinner';
 import type { NameProps, OptionBase } from '../_shared/types';
-import { CrossIcon } from './CrossIcon';
+import { CrossIcon } from '../_shared/CrossIcon';
 import { SelectChip } from './SelectChip';
 import { useListboxNavigation } from './useListboxNavigation';
 import { useSelectPopup } from './useSelectPopup';

@@ -1,3 +1,5 @@
+export { Banner } from './Banner';
+export type { BannerProps } from './Banner';
 export { Box } from './Box';
 export type { BoxProps } from './Box';
 export { Button } from './Button';

@@ -101,7 +101,7 @@ Checkbox / Radio options (`_shared/OptionGroup.module.css`) and the Select popup
 
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button), and one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio, Toggle and Select alias**. No palettes, no
+Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button, Banner), one opaque brand tint (`--color-primary-tint`) that Button's `normal` and Banner's `normal` alias, and one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio, Toggle and Select alias** (Banner's `less` aliases it too). No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -837,7 +837,7 @@ button. It sits beside the chevron (`aria-label="Clear"`, out of the tab order l
 shift when a value is picked. It clears what can be cleared: a disabled option stays, as for
 Backspace. Keyboard: Backspace with nothing typed clears a non-searchable single Select (a multiple
 one already removes the last chip); a searchable single one clears when its text is emptied. The ×
-is `Select/CrossIcon`, shared with the chip.
+is `_shared/CrossIcon`, shared with the chip and Banner's dismiss button.
 
 **Value.** Like Radio (`null` is the explicit empty value) for a single one, like Checkbox (`string[]`,
 options order) for a multiple one. The user can't clear a single Select unless `isClearable`, which
@@ -919,6 +919,50 @@ list, localisation of "No results", "Loading…" and "Remove <label>".
 - Check support for the Popover API and anchor positioning before release; the library already
   relies on `corner-shape` and `contrast-color()`.
 - The borderless fill and WCAG 1.4.11, as TextField.
+
+### Banner
+
+```tsx
+type BannerProps = Omit<HTMLAttributes<HTMLDivElement>, 'color' | 'title'> & {
+  size?: ScaleProp; // font-size; padding and gaps are in em, so they follow it
+  background?: ScaleProp; // --color-banner-background-*: how loudly it speaks, in the brand color
+  title?: string; // a short headline above the message, in heavier type
+  onDismiss?: () => void; // shows the × button and calls this when it is pressed
+  // children: the message (any content, so a link or a Button goes inside)
+};
+```
+
+An announcement in the flow of the page, not a status message. Researched against Carbon's inline
+notification, GOV.UK's notification banner and the W3C alert pattern: it sits where it concerns, stays
+until dismissed or resolved, and doesn't float, stack or time out (a toast is a different component,
+not built). Called Banner, not Alert, because it announces rather than warns.
+
+**`background` is intensity, not a kind of message.** It is named for what it sets, as in Button, so an
+escape-hatch value reads naturally (`background="linear-gradient(...)"`) instead of a "severity" that
+is really a CSS background. There is no info / success / warning / error:
+a Banner that needs to say which does so in its words. (Validation errors stay on the field, as
+GOV.UK advises, not in a banner.)
+`less` is the faint brand tint (`--color-banner-background-less`, an alias of the field fill), `normal`
+is the opaque tint (`--color-primary-tint`, shared with Button's `normal`) and `more` is the brand
+color itself, with `--color-banner-text-more` (an alias of `--color-on-primary`) for its text. A banner is flat: no shadow
+on any background. As in Button, a theme that recolors the `more` background sets its text with it
+(the dark theme does: umber and white). An escape-hatch `background` is any CSS value, and keeps
+`CanvasText`. Because the scale is only strength of the same hue, nothing in it relies on a color
+difference: the words carry the meaning.
+
+**Dismiss.** `onDismiss` renders a real `<button aria-label="Dismiss">` with `_shared/CrossIcon`, in
+the tab order (unlike a Select chip's: a banner is not inside a field). On hover the × grows, as
+Select's, over a faint disc of the text color (10%); when pressed the whole button shrinks (0.8,
+quick, no overshoot), so the disc and the × go down together, and the disc deepens (20%). With `prefers-reduced-motion` only the disc remains. The hit area is 1.75em around a 1em ×. The Banner doesn't hide itself: the caller stops
+rendering it and decides whether it comes back, so the state stays one place.
+
+**Role.** `role="status"` (a polite live region), so a banner rendered after the page has loaded is
+announced without moving focus, as the W3C alert pattern advises. One already on the page at load is
+not announced, which is right for a persistent notice. Pass `role="alert"` for something urgent; it is
+a plain native prop. `className`, `style`, `ref` and the other native props go on the root `<div>`.
+
+**Not yet:** an icon or leading slot, an action slot (put a link or a Button in the children for now),
+enter / leave motion, localisation of "Dismiss", a sticky or full-width variant.
 
 ---
 
@@ -1063,6 +1107,7 @@ more-or-less-ui/
 │   │   └── clsx.ts         # Re-export
 │   ├── components/         # Flat: one folder per component. Grouping (Layout, Actions, ...)
 │   │   │                   # lives only in the Storybook story `title`.
+│   │   ├── Banner/
 │   │   ├── Box/
 │   │   │   ├── Box.tsx
 │   │   │   ├── Box.module.css
@@ -1077,7 +1122,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, and Button's icon; Spinner: Button + Select)
+│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, and Button's icon; Spinner: Button + Select; CrossIcon: Select + Banner)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -1253,7 +1298,8 @@ export const EscapeHatch: Story = {
 - [x] `Select` — options, isSearchable, onSearch (async options), isLoading, isMultiple (chips), isClearable, placeholder, label, error, isDisabled, isRequired, size; one component for select and autocomplete; shares `_shared/TextFieldFrame` with TextField
 - [x] `Textarea` — size, rows, resize, label, error, isDisabled, isReadOnly, isRequired; shares `_shared/TextFieldFrame` with TextField
 - [x] `Toggle` — label, description, checked/defaultChecked, isDisabled (single boolean, no `size`, no `error`); no option row, on / off shown by position, fill and icon
-- [ ] `Badge`, `Alert`, `Icon` — Display
+- [x] `Banner` — size, background (brand color at three strengths, no info/error kinds), title, onDismiss; `role="status"`
+- [ ] `Badge`, `Icon` — Display
 - [ ] `Card` — Only once it adds more than Box (slots, interactive variant, semantic element)
 
 ### Phase 4: Developer Experience

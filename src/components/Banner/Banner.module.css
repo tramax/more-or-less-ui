@@ -1,0 +1,137 @@
+/*
+ * Banner: base styles first, then one class per scale variant, named <prop><Variant> (looked up by
+ * resolveScaleProps). The base has no scale values: `normal` is a real class too, and every prop gets
+ * it from BANNER_DEFAULTS in Banner.tsx.
+ *
+ * Padding and gaps are in em, so `size` (which only sets font-size) scales them too, and so does an
+ * escape-hatch size such as size="1.5rem". Border radius is fixed here, not a prop, as in Button.
+ *
+ * `background` uses the --color-banner-background-* tokens (see theme/tokens.css): the brand color at
+ * three strengths. A banner is flat: no shadow on any background.
+ */
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75em;
+  box-sizing: border-box;
+  padding: 0.75em 1em;
+  border-radius: var(--radius-normal);
+  corner-shape: squircle;
+  color: CanvasText;
+  line-height: 1.25;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-weight: var(--weight-more);
+}
+/* A message under a headline gets a little air; alone it needs none */
+.title + .message {
+  margin-top: 0.25em;
+}
+
+.message {
+  overflow-wrap: anywhere;
+}
+
+/* The hit area is 1.75em (28px at the default size, above the 24px WCAG 2.5.8 minimum) around a 1em ×.
+   The negative margin keeps the banner as tall as its text: the button is centered on the first line,
+   which is 1.25em tall. */
+.dismiss {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.75em;
+  height: 1.75em;
+  margin: -0.25em -0.25em -0.25em 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  /* A button doesn't inherit the font size, and the em sizes here follow the banner's `size` */
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    transform 300ms var(--ease-pop);
+}
+/* A disc of the text color behind the ×: faint on hover, stronger when pressed. currentColor so it
+   shows on every background, including the `more` background. Pressed is outside the hover query, so a
+   tap on touch shows it, and after the hover rule, which it outranks by order. */
+@media (hover: hover) {
+  .dismiss:hover {
+    background: color-mix(in oklab, currentColor 10%, transparent);
+  }
+}
+/* Pressed: the whole button shrinks, so the disc and the × go down together, quickly and without
+   overshoot. Releasing returns on the springy base transition. */
+.dismiss:active {
+  background: color-mix(in oklab, currentColor 20%, transparent);
+  transform: scale(0.8);
+  transition:
+    background-color 150ms ease,
+    transform 120ms var(--ease-leave);
+}
+/* currentColor, not CanvasText: on the `more` background the text is the on-primary color */
+.dismiss:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 0;
+}
+
+.dismissIcon {
+  width: 1em;
+  height: 1em;
+  transition: transform 300ms var(--ease-pop);
+}
+@media (hover: hover) {
+  .dismiss:hover .dismissIcon {
+    transform: scale(var(--scale-icon-hover));
+  }
+}
+/* Pressed: the hover growth gives way to the button's own shrink above, so the × ends up at the
+   button's scale (0.8), the same as the disc, instead of 1.3 × 0.8. After the hover rule, which it
+   outranks by order. */
+.dismiss:active .dismissIcon {
+  transform: none;
+  transition: transform 120ms var(--ease-leave);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dismiss,
+  .dismissIcon {
+    transition: none;
+  }
+  /* The deeper disc is the pressed cue; nothing scales */
+  .dismiss:active {
+    transform: none;
+  }
+}
+
+.sizeLess {
+  font-size: var(--size-less);
+}
+.sizeNormal {
+  font-size: var(--size-normal);
+}
+.sizeMore {
+  font-size: var(--size-more);
+}
+
+.backgroundLess {
+  background: var(--color-banner-background-less);
+}
+.backgroundNormal {
+  background: var(--color-banner-background-normal);
+}
+.backgroundMore {
+  background: var(--color-banner-background-more);
+  /* The base CanvasText is unreadable on a dark brand fill */
+  color: var(--color-banner-text-more);
+}

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { clsx } from '@/utils/clsx';
 import { OptionIcon } from '../_shared/OptionIcon';
-import { CrossIcon } from './CrossIcon';
+import { CrossIcon } from '../_shared/CrossIcon';
 import styles from './SelectChip.module.css';
 
 interface SelectChipProps {
