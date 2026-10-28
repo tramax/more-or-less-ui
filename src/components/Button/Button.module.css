@@ -224,6 +224,8 @@
 }
 .backgroundMore {
   background: var(--color-button-background-more);
+  /* The base CanvasText is unreadable on a dark brand fill */
+  color: var(--color-button-text-more);
   --button-shadow-color: color-mix(
     in oklab,
     var(--color-button-background-more),

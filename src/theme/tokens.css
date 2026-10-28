@@ -75,6 +75,10 @@
     Canvas
   ); /* brand tint on the canvas: keeps CanvasText readable in both themes */
   --color-button-background-more: var(--color-primary);
+  /* Text on the `more` background. `less` and `normal` sit on the canvas, so they keep CanvasText.
+     Aliases --color-on-primary because the background is the primary here; a theme or consumer that
+     sets --color-button-background-more to something else sets this one with it (themes.css does). */
+  --color-button-text-more: var(--color-on-primary);
 
   /* Error color: the TextField's error message and its error fill */
   --color-danger: #c62828;

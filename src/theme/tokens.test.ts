@@ -47,3 +47,13 @@ describe('theme/tokens.css', () => {
     expect(duplicates).toEqual({});
   });
 });
+
+describe('theme/themes.css', () => {
+  it('overrides the Button `more` text whenever it overrides its background', () => {
+    // --color-button-text-more aliases --color-on-primary, which follows --color-primary, not the
+    // overridden background, so a theme that recolors one must set the other
+    const css = readFileSync(resolve(process.cwd(), 'src/theme/themes.css'), 'utf8');
+    expect(css.includes('--color-button-background-more:')).toBe(true);
+    expect(css.includes('--color-button-text-more:')).toBe(true);
+  });
+});

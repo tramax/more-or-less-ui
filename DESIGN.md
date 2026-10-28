@@ -119,6 +119,7 @@ actually needs one.
   --color-button-background-less: transparent;
   --color-button-background-normal: color-mix(in oklab, var(--color-primary) 40%, Canvas);
   --color-button-background-more: #d9c9ad; /* sand */
+  --color-button-text-more: var(--color-on-primary); /* text on the `more` background */
 }
 
 /* theme/themes.css */
@@ -126,6 +127,7 @@ actually needs one.
   color-scheme: dark; /* flips system colors: Canvas, CanvasText, form controls, scrollbars */
   --color-box-background-more: #4a3f33; /* umber */
   --color-button-background-more: #4a3f33; /* umber */
+  --color-button-text-more: white; /* set with the background: on-primary follows the sand primary */
   /* ...heavier --elevation-* shadows */
 }
 ```
@@ -430,6 +432,12 @@ interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'col
 
 No `variant` and no `color` prop: every prop has exactly three predefined values plus the escape
 hatch. `background="more"` is the brand-colored button, `background="less"` the transparent one.
+
+Text is `CanvasText`, except on `background="more"`: there it is `--color-button-text-more`, an alias of
+`--color-on-primary` (black or white, whichever contrasts with the primary), so a dark brand color
+gets light text. A theme or consumer that recolors `--color-button-background-more` must set
+`--color-button-text-more` with it (the dark theme does: its umber fill gets white). An escape-hatch
+`background` string keeps `CanvasText`.
 
 Border radius, font weight and box shadow are not props: the Button defines them itself in its CSS
 module (currently placeholders on the `normal` tokens).

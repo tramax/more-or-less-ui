@@ -19,6 +19,8 @@
 
   --color-box-background-more: #4a3f33; /* umber */
   --color-button-background-more: #4a3f33; /* umber */
+  /* Not --color-on-primary: the primary is still the light sand here, which would give black text */
+  --color-button-text-more: white;
 
   /* Lighter, so the error text keeps its contrast on a dark surface */
   --color-danger: #ff8a80;
