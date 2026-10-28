@@ -950,6 +950,13 @@ on any background. As in Button, a theme that recolors the `more` background set
 `CanvasText`. Because the scale is only strength of the same hue, nothing in it relies on a color
 difference: the words carry the meaning.
 
+**Glow.** A static decoration on every banner: a soft pool of the text color (7% alpha at the
+corner) fading to nothing by 11em, drawn by `.banner::before` (a `radial-gradient`) behind the
+content. No markup and no motion, so nothing to pause or reduce. In `em`, so it follows `size`;
+`currentColor`, so it shows on every background; clipped to the banner's rounded corners. Chosen from
+a set of static corner effects (ripple, sheen, dots, grid, stripes, ...); the ripple was tried first
+and dropped for being busier than the rest of the library.
+
 **Dismiss.** `onDismiss` renders a real `<button aria-label="Dismiss">` with `_shared/CrossIcon`, in
 the tab order (unlike a Select chip's: a banner is not inside a field). On hover the × grows, as
 Select's, over a faint disc of the text color (10%); when pressed the whole button shrinks (0.8,
