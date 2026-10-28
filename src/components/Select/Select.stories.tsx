@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Select, SELECT_DEFAULTS, type SelectOption } from './Select';
 
@@ -203,6 +203,132 @@ const ControlledSelect = () => {
 export const Controlled: Story = {
   parameters: { controls: { disable: true } },
   render: () => <ControlledSelect />,
+};
+
+const PEOPLE: SelectOption[] = [
+  { value: 'ada', label: 'Ada Lovelace', description: 'ada@analytical.example' },
+  { value: 'alan', label: 'Alan Turing', description: 'alan@bletchley.example' },
+  { value: 'grace', label: 'Grace Hopper', description: 'grace@navy.example' },
+  { value: 'katherine', label: 'Katherine Johnson', description: 'kj@nasa.example' },
+  { value: 'margaret', label: 'Margaret Hamilton', description: 'margaret@apollo.example' },
+  { value: 'edsger', label: 'Edsger Dijkstra', description: 'ewd@tue.example' },
+  { value: 'barbara', label: 'Barbara Liskov', description: 'liskov@mit.example' },
+  { value: 'donald', label: 'Donald Knuth', description: 'knuth@stanford.example' },
+  { value: 'hedy', label: 'Hedy Lamarr', description: 'hedy@spread-spectrum.example' },
+  { value: 'tim', label: 'Tim Berners-Lee', description: 'timbl@cern.example' },
+];
+
+// Stands in for a request. Matches the name or the email, as a server would, so a result's label
+// needn't contain what was typed.
+const searchPeople = (query: string, signal: AbortSignal) =>
+  new Promise<SelectOption[]>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      const needle = query.toLowerCase();
+      resolve(PEOPLE.filter((p) => `${p.label} ${p.description}`.toLowerCase().includes(needle)));
+    }, 600);
+    signal.addEventListener('abort', () => {
+      clearTimeout(timer);
+      reject(new DOMException('Aborted', 'AbortError'));
+    });
+  });
+
+/**
+ * What a caller writes around `onSearch`: wait for a pause in typing (debounce), drop the request
+ * the next keystroke makes stale (abort), and show `isLoading` meanwhile. The Select does none of
+ * this itself. `onSearch` gets `''` when the text is reset, which is where the suggestions come back.
+ */
+const useSearch = (suggestions: SelectOption[]) => {
+  const [options, setOptions] = useState(suggestions);
+  const [isLoading, setIsLoading] = useState(false);
+  const pending = useRef<{ timer?: number; controller?: AbortController }>({});
+
+  const cancel = () => {
+    window.clearTimeout(pending.current.timer);
+    pending.current.controller?.abort();
+  };
+  useEffect(() => cancel, []);
+
+  const onSearch = (query: string) => {
+    cancel();
+    if (!query.trim()) {
+      setOptions(suggestions);
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    pending.current.timer = window.setTimeout(() => {
+      const controller = new AbortController();
+      pending.current.controller = controller;
+      searchPeople(query, controller.signal).then(
+        (found) => {
+          setOptions(found);
+          setIsLoading(false);
+        },
+        (error: unknown) => {
+          if (!(error instanceof DOMException && error.name === 'AbortError')) setIsLoading(false);
+        },
+      );
+    }, 250);
+  };
+
+  return { options, isLoading, onSearch };
+};
+
+const AsyncSelect = () => {
+  const search = useSearch(PEOPLE.slice(0, 4));
+  const [value, setValue] = useState<string | null>(null);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <Select
+        label="Assignee"
+        placeholder="Search people…"
+        isClearable
+        {...search}
+        value={value}
+        onChange={setValue}
+      />
+      <output>value: {String(value)}</output>
+    </div>
+  );
+};
+
+/**
+ * `onSearch` is for options that are fetched by what is typed. It makes the Select searchable and
+ * stops it filtering: `options` are the matches, whatever they matched on (try an email address).
+ * Selected options are remembered, so the value stays shown when a new search replaces the list.
+ * Debounce and abort are the caller's, here in `useSearch`; `isLoading` shows "Loading…".
+ */
+export const AsyncSearch: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => <AsyncSelect />,
+};
+
+const AsyncMultipleSelect = () => {
+  const search = useSearch(PEOPLE.slice(0, 4));
+  const [value, setValue] = useState<string[]>(['ada']);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <Select
+        label="Reviewers"
+        placeholder="Search people…"
+        isMultiple
+        {...search}
+        value={value}
+        onChange={setValue}
+      />
+      <output>value: {JSON.stringify(value)}</output>
+    </div>
+  );
+};
+
+/**
+ * The chips stay while the list changes under them, and values are in the order they were picked
+ * (there is no stable `options` order across searches). Ada is selected from the start, so her
+ * option is in the first list: a value selected on first render needs that.
+ */
+export const AsyncSearchMultiple: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => <AsyncMultipleSelect />,
 };
 
 export const Required: Story = {

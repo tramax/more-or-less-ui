@@ -48,6 +48,13 @@ interface Params<O extends OptionBase> {
   onBackspace: () => void;
   /** The popup, to scroll the active option into view. */
   popupRef: RefObject<HTMLElement>;
+  /**
+   * The caller searches: `options` are already the matches, so they aren't filtered here, and the
+   * query is reported instead (`''` when it is reset).
+   */
+  onSearch?: (query: string) => void;
+  /** Results are on their way, so the list on screen is stale and Enter doesn't take its first option. */
+  isLoading?: boolean;
 }
 
 /**
@@ -70,6 +77,8 @@ export function useListboxNavigation<O extends OptionBase>({
   choose,
   onBackspace,
   popupRef,
+  onSearch,
+  isLoading = false,
 }: Params<O>) {
   const [query, setQuery] = useState<string | null>(null);
   const [activeValue, setActiveValue] = useState<string | null>(null);
@@ -77,9 +86,10 @@ export function useListboxNavigation<O extends OptionBase>({
   // A hovered option is already in view, and scrolling it would move the list under the pointer
   const activatedByPointer = useRef(false);
 
+  const isRemote = onSearch !== undefined;
   const visible = useMemo(
-    () => (isSearchable && query ? filterOptions(options, query) : options),
-    [options, isSearchable, query],
+    () => (isSearchable && !isRemote && query ? filterOptions(options, query) : options),
+    [options, isSearchable, isRemote, query],
   );
 
   // Where the active option starts: the first match while searching, else the selection
@@ -102,9 +112,15 @@ export function useListboxNavigation<O extends OptionBase>({
     open();
   };
 
+  // The caller is told only when there was a query to forget
+  const resetQuery = () => {
+    if (query) onSearch?.('');
+    setQuery(null);
+  };
+
   const dismiss = () => {
     close();
-    setQuery(null);
+    resetQuery();
     setActiveValue(null);
   };
 
@@ -118,7 +134,7 @@ export function useListboxNavigation<O extends OptionBase>({
     choose(option.value);
     if (isMultiple) {
       // Stays open for the next pick, with the list whole again
-      setQuery(null);
+      resetQuery();
       activate(option);
     } else {
       dismiss();
@@ -128,6 +144,7 @@ export function useListboxNavigation<O extends OptionBase>({
   const type = (text: string) => {
     setQuery(text);
     setActiveValue(null);
+    onSearch?.(text);
     if (!isOpen) open();
   };
 
@@ -158,7 +175,7 @@ export function useListboxNavigation<O extends OptionBase>({
         return;
       }
       event.preventDefault();
-      commit(active);
+      if (!isLoading) commit(active);
     } else if (key === 'Escape') {
       if (!isOpen) return;
       event.preventDefault();

@@ -6,6 +6,7 @@ import { filterOptions, findByPrefix, stepEnabled } from './useListboxNavigation
 import frameStyles from '../_shared/TextFieldFrame.module.css';
 import labelStyles from '../_shared/FieldLabel.module.css';
 import errorStyles from '../_shared/FieldError.module.css';
+import spinnerStyles from '../_shared/Spinner.module.css';
 
 const OPTIONS: SelectOption[] = [
   { value: 'a', label: 'Apple' },
@@ -439,6 +440,156 @@ describe('Select (searchable)', () => {
   });
 });
 
+describe('Select (onSearch)', () => {
+  const type = (text: string) => fireEvent.change(combo(), { target: { value: text } });
+  const MORE: SelectOption[] = [
+    { value: 'x', label: 'Xigua' },
+    { value: 'y', label: 'Yuzu' },
+  ];
+  const chips = (container: HTMLElement) =>
+    [...container.querySelectorAll('button[aria-label^="Remove"]')].map((b) =>
+      b.getAttribute('aria-label'),
+    );
+
+  it('is searchable without isSearchable, and reports the text instead of filtering', () => {
+    const onSearch = vi.fn();
+    renderSelect({ onSearch });
+    expect(combo().tagName).toBe('INPUT');
+    type('zzz');
+    expect(onSearch).toHaveBeenCalledExactlyOnceWith('zzz');
+    // The options are the caller's matches: all of them stay
+    expect(options()).toHaveLength(5);
+  });
+
+  it('does not leak its own props to the DOM', () => {
+    renderSelect({ onSearch: vi.fn(), isLoading: true });
+    for (const attr of ['onsearch', 'isloading']) expect(combo().hasAttribute(attr)).toBe(false);
+  });
+
+  it('reports an empty query when the list closes, but only after something was typed', () => {
+    const onSearch = vi.fn();
+    renderSelect({ onSearch });
+    fireEvent.click(combo());
+    key('Escape');
+    expect(onSearch).not.toHaveBeenCalled();
+    type('an');
+    key('Escape');
+    expect(onSearch).toHaveBeenNthCalledWith(1, 'an');
+    expect(onSearch).toHaveBeenNthCalledWith(2, '');
+    expect(onSearch).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps the selection shown when new results replace the list', () => {
+    const onSearch = vi.fn();
+    const { rerender } = render(
+      <Select label="Fruit" options={OPTIONS} onSearch={onSearch} placeholder="None" />,
+    );
+    type('an');
+    fireEvent.click(optionNamed('Banana'));
+    // The caller resets its results in the same update as the pick
+    rerender(<Select label="Fruit" options={MORE} onSearch={onSearch} placeholder="None" />);
+    expect((combo() as HTMLInputElement).value).toBe('Banana');
+    fireEvent.click(combo());
+    expect(options().map((o) => o.getAttribute('aria-selected'))).toEqual(['false', 'false']);
+  });
+
+  it('keeps a controlled selection shown when the list is swapped with the value', () => {
+    const Controlled = () => {
+      const [value, setValue] = useState<string | null>(null);
+      const [list, setList] = useState(OPTIONS);
+      return (
+        <Select
+          label="Fruit"
+          options={list}
+          value={value}
+          onChange={(v) => {
+            setValue(v);
+            setList(MORE);
+          }}
+          onSearch={() => {}}
+        />
+      );
+    };
+    render(<Controlled />);
+    fireEvent.click(combo());
+    fireEvent.click(optionNamed('Date'));
+    expect((combo() as HTMLInputElement).value).toBe('Date');
+  });
+
+  it('keeps chips across searches, in the order they were picked', () => {
+    const onChange = vi.fn();
+    const onSearch = vi.fn();
+    const { container, rerender } = render(
+      <Select label="Fruit" options={OPTIONS} isMultiple onChange={onChange} onSearch={onSearch} />,
+    );
+    fireEvent.click(combo());
+    fireEvent.click(optionNamed('Date'));
+    rerender(
+      <Select label="Fruit" options={MORE} isMultiple onChange={onChange} onSearch={onSearch} />,
+    );
+    fireEvent.click(optionNamed('Xigua'));
+    fireEvent.click(optionNamed('Yuzu'));
+    fireEvent.click(optionNamed('Xigua'));
+    expect(onChange.mock.calls.map(([v]) => v)).toEqual([
+      ['d'],
+      ['d', 'x'],
+      ['d', 'x', 'y'],
+      ['d', 'y'],
+    ]);
+    expect(chips(container)).toEqual(['Remove Date', 'Remove Yuzu']);
+  });
+
+  it('reports an empty query after a pick in a multiple Select that had text', () => {
+    const onSearch = vi.fn();
+    renderSelect({ isMultiple: true, onSearch });
+    type('an');
+    key('Enter');
+    expect(onSearch).toHaveBeenLastCalledWith('');
+    expect((combo() as HTMLInputElement).value).toBe('');
+  });
+
+  it('says it is loading when the list is empty, and keeps a stale list busy', () => {
+    const { rerender } = render(<Select label="Fruit" options={[]} onSearch={vi.fn()} isLoading />);
+    fireEvent.click(combo());
+    expect(screen.getByRole('status').textContent).toBe('Loading…');
+    rerender(<Select label="Fruit" options={[]} onSearch={vi.fn()} />);
+    expect(screen.getByRole('status').textContent).toBe('No results');
+    rerender(<Select label="Fruit" options={OPTIONS} onSearch={vi.fn()} isLoading />);
+    expect(screen.getByRole('listbox').getAttribute('aria-busy')).toBe('true');
+    expect(options()).toHaveLength(5);
+  });
+
+  it('shows a spinner in the field while loading, even with results on screen', () => {
+    const { container, rerender } = render(
+      <Select label="Fruit" options={OPTIONS} onSearch={vi.fn()} />,
+    );
+    const spinner = () => container.querySelector(`.${spinnerStyles.spinner}`);
+    expect(spinner()).toBeNull();
+    rerender(<Select label="Fruit" options={OPTIONS} onSearch={vi.fn()} isLoading />);
+    expect(spinner()).not.toBeNull();
+    // Decoration: the busy state is on the listbox, the status text on an empty list
+    expect(spinner()?.getAttribute('aria-hidden')).toBe('true');
+    expect(container.querySelector('[data-loading]')).not.toBeNull();
+    rerender(<Select label="Fruit" options={OPTIONS} onSearch={vi.fn()} />);
+    expect(spinner()).toBeNull();
+    expect(container.querySelector('[data-loading]')).toBeNull();
+  });
+
+  it('shows the spinner on a Select without onSearch too', () => {
+    const { container } = renderSelect({ isLoading: true });
+    expect(container.querySelector(`.${spinnerStyles.spinner}`)).not.toBeNull();
+  });
+
+  it('does not take the stale first option on Enter while loading', () => {
+    const onChange = vi.fn();
+    renderSelect({ onSearch: vi.fn(), isLoading: true, onChange });
+    type('x');
+    key('Enter');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(combo().getAttribute('aria-expanded')).toBe('true');
+  });
+});
+
 describe('Select (multiple)', () => {
   const chips = (container: HTMLElement) =>
     [...container.querySelectorAll('button[aria-label^="Remove"]')].map((b) =>
@@ -660,6 +811,9 @@ describe('Select types', () => {
         <Select label="a" options={[]} isMultiple onChange={(v: string) => v} />
         {/* @ts-expect-error a single Select's value is a string */}
         <Select label="a" options={[]} value={['a']} />
+        {/* @ts-expect-error onSearch is search, so the Select can't be told it isn't searchable */}
+        <Select label="a" options={[]} isSearchable={false} onSearch={() => {}} />
+        <Select label="a" options={[]} isSearchable onSearch={() => {}} />
         {/* @ts-expect-error a name is required: label, aria-label or aria-labelledby */}
         <Select options={[]} />
       </>

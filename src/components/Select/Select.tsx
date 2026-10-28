@@ -14,6 +14,7 @@ import { clsx } from '@/utils/clsx';
 import type { ScaleProp } from '@/types/scale';
 import { TextFieldFrame } from '../_shared/TextFieldFrame';
 import { OptionText } from '../_shared/OptionText';
+import { Spinner } from '../_shared/Spinner';
 import type { NameProps, OptionBase } from '../_shared/types';
 import { CrossIcon } from './CrossIcon';
 import { SelectChip } from './SelectChip';
@@ -44,10 +45,11 @@ type SelectFieldProps = Omit<
   /** Shown while nothing is selected. Not a label or a hint: use `label`. */
   placeholder?: string;
   /**
-   * The control is an input that filters the options as the user types. The value is still always
-   * one of the options, never the typed text.
+   * A spinner replaces the chevron. An empty list says "Loading…" instead of "No results"; one that
+   * isn't empty stays on screen, marked busy, and Enter doesn't take its first option. Set it while
+   * a search is running.
    */
-  isSearchable?: boolean;
+  isLoading?: boolean;
   /** Not openable, not focusable, dimmed. */
   isDisabled?: boolean;
   /**
@@ -57,7 +59,31 @@ type SelectFieldProps = Omit<
   isRequired?: boolean;
 };
 
+// `onSearch` is search, so it can't be combined with `isSearchable={false}`
+type SearchProps =
+  | {
+      /**
+       * The control is an input that filters the options as the user types. The value is still always
+       * one of the options, never the typed text.
+       */
+      isSearchable?: boolean;
+      onSearch?: undefined;
+    }
+  | {
+      isSearchable?: true;
+      /**
+       * The caller searches, for options fetched by what is typed. Makes the Select searchable and
+       * stops it filtering `options`: pass the matches. Called with the typed text, and with `''`
+       * when the text is reset (a pick in a multiple one, the list closing). Debounce and abort in
+       * the caller. Selected options are remembered, so they stay shown when new results replace the
+       * list; a value that is already selected on first render needs its option in `options` once.
+       * Values are in the order they were picked, not `options` order.
+       */
+      onSearch: (query: string) => void;
+    };
+
 export type SelectProps = SelectFieldProps &
+  SearchProps &
   NameProps &
   (
     | {
@@ -103,6 +129,8 @@ export type SelectProps = SelectFieldProps &
 // What the component works with once `isMultiple` has been looked at. The public type above is the
 // union that makes `value` and `onChange` follow `isMultiple`.
 type SelectImplProps = SelectFieldProps & {
+  isSearchable?: boolean;
+  onSearch?: (query: string) => void;
   isMultiple?: boolean;
   isClearable?: boolean;
   value?: string | string[] | null;
@@ -138,7 +166,9 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
     onChange,
     name,
     placeholder,
-    isSearchable = false,
+    isSearchable: searchableProp = false,
+    onSearch,
+    isLoading = false,
     isMultiple = false,
     isClearable = false,
     isDisabled = false,
@@ -146,6 +176,8 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
     id,
     ...frameProps
   } = rawProps as SelectImplProps;
+  const isRemote = onSearch !== undefined;
+  const isSearchable = searchableProp || isRemote;
 
   const autoId = useId();
   const controlId = id ?? autoId;
@@ -157,7 +189,21 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
   // One list for both modes: a single Select holds at most one. Only values that are options count.
   const [uncontrolled, setUncontrolled] = useState(() => toValues(defaultValue));
   const current = value === undefined ? uncontrolled : toValues(value);
-  const selectedOptions = options.filter((option) => current.includes(option.value));
+  // With `onSearch`, `options` are only the latest matches, so a selected option that dropped out of
+  // them is looked up here, in the order the values were picked. Without it, `options` is the whole
+  // list, in its order.
+  const remembered = useRef(new Map<string, SelectOption>());
+  let selectedOptions: SelectOption[];
+  if (isRemote) {
+    const inList = new Map(options.map((option) => [option.value, option]));
+    selectedOptions = current.flatMap((v) => {
+      const option = inList.get(v) ?? remembered.current.get(v);
+      if (option) remembered.current.set(v, option);
+      return option ? [option] : [];
+    });
+  } else {
+    selectedOptions = options.filter((option) => current.includes(option.value));
+  }
   const selectedValues = selectedOptions.map((option) => option.value);
   const selectedLabel = selectedOptions[0]?.label ?? '';
 
@@ -166,8 +212,19 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
     onChange?.(isMultiple ? next : (next[0] ?? null));
   };
   const choose = (optionValue: string) => {
+    // The caller may swap the list in the same update as the pick, before it is rendered selected
+    const picked = options.find((o) => o.value === optionValue);
+    if (isRemote && picked) remembered.current.set(optionValue, picked);
     if (!isMultiple) {
       if (selectedValues[0] !== optionValue) update([optionValue]);
+      return;
+    }
+    if (isRemote) {
+      update(
+        selectedValues.includes(optionValue)
+          ? selectedValues.filter((v) => v !== optionValue)
+          : [...selectedValues, optionValue],
+      );
       return;
     }
     // In `options` order, not click order
@@ -211,6 +268,8 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
     choose,
     onBackspace,
     popupRef: popup.popupRef,
+    onSearch,
+    isLoading,
   });
 
   // While the popup animates out, keep listing what it listed: closing resets the query, which
@@ -373,6 +432,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
             className={styles.field}
             data-open={isOpen || undefined}
             data-clearable={canClear || undefined}
+            data-loading={isLoading || undefined}
             style={{ '--select-anchor': anchorName } as CSSProperties}
           >
             {control}
@@ -394,6 +454,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
               </button>
             )}
             <Chevron />
+            {isLoading && <Spinner className={styles.spinner} />}
             {name &&
               selectedValues.map((v) => (
                 <input key={v} type="hidden" name={name} value={v} disabled={disabled} />
@@ -412,7 +473,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
               >
                 {listed.length === 0 ? (
                   <p role="status" className={styles.empty}>
-                    No results
+                    {isLoading ? 'Loading…' : 'No results'}
                   </p>
                 ) : (
                   <ul
@@ -420,6 +481,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                     role="listbox"
                     className={styles.listbox}
                     aria-multiselectable={isMultiple || undefined}
+                    aria-busy={isLoading || undefined}
                     aria-label={rawProps['aria-label'] ?? frameProps.label}
                     aria-labelledby={rawProps['aria-labelledby']}
                   >

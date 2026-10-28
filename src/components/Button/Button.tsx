@@ -2,6 +2,7 @@ import { forwardRef, type ButtonHTMLAttributes, type MouseEvent } from 'react';
 import { clsx } from '@/utils/clsx';
 import { resolveScaleProps } from '@/utils/scale';
 import type { ScaleProp } from '@/types/scale';
+import { Spinner } from '../_shared/Spinner';
 import styles from './Button.module.css';
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
@@ -71,7 +72,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     >
       {/* Stays in the layout (just transparent) while loading, so the button keeps its width and its accessible name */}
       <span className={styles.content}>{children}</span>
-      {isLoading && <span className={styles.spinner} aria-hidden="true" />}
+      {isLoading && <Spinner className={styles.spinner} />}
     </button>
   );
 });

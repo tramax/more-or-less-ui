@@ -109,13 +109,28 @@
   /* Turns over with a slight overshoot when opening, and settles without one when closing */
   transition:
     transform 400ms var(--ease-leave),
-    scale 300ms var(--ease-pop);
+    scale 300ms var(--ease-pop),
+    opacity 150ms ease;
 }
 .field[data-open] .chevron {
   transform: rotate(180deg);
   transition:
     transform 500ms var(--ease-pop),
-    scale 300ms var(--ease-pop);
+    scale 300ms var(--ease-pop),
+    opacity 150ms ease;
+}
+/* Loading: the ring takes the chevron's place, so nothing shifts. The chevron stays mounted (just
+   transparent) so it doesn't jump back to its open or closed angle when the ring goes. */
+.field[data-loading] .chevron {
+  opacity: 0;
+}
+/* Over the chevron's 1em box: the ring is 1em plus its 0.125em border, so it starts that much
+   further out and up. The chevron's click-through applies to it too. */
+.spinner {
+  position: absolute;
+  inset-inline-end: 0.875em;
+  top: 0.75em;
+  pointer-events: none;
 }
 /* Hovering the control grows the caret by the same amount as a × grows. `scale` is its own property,
    so it doesn't fight the rotation. The caret ignores the pointer, so it is the control under it

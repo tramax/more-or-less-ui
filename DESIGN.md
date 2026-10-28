@@ -435,7 +435,8 @@ Border radius, font weight and box shadow are not props: the Button defines them
 module (currently placeholders on the `normal` tokens).
 
 Boolean props use the `is*` prefix. While `isLoading`, the content stays in the layout (transparent)
-so the button keeps its width and its accessible name.
+so the button keeps its width and its accessible name. The spinner is `_shared/Spinner`, also used by
+Select; Button only centers it.
 
 ### Card
 
@@ -716,10 +717,20 @@ type SelectProps = Omit<
     label?: string; // without it aria-label/aria-labelledby is required
     error?: string; // invalid state + message below the field; the caller decides when
     placeholder?: string; // shown while nothing is selected; not a label or a hint
-    isSearchable?: boolean; // the control is an input that filters the options
+    isLoading?: boolean; // a spinner in the chevron's place; "Loading…" for an empty list, aria-busy and no Enter-to-pick for a stale one
     isDisabled?: boolean;
     isRequired?: boolean; // aria-required + an aria-hidden asterisk; NOT native `required`
   } & (
+    | {
+        isSearchable?: boolean; // the control is an input that filters the options
+        onSearch?: undefined;
+      }
+    | {
+        isSearchable?: true; // implied: `isSearchable={false}` with `onSearch` is a type error
+        onSearch: (query: string) => void; // the caller searches; `options` are the matches, not filtered
+      }
+  ) &
+  (
     | {
         isMultiple?: false;
         isClearable?: false;
@@ -770,6 +781,34 @@ Enter commits. A multiple one clears the query after each pick. In a multiple on
 empty input removes the last chip that can be removed. A click anywhere on a removable chip removes it
 (the whole chip is the hover target: it takes `--color-select-chip-hover` and the × scales up); its button is the accessible name and is out of the tab order, so
 the field is one Tab stop.
+
+**Async search.** `onSearch` is for options fetched by what is typed. One prop, not an `isAsync` flag
+next to `isSearchable`: a flag would be meaningless without `isSearchable` (a button has no text to
+search), and one prop can't be set to a state that doesn't exist, so `onSearch` implies a searchable
+input and the types reject `isSearchable={false}` with it. What it changes, and only that:
+
+- **No local filtering.** `options` are the caller's matches, shown whatever they matched on (an email
+  that isn't in the label, a fuzzy hit). The hook's `visible` skips `filterOptions`.
+- **The text is reported.** `onSearch(text)` on every change, and `onSearch('')` when the text is
+  reset (the list closes, or a multiple Select clears it after a pick), and only if there was text.
+  That is where the caller brings its default suggestions back. Debounce and abort are the caller's:
+  they depend on the API, and `Select.stories.tsx` has a `useSearch` that does both.
+- **Selected options are remembered.** `selectedOptions = options.filter(…)` would lose the value the
+  moment a new result set lacks it, so the Select keeps the option objects it has seen selected
+  (and records one when it is picked, since the caller may swap the list in the same update). A value
+  that is selected on first render has never been seen, so its option has to be in `options` once.
+- **Pick order.** Without `onSearch`, a multiple Select reports values in `options` order. Across
+  searches there is no stable `options` order (and chips that reshuffle as the user types are worse),
+  so with it chips stay where they are and a new pick goes last.
+
+`isLoading` is independent of it and works on any Select. The field shows `_shared/Spinner` (the ring
+Button uses) in the chevron's corner, which fades out under it but stays mounted, so it doesn't jump
+back to its open or closed angle afterwards; the field's width and text don't move. The ring is the
+cue for sighted users whatever the list holds; it is `aria-hidden`, like Button's. For assistive tech:
+while `options` is empty the popup says "Loading…" in place of "No results"; while it isn't, the stale
+list stays (blanking it on every keystroke flickers) with `aria-busy` on the listbox, and Enter doesn't
+take its first option, since the user hasn't seen the list they are about to pick from. Clicking is
+still allowed: they can see it.
 
 **Clearable.** Off by default, as in most libraries: a plain single Select is expected to always have a
 value, and a required one must not offer to empty itself, so `isRequired` and `isDisabled` hide the
@@ -833,8 +872,9 @@ option text is `_shared/OptionText`, and `SelectOption` is `OptionBase`. The lis
 chip becomes the shared Badge when that is built.
 
 **Not yet:** a clear button, `minSelected` / `maxSelected` (Checkbox has `minChecked` / `maxChecked`),
-option groups, async options (an `onSearch`) and creating an option, a custom `filter`,
-localisation of "No results" and "Remove <label>".
+option groups, creating an option, a custom `filter`, loading options when the list opens (not by
+typing: needs an `onOpen`, and `onSearch` doesn't cover a non-searchable Select), paging a long result
+list, localisation of "No results", "Loading…" and "Remove <label>".
 
 **Open:**
 
@@ -1003,7 +1043,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText: options)
+│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText: options; Spinner: Button + Select)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -1176,7 +1216,7 @@ export const EscapeHatch: Story = {
 - [x] `TextField` — size, label, error, isDisabled, isReadOnly, isRequired
 - [x] `Checkbox` — options, orientation, minChecked/maxChecked, label, error, isDisabled (no `size`)
 - [x] `Radio` — options, orientation, label, error, isDisabled, isRequired (no `size`); shares `_shared/OptionGroup` with Checkbox
-- [x] `Select` — options, isSearchable, isMultiple (chips), isClearable, placeholder, label, error, isDisabled, isRequired, size; one component for select and autocomplete; shares `_shared/TextFieldFrame` with TextField
+- [x] `Select` — options, isSearchable, onSearch (async options), isLoading, isMultiple (chips), isClearable, placeholder, label, error, isDisabled, isRequired, size; one component for select and autocomplete; shares `_shared/TextFieldFrame` with TextField
 - [x] `Textarea` — size, rows, resize, label, error, isDisabled, isReadOnly, isRequired; shares `_shared/TextFieldFrame` with TextField
 - [x] `Toggle` — label, description, checked/defaultChecked, isDisabled (single boolean, no `size`, no `error`); no option row, on / off shown by position, fill and icon
 - [ ] `Badge`, `Alert`, `Icon` — Display

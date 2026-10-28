@@ -181,29 +181,15 @@
   display: none;
 }
 
+/* The ring itself is _shared/Spinner; this centers it over the content */
 .spinner {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 1em;
-  height: 1em;
   margin: -0.5em 0 0 -0.5em;
-  border: 0.125em solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: spin 700ms linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation-duration: 2s;
-  }
   /* No scaling for reduced motion; the tint and the raised shadow remain as the hover cue */
   .button:hover:not(:disabled, .loading),
   .button:hover:active:not(:disabled, .loading) {
