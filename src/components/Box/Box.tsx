@@ -4,17 +4,9 @@ import { resolveScaleProps } from '@/utils/scale';
 import type { ScaleProp } from '@/types/scale';
 import styles from './Box.module.css';
 
-// Exported for Storybook, which can't see defaults that aren't destructuring defaults
-export const BOX_DEFAULTS = {
-  padding: 'normal',
-  margin: 'normal',
-  borderRadius: 'normal',
-  boxShadow: 'normal',
-  background: 'normal',
-} as const;
-
 const SCALE_SPEC = {
-  // Each drives the CSS property of the same name
+  // Each drives the CSS property of the same name. No defaults: a bare `<Box>` is a plain div, and
+  // a prop only does something once you set it. Card (the styled surface) and Stack build on this.
   direct: [
     'padding',
     'paddingLeft',
@@ -26,14 +18,7 @@ const SCALE_SPEC = {
     'marginRight',
     'marginTop',
     'marginBottom',
-    'borderRadius',
-    'boxShadow',
-    'background',
   ],
-  // Every prop falls back to `normal`, so `<Box />` is a styled surface out of the box. The per-side
-  // props (paddingLeft, marginTop, ...) have no default: they only override their shorthand.
-  // Opt out with an escape-hatch value: padding={0}, margin={0}, boxShadow="none", background="transparent".
-  defaults: BOX_DEFAULTS,
 } as const;
 
 type ScalePropName = (typeof SCALE_SPEC.direct)[number];

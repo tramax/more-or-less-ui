@@ -4,6 +4,8 @@ export { Box } from './Box';
 export type { BoxProps } from './Box';
 export { Button } from './Button';
 export type { ButtonProps } from './Button';
+export { Card } from './Card';
+export type { CardProps } from './Card';
 export { Checkbox } from './Checkbox';
 export type { CheckboxProps, CheckboxOption } from './Checkbox';
 export { Radio } from './Radio';

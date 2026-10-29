@@ -27,11 +27,22 @@ export type { ClassValue } from '@/utils/clsx';
 export {} from '@/styles.css';
 
 // Components
-export { Banner, Box, Button, Checkbox, Radio, Select, TextField, Textarea } from '@/components';
+export {
+  Banner,
+  Box,
+  Button,
+  Card,
+  Checkbox,
+  Radio,
+  Select,
+  TextField,
+  Textarea,
+} from '@/components';
 export type {
   BannerProps,
   BoxProps,
   ButtonProps,
+  CardProps,
   CheckboxProps,
   CheckboxOption,
   RadioProps,

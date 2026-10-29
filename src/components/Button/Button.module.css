@@ -8,7 +8,7 @@
  * too, and so does an escape-hatch size such as size="1.5rem".
  *
  * `background` uses the --color-button-background-* tokens (see theme/tokens.css), separate from
- * Box's so they can be customised independently.
+ * Card's so they can be customised independently.
  */
 
 .button {
@@ -19,7 +19,7 @@
   padding: 0.75em 1em;
   border: 0;
   /* Fixed, not props. Placeholders on the `normal` tokens until the Button's own look is defined.
-     corner-shape: squircle gives smoother corners than circular arcs, as in Box. */
+     corner-shape: squircle gives smoother corners than circular arcs, as in Card. */
   border-radius: var(--radius-normal);
   corner-shape: squircle;
   /* Own elevation layers rather than the shared --elevation-* tokens: those resolve at :root, so

@@ -1,0 +1,45 @@
+/*
+ * Card: the surface variants. Every scale prop has one class per variant, named <prop><Variant>
+ * (looked up by resolveScaleProps). Card has no base values in CSS: `normal` is a real class too, and
+ * the props that default to `normal` get it from SCALE_SPEC.defaults in Card.tsx.
+ *
+ * Padding is not here: Card renders a Box, which owns the spacing classes.
+ *
+ * `background` uses the --color-card-background-* tokens (see theme/tokens.css).
+ */
+
+/* corner-shape: squircle gives smoother, more organic corners than circular arcs. Browsers without
+   support ignore it and fall back to regular rounded corners. It lives on the token classes only, so
+   escape-hatch values (borderRadius="50%") keep their normal geometry. */
+.borderRadiusLess {
+  border-radius: var(--radius-less);
+  corner-shape: squircle;
+}
+.borderRadiusNormal {
+  border-radius: var(--radius-normal);
+  corner-shape: squircle;
+}
+.borderRadiusMore {
+  border-radius: var(--radius-more);
+  corner-shape: squircle;
+}
+
+.boxShadowLess {
+  box-shadow: var(--elevation-less);
+}
+.boxShadowNormal {
+  box-shadow: var(--elevation-normal);
+}
+.boxShadowMore {
+  box-shadow: var(--elevation-more);
+}
+
+.backgroundLess {
+  background: var(--color-card-background-less);
+}
+.backgroundNormal {
+  background: var(--color-card-background-normal);
+}
+.backgroundMore {
+  background: var(--color-card-background-more);
+}

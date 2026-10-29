@@ -101,7 +101,7 @@ Checkbox / Radio options (`_shared/OptionGroup.module.css`) and the Select popup
 
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button, Banner), one opaque brand tint (`--color-primary-tint`) that Button's `normal` and Banner's `normal` alias, the opposite of the current text color (`--color-text-inverse`, which Banner's glow aliases), and one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio, Toggle and Select alias** (Banner's `less` aliases it too). No palettes, no
+Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Card, Button, Banner), one opaque brand tint (`--color-primary-tint`) that Button's `normal` and Banner's `normal` alias, the opposite of the current text color (`--color-text-inverse`, which Banner's glow aliases), and one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio, Toggle and Select alias** (Banner's `less` aliases it too). No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -110,10 +110,10 @@ actually needs one.
 :root {
   --color-primary: #3b82f6;
 
-  /* Box's `background` less / normal / more */
-  --color-box-background-less: transparent;
-  --color-box-background-normal: Canvas; /* system canvas: white in light, system dark in dark */
-  --color-box-background-more: #d9c9ad; /* sand */
+  /* Card's `background` less / normal / more */
+  --color-card-background-less: transparent;
+  --color-card-background-normal: Canvas; /* system canvas: white in light, system dark in dark */
+  --color-card-background-more: #d9c9ad; /* sand */
 
   /* Button's `background`, separate so each component can be customised on its own */
   --color-button-background-less: transparent;
@@ -125,7 +125,7 @@ actually needs one.
 /* theme/themes.css */
 [data-theme='dark'] {
   color-scheme: dark; /* flips system colors: Canvas, CanvasText, form controls, scrollbars */
-  --color-box-background-more: #4a3f33; /* umber */
+  --color-card-background-more: #4a3f33; /* umber */
   --color-button-background-more: #4a3f33; /* umber */
   --color-button-text-more: white; /* set with the background: on-primary follows the sand primary */
   /* ...heavier --elevation-* shadows */
@@ -322,7 +322,7 @@ export const Component = forwardRef<HTMLDivElement, ComponentProps>(
 <Button boxShadow="less" />                   // Flatter
 <Button padding="less" />                     // Tighter padding
 
-<Box
+<Card
   padding="more"
   margin="less"
   borderRadius="more"
@@ -341,7 +341,7 @@ export const Component = forwardRef<HTMLDivElement, ComponentProps>(
   padding="12px 24px"
 />
 
-<Box
+<Card
   borderRadius="12px"
   padding="1rem 2rem"
 />
@@ -351,12 +351,15 @@ export const Component = forwardRef<HTMLDivElement, ComponentProps>(
 
 ## Primitive Components
 
-### Box — The Fundamental Building Block
+### Box — Spacing Only
+
+`Box` provides margin and padding for layout and nothing else. It has no defaults and paints nothing:
+a bare `<Box>` is a plain `div`. Every prop is a `ScaleProp` (`less` / `normal` / `more` or an escape
+hatch). `marginLeft="auto"` pushes a box to the end of a row.
 
 ```tsx
 // components/Box/Box.tsx
 interface BoxProps {
-  // Spacing (direct CSS mappings)
   padding?: ScaleProp;
   paddingLeft?: ScaleProp;
   paddingRight?: ScaleProp;
@@ -368,48 +371,66 @@ interface BoxProps {
   marginTop?: ScaleProp;
   marginBottom?: ScaleProp;
 
-  // Radius, Shadow (direct)
-  borderRadius?: ScaleProp;
-  boxShadow?: ScaleProp;
-
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
 }
 ```
 
-### Flex, Stack, Grid — Composition Helpers
+### Card — The Surface
+
+`Card` is a `Box` with a surface: radius, shadow and background. It renders a Box, so the padding
+props and classes are Box's (`Card.module.css` has only the surface classes). Every prop defaults to
+`normal`, so a bare `<Card />` is a styled surface; opt out with `padding={0}`, `boxShadow="none"`,
+`background="transparent"`. It has no margin props: the space around a card comes from the layout it
+sits in (a Stack's `gap`, or a wrapping Box). Background uses `--color-card-background-*`.
 
 ```tsx
-// components/Flex/Flex.tsx
-interface FlexProps extends BoxProps {
-  direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
-  wrap?: 'nowrap' | 'wrap' | 'wrap-reverse';
-  align?: 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline';
-  justify?:
-    | 'stretch'
-    | 'center'
-    | 'flex-start'
-    | 'flex-end'
-    | 'space-between'
-    | 'space-around'
-    | 'space-evenly';
-  gap?: ScaleProp;
+// components/Card/Card.tsx
+interface CardProps extends Omit<BoxProps, 'margin' | `margin${string}`> {
+  borderRadius?: ScaleProp; // default normal
+  boxShadow?: ScaleProp; // default normal
+  background?: ScaleProp; // default normal
+  // padding defaults to normal
 }
+```
 
+Still to come, so that Card earns its name: header / body / footer slots, a semantic `as`, and an
+interactive state (`onClick` / `href`: hover, focus ring).
+
+### Stack, Grid — Layout (planned)
+
+One flex component, not two: `Stack` is a column with a gap by default, and `direction="row"` makes it
+a row. There is no `Flex`, `HStack` or `VStack`. It extends `BoxProps`, so it also takes padding and
+margin. The common cases (form rhythm, toolbar, wrapping tag list, header with actions) are all props:
+
+```tsx
+<Stack>                                              // column, gap normal
+<Stack direction="row" align="center" gap="less">    // toolbar
+<Stack direction="row" justify="between">            // title left, actions right
+<Stack direction="row" wrap>                         // tag list
+```
+
+```tsx
 // components/Stack/Stack.tsx
 interface StackProps extends BoxProps {
-  direction?: 'vertical' | 'horizontal';
-  divider?: React.ReactNode;
+  direction?: 'column' | 'row'; // default column; no -reverse (it breaks tab order)
+  gap?: ScaleProp; // default normal
+  align?: 'start' | 'center' | 'end' | 'stretch' | 'baseline';
+  justify?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
+  wrap?: boolean;
 }
 
 // components/Grid/Grid.tsx
 interface GridProps extends BoxProps {
-  columns?: number | ScaleProp; // Can use ScaleProp for escape hatch
-  rows?: number | ScaleProp;
-  gap?: ScaleProp;
+  minColumnWidth?: ScaleProp; // auto-fill columns at least this wide (the usual card grid)
+  columns?: number; // fixed column count
+  gap?: ScaleProp; // default normal
 }
 ```
+
+Open: switching from row to column on narrow screens (prefer a container query over breakpoint objects).
+No `divider` prop; put a `Divider` between children.
 
 ---
 
@@ -1024,7 +1045,7 @@ export function useTheme() {
 
 ```tsx
 // Consumer's custom component
-import { Box, Text, ScaleProp, isVariant } from 'more-or-less-ui';
+import { Card, Text, ScaleProp, isVariant } from 'more-or-less-ui';
 
 interface StatCardProps {
   value: string;
@@ -1036,7 +1057,7 @@ interface StatCardProps {
 
 export function StatCard({ value, label, size, borderRadius, boxShadow }) {
   return (
-    <Box
+    <Card
       padding="normal"
       borderRadius={borderRadius}
       boxShadow={boxShadow}
@@ -1050,7 +1071,7 @@ export function StatCard({ value, label, size, borderRadius, boxShadow }) {
       <Text size="less" color="textMuted">
         {label}
       </Text>
-    </Box>
+    </Card>
   );
 }
 
@@ -1124,7 +1145,6 @@ more-or-less-ui/
 │   │   │   ├── Box.stories.tsx
 │   │   │   └── index.ts
 │   │   ├── Button/
-│   │   ├── Flex/
 │   │   ├── Stack/
 │   │   ├── Grid/
 │   │   ├── Text/
@@ -1154,7 +1174,6 @@ export { getCSSVariable, getAllTokens } from './utils/cssVars';
 
 // Components
 export { Box } from './components/Box';
-export { Flex } from './components/Flex';
 export { Stack } from './components/Stack';
 export { Grid } from './components/Grid';
 export { Text } from './components/Text';
@@ -1174,6 +1193,7 @@ export { useTokens } from './hooks/useTokens';
 // Types
 export type { ScaleProp, Variant } from './types/scale';
 export type { BoxProps } from './components/Box';
+export type { CardProps } from './components/Card';
 export type { ButtonProps } from './components/Button';
 // ...
 ```
@@ -1285,7 +1305,7 @@ export const EscapeHatch: Story = {
 
 - [ ] `types/scale.ts` — `ScaleProp`, `Variant`, `isVariant`
 - [ ] `theme/tokens.css` — 15 scale CSS variables
-- [x] Color tokens in `theme/tokens.css` — Minimal: one primary color + Box and Button background scales
+- [x] Color tokens in `theme/tokens.css` — Minimal: one primary color + Card and Button background scales
 - [ ] `theme/themes.css` — Light/dark theme definitions
 - [ ] `theme/ThemeProvider.tsx` + `useTheme` hook
 - [ ] `utils/cssVars.ts` — `getCSSVariable`, `getAllTokens`
@@ -1293,10 +1313,9 @@ export const EscapeHatch: Story = {
 
 ### Phase 2: Primitives
 
-- [ ] `Box` — Full `ScaleProp` support on all props
-- [ ] `Flex` — Layout helpers
-- [ ] `Stack` — Vertical/horizontal with divider
-- [ ] `Grid` — Column/row helpers
+- [x] `Box` — padding and margin only (incl. per-side), no defaults
+- [ ] `Stack` — the one flex component: `direction`, `gap`, `align`, `justify`, `wrap`; replaces Flex
+- [ ] `Grid` — `minColumnWidth` / `columns`, `gap`
 - [ ] `Text` — Typography with `size`, `weight`, `color` props
 
 ### Phase 3: Components
@@ -1310,7 +1329,7 @@ export const EscapeHatch: Story = {
 - [x] `Toggle` — label, description, checked/defaultChecked, isDisabled (single boolean, no `size`, no `error`); no option row, on / off shown by position, fill and icon
 - [x] `Banner` — size, background (brand color at three strengths, no info/error kinds), title, onDismiss; `role="status"`
 - [ ] `Badge`, `Icon` — Display
-- [ ] `Card` — Only once it adds more than Box (slots, interactive variant, semantic element)
+- [x] `Card` — the former Box: radius, shadow, background, padding (no margin); renders a Box. Still to add: slots, interactive variant, semantic element
 
 ### Phase 4: Developer Experience
 
@@ -1337,6 +1356,6 @@ export const EscapeHatch: Story = {
 3. **CSS Modules for variants** — Zero runtime, browser-resolved, DevTools-friendly
 4. **Direct CSS property names** — `borderRadius`, `fontWeight`, `boxShadow`, `padding`, `margin`
 5. **Semantic names only for compounds** — `size` (multi-property: fontSize + padding + gap)
-6. **Primitives first** — `Box`, `Flex`, `Stack` cover 80% of custom component needs
+6. **Primitives first** — `Box`, `Stack`, `Grid` cover 80% of custom component needs
 7. **Export everything** — Tokens, hooks, utilities, types for consumer extensibility
 8. **No lock-in** — Escape hatch works, consumers can eject to own CSS anytime

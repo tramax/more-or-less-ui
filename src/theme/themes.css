@@ -17,7 +17,7 @@
   /* Flips system colors (Canvas, CanvasText, form controls, scrollbars) to their dark variants */
   color-scheme: dark;
 
-  --color-box-background-more: #4a3f33; /* umber */
+  --color-card-background-more: #4a3f33; /* umber */
   --color-button-background-more: #4a3f33; /* umber */
   /* Not --color-on-primary: the primary is still the light sand here, which would give black text */
   --color-button-text-more: white;

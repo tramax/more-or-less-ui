@@ -57,7 +57,7 @@
   align-items: start;
   column-gap: 0.75em;
   padding: 0.75em 1em;
-  /* Fixed, not props. corner-shape: squircle gives smoother corners than circular arcs, as in Box. */
+  /* Fixed, not props. corner-shape: squircle gives smoother corners than circular arcs, as in Card. */
   border-radius: var(--radius-less);
   corner-shape: squircle;
   background: var(--option-background);

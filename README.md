@@ -41,19 +41,19 @@ yarn add more-or-less-ui
 ## Quick Start
 
 ```tsx
-import { Button, Box, Flex, Text } from 'more-or-less-ui';
+import { Button, Stack, Text } from 'more-or-less-ui';
 import 'more-or-less-ui/styles.css';
 
 function App() {
   return (
-    <Flex gap="more" align="center">
+    <Stack direction="row" gap="more" align="center">
       <Button size="more" borderRadius="more">
         Primary Action
       </Button>
       <Button size="less" boxShadow="less">
         Secondary
       </Button>
-    </Flex>
+    </Stack>
   );
 }
 ```
@@ -130,7 +130,7 @@ Every component accepts these props with `ScaleProp` type (`'less' | 'normal' | 
 
 ### Defaults
 
-Components are opinionated: a prop you leave out falls back to `normal` where that makes a good starting point. `Box`, for example, defaults `padding`, `margin`, `borderRadius`, `boxShadow` and `background` to `normal`, so a bare `<Box />` is already a styled surface. To opt out, pass an escape-hatch value such as `padding={0}` or `boxShadow="none"`. The per-side props (`paddingLeft`, `marginTop`, ...) have no default; they only override their shorthand.
+Components are opinionated: a prop you leave out falls back to `normal` where that makes a good starting point. `Card`, for example, defaults `padding`, `borderRadius`, `boxShadow` and `background` to `normal`, so a bare `<Card />` is already a styled surface. `Box` is the exception: it only adds the margin and padding you ask for. To opt out, pass an escape-hatch value such as `padding={0}` or `boxShadow="none"`. The per-side props (`paddingLeft`, `marginTop`, ...) have no default; they only override their shorthand.
 
 To switch a default off, pass an escape-hatch value: `padding={0}`, or `background="less"` for a transparent background.
 
@@ -141,27 +141,28 @@ To switch a default off, pass an escape-hatch value: `padding={0}`, or `backgrou
 <Button size="more" />
 <Button borderRadius="less" />
 <Button fontWeight="more" />
-<Box padding="more" margin="less" />
+<Card padding="more" borderRadius="less" />
+<Box padding="more" marginBottom="less" />
 
 // Escape hatch (10% of cases)
 <Button size="1.5rem" borderRadius="50%" fontWeight={700} />
 <Box margin="2rem" padding="1rem 2rem" />
+<Card borderRadius="50%" />
 ```
 
 ## Components
 
 ### Primitives (Building Blocks)
 
-- `Box` — Fundamental layout primitive with all scale props
-- `Flex` — Flexbox layout helper
-- `Stack` — Vertical/horizontal stack with divider
+- `Box` — Margin and padding only, for layout
+- `Card` — A surface: padding, borderRadius, boxShadow, background
+- `Stack` — Flex layout: a column by default, `direction="row"` for a row; `gap`, `align`, `justify`, `wrap`
 - `Grid` — Grid layout helper
 - `Text` — Typography with size/weight/color
 
 ### Components (Composed)
 
 - `Button` — Interactive button with all scale props
-- `Card` — Container with elevation
 - `Input` — Form input
 - `Textarea` — Multi-line input
 - `Select` — Compound select component
@@ -171,7 +172,7 @@ To switch a default off, pass an escape-hatch value: `padding={0}`, or `backgrou
 Build custom components using the same design tokens:
 
 ```tsx
-import { Box, Text, ScaleProp, isVariant } from 'more-or-less-ui';
+import { Card, Text, ScaleProp, isVariant } from 'more-or-less-ui';
 
 interface StatCardProps {
   value: string;
@@ -183,7 +184,7 @@ interface StatCardProps {
 
 export function StatCard({ value, label, size, borderRadius, boxShadow }) {
   return (
-    <Box
+    <Card
       padding="normal"
       borderRadius={borderRadius}
       boxShadow={boxShadow}
@@ -197,7 +198,7 @@ export function StatCard({ value, label, size, borderRadius, boxShadow }) {
       <Text size="less" color="textMuted">
         {label}
       </Text>
-    </Box>
+    </Card>
   );
 }
 ```
