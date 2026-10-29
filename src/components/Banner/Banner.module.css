@@ -20,15 +20,16 @@
   gap: 0.75em;
   box-sizing: border-box;
   padding: 0.75em 1em;
-  border-radius: var(--radius-normal);
+  border-radius: var(--radius-less);
   corner-shape: squircle;
   color: CanvasText;
   line-height: 1.25;
 }
 
-/* A static glow: a soft pool of the text color in the top-left corner, fading out before it reaches the
-   text. Decoration only, so no markup and no motion. currentColor, so it shows on every background; in
-   em, so it follows `size`. It takes the banner's rounded corners, so it never spills past them. */
+/* A static glow: a soft pool in the top-left corner, in the opposite of the text color (white behind
+   black text, black behind white), so it is the part of the banner that contrasts with the words. It
+   sits under the first line of text, which it only tints. Decoration only, so no markup and no motion.
+   In em, so it follows `size`. It takes the banner's rounded corners, so it never spills past them. */
 .banner::before {
   content: '';
   position: absolute;
@@ -39,7 +40,7 @@
   pointer-events: none;
   background: radial-gradient(
     circle at 0 0,
-    color-mix(in oklab, currentColor 5%, transparent),
+    color-mix(in oklab, var(--color-banner-glow) 30%, transparent),
     transparent 12em
   );
 }

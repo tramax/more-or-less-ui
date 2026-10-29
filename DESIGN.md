@@ -101,7 +101,7 @@ Checkbox / Radio options (`_shared/OptionGroup.module.css`) and the Select popup
 
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button, Banner), one opaque brand tint (`--color-primary-tint`) that Button's `normal` and Banner's `normal` alias, and one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio, Toggle and Select alias** (Banner's `less` aliases it too). No palettes, no
+Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Box, Button, Banner), one opaque brand tint (`--color-primary-tint`) that Button's `normal` and Banner's `normal` alias, the opposite of the current text color (`--color-text-inverse`, which Banner's glow aliases), and one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio, Toggle and Select alias** (Banner's `less` aliases it too). No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -950,12 +950,15 @@ on any background. As in Button, a theme that recolors the `more` background set
 `CanvasText`. Because the scale is only strength of the same hue, nothing in it relies on a color
 difference: the words carry the meaning.
 
-**Glow.** A static decoration on every banner: a soft pool of the text color (7% alpha at the
-corner) fading to nothing by 11em, drawn by `.banner::before` (a `radial-gradient`) behind the
-content. No markup and no motion, so nothing to pause or reduce. In `em`, so it follows `size`;
-`currentColor`, so it shows on every background; clipped to the banner's rounded corners. Chosen from
-a set of static corner effects (ripple, sheen, dots, grid, stripes, ...); the ripple was tried first
-and dropped for being busier than the rest of the library.
+**Glow.** A static decoration on every banner: a soft pool in the top-left corner, in the **opposite
+of the text color** (`--color-banner-glow`, an alias of `--color-text-inverse`: white behind black
+text, black behind white), 20% alpha at the corner, fading to nothing by 11em. Drawn by
+`.banner::before` (a `radial-gradient`) behind the content. No markup and no motion, so nothing to
+pause or reduce. In `em`, so it follows `size`; clipped to the banner's rounded corners. It lightens
+under dark text and darkens under light text, so it always contrasts with the words, but on a dark
+background the darkening has little room to show. Chosen from a set of static corner effects
+(ripple, sheen, dots, grid, stripes, ...); the ripple was tried first and dropped for being busier
+than the rest of the library.
 
 **Dismiss.** `onDismiss` renders a real `<button aria-label="Dismiss">` with `_shared/CrossIcon`, in
 the tab order (unlike a Select chip's: a banner is not inside a field). On hover the × grows, as

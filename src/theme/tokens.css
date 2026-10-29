@@ -97,6 +97,12 @@
      browser gets the exact choice from contrast-color() (see the end of this file). */
   --color-on-primary: oklch(from var(--color-primary) clamp(0, (0.6 - l) * 1000, 1) 0 0);
 
+  /* The opposite of the text color it is used on: white on black text, black on white. Same recipe as
+     --color-on-primary, fed `currentColor`, which resolves where the token is used, not here. Banner's
+     glow aliases it. A different input, so a different string: this is not a second copy of the
+     recipe above. */
+  --color-text-inverse: oklch(from currentColor clamp(0, (0.6 - l) * 1000, 1) 0 0);
+
   /* Per-component tokens. Each aliases the shared value above, so a component can be customised on
      its own while the default stays defined once. Only set one to something else when the component
      really differs; a new input component adds its aliases here rather than a new recipe. */
@@ -149,10 +155,14 @@
   --color-banner-background-more: var(--color-primary);
   /* Text on the `more` background; set with it, as Button's (themes.css does) */
   --color-banner-text-more: var(--color-on-primary);
+  /* The glow in the corner: the opposite of the banner's text, so it lightens under dark text and
+     darkens under light text, whichever background */
+  --color-banner-glow: var(--color-text-inverse);
 }
 
 @supports (color: contrast-color(red)) {
   :root {
     --color-on-primary: contrast-color(var(--color-primary));
+    --color-text-inverse: contrast-color(currentColor);
   }
 }
