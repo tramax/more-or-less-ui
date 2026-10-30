@@ -56,11 +56,6 @@
     0 4px 8px color-mix(in oklab, var(--shadow-color) 8%, transparent),
     0 16px 32px color-mix(in oklab, var(--shadow-color) 10%, transparent);
 
-  /* Button's coloured shadows: how far the background is darkened toward black to get the shadow
-     colour, and a multiplier on the shadow alpha. Dark themes override both (themes.css). */
-  --button-shadow-darken: 45%;
-  --button-shadow-boost: 1;
-
   /* Card background scale — affects Card background */
   --color-card-background-less: transparent;
   --color-card-background-normal: Canvas; /* system canvas: white in light, system dark in dark */

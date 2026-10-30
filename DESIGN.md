@@ -518,7 +518,9 @@ gets light text. A theme or consumer that recolors `--color-button-background-mo
 `background` string keeps `CanvasText`.
 
 Border radius, font weight and box shadow are not props: the Button defines them itself in its CSS
-module (currently placeholders on the `normal` tokens).
+module (currently placeholders on the `normal` tokens). Its shadow is the shared elevation scale, not
+its own: `--elevation-normal` at rest, `-more` on hover, `-less` while pressed, so a theme that
+changes `--elevation-*` changes Button with Card and the rest.
 
 Boolean props use the `is*` prefix. While `isLoading`, the content stays in the layout (transparent)
 so the button keeps its width and its accessible name. The spinner is `_shared/Spinner`, also used by

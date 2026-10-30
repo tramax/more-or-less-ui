@@ -20,51 +20,9 @@
   border: 0;
   /* Fixed, not props. Placeholders on the `normal` tokens until the Button's own look is defined.
      corner-shape: squircle gives smoother corners than circular arcs, as in Card. */
-  border-radius: var(--radius-normal);
+  border-radius: var(--radius-more);
   corner-shape: squircle;
-  /* Own elevation layers rather than the shared --elevation-* tokens: those resolve at :root, so
-     they can't pick up a per-button shadow colour. Same two-layer structure (contact + ambient),
-     so hover interpolates per layer.
-     Why not the shared neutral shadow: on a dark fill the button's own edge already contrasts
-     strongly with the page, which masks a faint neutral shadow. A shadow in the button's own hue,
-     with more alpha, stays visible. The variants below set the colour and strength; without them
-     (an escape-hatch background) the shadow falls back to the faint neutral one. */
-  --button-shadow-color: var(--shadow-color);
-  --button-shadow-strength: 0.35;
-  --button-shadow-contact: calc(22% * var(--button-shadow-strength) * var(--button-shadow-boost));
-  --button-shadow-ambient: calc(16% * var(--button-shadow-strength) * var(--button-shadow-boost));
-  --button-elevation-less:
-    0 1px 2px
-      color-mix(
-        in oklab,
-        var(--button-shadow-color) calc(var(--button-shadow-contact) * 0.75),
-        transparent
-      ),
-    0 2px 6px
-      color-mix(
-        in oklab,
-        var(--button-shadow-color) calc(var(--button-shadow-ambient) * 0.5),
-        transparent
-      );
-  --button-elevation-normal:
-    0 2px 4px
-      color-mix(in oklab, var(--button-shadow-color) var(--button-shadow-contact), transparent),
-    0 8px 16px
-      color-mix(in oklab, var(--button-shadow-color) var(--button-shadow-ambient), transparent);
-  --button-elevation-more:
-    0 4px 8px
-      color-mix(
-        in oklab,
-        var(--button-shadow-color) calc(var(--button-shadow-contact) * 1.25),
-        transparent
-      ),
-    0 16px 32px
-      color-mix(
-        in oklab,
-        var(--button-shadow-color) calc(var(--button-shadow-ambient) * 1.5),
-        transparent
-      );
-  box-shadow: var(--button-elevation-normal);
+  box-shadow: var(--elevation-less);
   font-weight: var(--weight-more);
   color: CanvasText;
   font-family: inherit;
@@ -100,7 +58,7 @@
     transform: translateY(var(--button-hover-lift)) scale(var(--button-hover-scale));
     /* Next step up the elevation scale. The shadow gets the non-overshooting curve: it follows
        the scale's timing but doesn't need to bounce. */
-    box-shadow: var(--button-elevation-more);
+    box-shadow: var(--elevation-normal);
     z-index: 1;
     transition:
       transform 500ms var(--button-ease-enter),
@@ -112,7 +70,7 @@
   .button:hover:active:not(:disabled, .loading) {
     transform: translateY(0) scale(1);
     /* Below the resting elevation, as if pushed in */
-    box-shadow: var(--button-elevation-less);
+    box-shadow: var(--elevation-less);
     transition:
       transform 200ms var(--button-ease-leave),
       box-shadow 200ms var(--button-ease-leave),
@@ -222,26 +180,11 @@
 .backgroundLess {
   background: var(--color-button-background-less);
 }
-/* Filled variants cast a shadow in their own hue, darkened. `less` is transparent, so it keeps the
-   neutral fallback. `normal` is a pale tint, and darkening that gives a near-grey that reads as
-   black, so its shadow is derived from the brand colour itself, and lighter. */
 .backgroundNormal {
   background: var(--color-button-background-normal);
-  --button-shadow-color: color-mix(
-    in oklab,
-    var(--color-primary),
-    black var(--button-shadow-darken)
-  );
-  --button-shadow-strength: 0.7;
 }
 .backgroundMore {
   background: var(--color-button-background-more);
   /* The base CanvasText is unreadable on a dark brand fill */
   color: var(--color-button-text-more);
-  --button-shadow-color: color-mix(
-    in oklab,
-    var(--color-button-background-more),
-    black var(--button-shadow-darken)
-  );
-  --button-shadow-strength: 1;
 }

@@ -27,16 +27,17 @@
   /* Lighter, so the error text keeps its contrast on a dark surface */
   --color-danger: #ff8a80;
 
-  /* Shadows need to be heavier to read on dark surfaces */
-  --elevation-less: 0 1px 2px rgb(0 0 0 / 0.2);
-  --elevation-normal: 0 4px 6px rgb(0 0 0 / 0.3);
-  --elevation-more: 0 10px 15px rgb(0 0 0 / 0.4);
-  /* The neutral shadow tint (Button `less`, escape-hatch backgrounds) is the brand colour darkened
-     75%, still lighter than a dark page: use black. */
+  /* The shadow tint is the brand colour darkened 75%, still lighter than a dark page: use black */
   --shadow-color: black;
-
-  /* A shadow has to be darker than the page to show. On a dark page, a background darkened only
-     45% is still lighter than the page, so it reads as a glow: go nearly to black instead. */
-  --button-shadow-darken: 85%;
-  --button-shadow-boost: 2;
+  /* Same geometry and layer count as the light scale, heavier alphas to read on dark surfaces.
+     Every component's shadow (Card, Button, options, chips) comes from these. */
+  --elevation-less:
+    0 1px 2px color-mix(in oklab, var(--shadow-color) 20%, transparent),
+    0 2px 6px color-mix(in oklab, var(--shadow-color) 15%, transparent);
+  --elevation-normal:
+    0 2px 4px color-mix(in oklab, var(--shadow-color) 30%, transparent),
+    0 8px 16px color-mix(in oklab, var(--shadow-color) 25%, transparent);
+  --elevation-more:
+    0 4px 8px color-mix(in oklab, var(--shadow-color) 40%, transparent),
+    0 16px 32px color-mix(in oklab, var(--shadow-color) 40%, transparent);
 }
