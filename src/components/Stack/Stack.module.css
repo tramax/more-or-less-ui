@@ -1,8 +1,7 @@
 /*
  * Stack: a flex container. The base class sets `display: flex`; direction, alignment and wrapping are
- * one class per value, named <prop><Value> (looked up in Stack.tsx). `gap` is a scale prop, so its
- * classes are named <prop><Variant> and looked up by resolveScaleProps. Padding and margin are Box's:
- * Stack renders a Box.
+ * one class per value, named <prop><Value> (looked up in Stack.tsx). `gap` is in _shared/Gap, and
+ * padding and margin are Box's: Stack renders a Box.
  *
  * `align` and `justify` use start / end rather than flex-start / flex-end, so they read the same in
  * a column and a row.
@@ -56,14 +55,4 @@
 }
 .justifyEvenly {
   justify-content: space-evenly;
-}
-
-.gapLess {
-  gap: var(--space-less);
-}
-.gapNormal {
-  gap: var(--space-normal);
-}
-.gapMore {
-  gap: var(--space-more);
 }

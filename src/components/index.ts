@@ -8,6 +8,8 @@ export { Card } from './Card';
 export type { CardProps } from './Card';
 export { Checkbox } from './Checkbox';
 export type { CheckboxProps, CheckboxOption } from './Checkbox';
+export { Grid } from './Grid';
+export type { GridProps } from './Grid';
 export { Radio } from './Radio';
 export type { RadioProps, RadioOption } from './Radio';
 export { Select } from './Select';

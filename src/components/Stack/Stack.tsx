@@ -1,21 +1,14 @@
 import { forwardRef } from 'react';
 import { Box, type BoxProps } from '@/components/Box';
 import { clsx } from '@/utils/clsx';
-import { resolveScaleProps } from '@/utils/scale';
+import { GAP_DEFAULTS, resolveGap } from '@/components/_shared/Gap';
 import type { ScaleProp } from '@/types/scale';
 import styles from './Stack.module.css';
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
 export const STACK_DEFAULTS = {
-  gap: 'normal',
+  ...GAP_DEFAULTS,
   direction: 'column',
-} as const;
-
-const SCALE_SPEC = {
-  // Drives the CSS property of the same name. Padding and margin are Box's: Stack renders a Box.
-  direct: ['gap'],
-  // `<Stack>` is a column with a normal gap. Opt out with gap={0}.
-  defaults: { gap: STACK_DEFAULTS.gap },
 } as const;
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -37,7 +30,7 @@ export const Stack = forwardRef<HTMLDivElement, StackProps>(function Stack(
   { className, style, direction = STACK_DEFAULTS.direction, align, justify, wrap, ...props },
   ref,
 ) {
-  const { classNames, style: scaleStyle, rest } = resolveScaleProps(styles, SCALE_SPEC, props);
+  const { classNames, style: scaleStyle, rest } = resolveGap(props);
 
   return (
     <Box

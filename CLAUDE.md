@@ -44,6 +44,8 @@ same recipe is defined under two names.
   `className`; a new input component renders it rather than its own `<p>` and `<svg>`.
 - `_shared/FieldLabel` is the visible name (a `<label>` for TextField, a `<legend>` for groups) with
   its required asterisk. Spacing goes through `className`.
+- `_shared/Gap` is the `gap` scale (classes + `resolveGap`) for Stack and Grid, which both render a Box
+  for padding and margin. A new layout component takes `gap` from it rather than its own classes.
 - `_shared/OptionText` is the label + description beside an option's control; `_shared/types.ts` has
   `NameProps` (the accessible-name union for every labelled input) and `OptionBase` (one option).
 - Left duplicated on purpose (`pnpm check:dup` reports them):

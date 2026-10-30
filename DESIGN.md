@@ -400,7 +400,7 @@ interactive state (`onClick` / `href`: hover, focus ring).
 
 ### Stack, Grid — Layout
 
-One flex component, not two (`Stack` is built, `Grid` is planned): `Stack` is a column with a gap by default, and `direction="row"` makes it
+One flex component, not two: `Stack` is a column with a gap by default, and `direction="row"` makes it
 a row. There is no `Flex`, `HStack` or `VStack`. It extends `BoxProps`, so it also takes padding and
 margin. The common cases (form rhythm, toolbar, wrapping tag list, header with actions) are all props:
 
@@ -423,13 +423,29 @@ interface StackProps extends BoxProps {
 // Padding and margin are Box's: Stack renders a Box and adds only `display: flex`, the gap and the
 // direction / align / justify / wrap classes (one class per value, as Checkbox's `orientation`).
 
-// components/Grid/Grid.tsx (planned)
-interface GridProps extends BoxProps {
-  minColumnWidth?: ScaleProp; // auto-fill columns at least this wide (the usual card grid)
-  columns?: number; // fixed column count
+// components/Grid/Grid.tsx
+type GridProps = BoxProps & {
   gap?: ScaleProp; // default normal
-}
+  columns?: number | { minWidth: string | number }; // none: a single column
+};
 ```
+
+```tsx
+<Grid>                                    // one column
+<Grid columns={3}>                        // three equal columns
+<Grid columns={{ minWidth: '14rem' }}>    // as many equal columns as fit, each at least 14rem
+```
+
+`columns` is one prop, so a fixed count and a minimum width can't be set at once. A number is a count
+(made a whole number of at least 1; NaN is ignored). `{ minWidth }` is the card grid: as many equal columns
+as the width allows, with no breakpoints, and a column shrinks below `minWidth` when the parent is
+narrower. `minWidth` is a plain CSS length (a number is pixels), not a scale: a width has no
+less / normal / more, and `less` would mean more columns. A percentage is a share of the Grid's width, and the
+gap counts against it, so `25%` with a gap fits 3 columns, not 4. Use a length for a card grid, and
+`columns` for a count. A bare `<Grid>` is a single column with a gap: choosing a layout is explicit.
+
+`gap` (the same scale as padding and margin) is shared by Stack and Grid through `_shared/Gap`, which
+holds the three classes and `resolveGap`. Both render a Box for padding and margin.
 
 Open: switching from row to column on narrow screens (prefer a container query over breakpoint objects).
 No `divider` prop; put a `Divider` between children.
@@ -1154,7 +1170,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, and Button's icon; Spinner: Button + Select; CrossIcon: Select + Banner)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, and Button's icon; Spinner: Button + Select; CrossIcon: Select + Banner)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -1317,7 +1333,7 @@ export const EscapeHatch: Story = {
 
 - [x] `Box` — padding and margin only (incl. per-side), no defaults
 - [x] `Stack` — the one flex component: `direction`, `gap`, `align`, `justify`, `wrap`; renders a Box; replaces Flex
-- [ ] `Grid` — `minColumnWidth` / `columns`, `gap`
+- [x] `Grid` — `columns` (a count, or `{ minWidth }` to fit by width), `gap`; renders a Box
 - [ ] `Text` — Typography with `size`, `weight`, `color` props
 
 ### Phase 3: Components

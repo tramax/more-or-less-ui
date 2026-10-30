@@ -1,0 +1,23 @@
+/*
+ * Grid: a grid container. With no `columns` it is a single column. `columns={n}` makes n equal
+ * columns (.fixed); `columns={{ minWidth }}` fills the row with as many equal columns as fit, each at
+ * least that wide, with no breakpoints (.fit). `gap` is in _shared/Gap, and padding and margin are
+ * Box's: Grid renders a Box.
+ *
+ * min(..., 100%) lets a column shrink below its minimum when the container itself is narrower.
+ * auto-fill (not auto-fit) keeps empty tracks, so a lone item keeps a column's width rather than
+ * stretching across the whole row. minmax(0, 1fr) keeps columns equal even when a child's content is
+ * wider than its column.
+ */
+
+.grid {
+  display: grid;
+}
+
+.fixed {
+  grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+}
+
+.fit {
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--grid-column-min), 100%), 1fr));
+}

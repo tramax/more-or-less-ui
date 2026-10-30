@@ -33,6 +33,7 @@ export {
   Button,
   Card,
   Checkbox,
+  Grid,
   Radio,
   Select,
   Stack,
@@ -46,6 +47,7 @@ export type {
   CardProps,
   CheckboxProps,
   CheckboxOption,
+  GridProps,
   RadioProps,
   RadioOption,
   SelectProps,
@@ -56,6 +58,5 @@ export type {
 } from '@/components';
 
 // Components (to be implemented)
-// export { Grid } from '@/components/Grid';
 // export { Text } from '@/components/Text';
 // export { Card } from '@/components/Card';

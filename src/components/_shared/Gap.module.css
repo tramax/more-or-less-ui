@@ -1,0 +1,14 @@
+/*
+ * The `gap` scale, shared by Stack and Grid. Named <prop><Variant> and looked up by resolveScaleProps
+ * (see Gap.ts). Spacing between children is the same scale as padding and margin.
+ */
+
+.gapLess {
+  gap: var(--space-less);
+}
+.gapNormal {
+  gap: var(--space-normal);
+}
+.gapMore {
+  gap: var(--space-more);
+}

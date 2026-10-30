@@ -4,6 +4,7 @@ import { render } from '@testing-library/react';
 import { Stack } from './Stack';
 import styles from './Stack.module.css';
 import boxStyles from '../Box/Box.module.css';
+import gapStyles from '../_shared/Gap.module.css';
 
 const renderStack = (props: ComponentProps<typeof Stack> = {}) => {
   const { container } = render(<Stack {...props} />);
@@ -52,7 +53,7 @@ describe('Stack', () => {
   describe('defaults', () => {
     it('is a column with a normal gap and no styles', () => {
       const el = renderStack();
-      expect([...el.classList]).toEqual([styles.stack, styles.column, styles.gapNormal]);
+      expect([...el.classList]).toEqual([styles.stack, styles.column, gapStyles.gapNormal]);
       expect(el.getAttribute('style')).toBeFalsy();
     });
   });
@@ -68,7 +69,7 @@ describe('Stack', () => {
   describe('gap', () => {
     // Guards against the prop list and Stack.module.css drifting apart
     it.each(VARIANTS)('gap="%s" applies its class and no inline style', (variant) => {
-      const className = styles[`gap${cap(variant)}`];
+      const className = gapStyles[`gap${cap(variant)}`];
       expect(className).toBeTruthy();
 
       const el = renderStack({ gap: variant });
@@ -78,20 +79,20 @@ describe('Stack', () => {
 
     it('replaces the default when a variant is given', () => {
       const el = renderStack({ gap: 'more' });
-      expect(el.classList.contains(styles.gapNormal as string)).toBe(false);
+      expect(el.classList.contains(gapStyles.gapNormal as string)).toBe(false);
     });
 
     it('takes an escape-hatch value, numbers as pixels', () => {
       expect(renderStack({ gap: '2rem' }).style.gap).toBe('2rem');
       const el = renderStack({ gap: 12 });
       expect(el.style.gap).toBe('12px');
-      expect(el.classList.contains(styles.gapNormal as string)).toBe(false);
+      expect(el.classList.contains(gapStyles.gapNormal as string)).toBe(false);
     });
 
     it('turns the gap off with 0', () => {
       const el = renderStack({ gap: 0 });
       expect(el.style.gap).toBe('0px');
-      expect(el.classList.contains(styles.gapNormal as string)).toBe(false);
+      expect(el.classList.contains(gapStyles.gapNormal as string)).toBe(false);
     });
   });
 
