@@ -35,6 +35,7 @@ export {
   Checkbox,
   Radio,
   Select,
+  Stack,
   TextField,
   Textarea,
 } from '@/components';
@@ -49,13 +50,12 @@ export type {
   RadioOption,
   SelectProps,
   SelectOption,
+  StackProps,
   TextFieldProps,
   TextareaProps,
 } from '@/components';
 
 // Components (to be implemented)
-// export { Flex } from '@/components/Flex';
-// export { Stack } from '@/components/Stack';
 // export { Grid } from '@/components/Grid';
 // export { Text } from '@/components/Text';
 // export { Card } from '@/components/Card';

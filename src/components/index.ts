@@ -12,6 +12,8 @@ export { Radio } from './Radio';
 export type { RadioProps, RadioOption } from './Radio';
 export { Select } from './Select';
 export type { SelectProps, SelectOption } from './Select';
+export { Stack } from './Stack';
+export type { StackProps } from './Stack';
 export { TextField } from './TextField';
 export type { TextFieldProps } from './TextField';
 export { Textarea } from './Textarea';

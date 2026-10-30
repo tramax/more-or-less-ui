@@ -398,9 +398,9 @@ interface CardProps extends Omit<BoxProps, 'margin' | `margin${string}`> {
 Still to come, so that Card earns its name: header / body / footer slots, a semantic `as`, and an
 interactive state (`onClick` / `href`: hover, focus ring).
 
-### Stack, Grid — Layout (planned)
+### Stack, Grid — Layout
 
-One flex component, not two: `Stack` is a column with a gap by default, and `direction="row"` makes it
+One flex component, not two (`Stack` is built, `Grid` is planned): `Stack` is a column with a gap by default, and `direction="row"` makes it
 a row. There is no `Flex`, `HStack` or `VStack`. It extends `BoxProps`, so it also takes padding and
 margin. The common cases (form rhythm, toolbar, wrapping tag list, header with actions) are all props:
 
@@ -420,8 +420,10 @@ interface StackProps extends BoxProps {
   justify?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
   wrap?: boolean;
 }
+// Padding and margin are Box's: Stack renders a Box and adds only `display: flex`, the gap and the
+// direction / align / justify / wrap classes (one class per value, as Checkbox's `orientation`).
 
-// components/Grid/Grid.tsx
+// components/Grid/Grid.tsx (planned)
 interface GridProps extends BoxProps {
   minColumnWidth?: ScaleProp; // auto-fill columns at least this wide (the usual card grid)
   columns?: number; // fixed column count
@@ -1314,7 +1316,7 @@ export const EscapeHatch: Story = {
 ### Phase 2: Primitives
 
 - [x] `Box` — padding and margin only (incl. per-side), no defaults
-- [ ] `Stack` — the one flex component: `direction`, `gap`, `align`, `justify`, `wrap`; replaces Flex
+- [x] `Stack` — the one flex component: `direction`, `gap`, `align`, `justify`, `wrap`; renders a Box; replaces Flex
 - [ ] `Grid` — `minColumnWidth` / `columns`, `gap`
 - [ ] `Text` — Typography with `size`, `weight`, `color` props
 
