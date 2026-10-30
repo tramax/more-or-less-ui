@@ -218,7 +218,7 @@
 
 .description {
   font-size: 0.875em;
-  color: color-mix(in oklab, CanvasText 70%, transparent);
+  color: var(--color-text-less);
 }
 
 /* The same fill, in the error color. The message and icon carry the state too, not color alone. */

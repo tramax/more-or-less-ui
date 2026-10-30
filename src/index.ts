@@ -37,6 +37,7 @@ export {
   Radio,
   Select,
   Stack,
+  Text,
   TextField,
   Textarea,
 } from '@/components';
@@ -53,10 +54,9 @@ export type {
   SelectProps,
   SelectOption,
   StackProps,
+  TextProps,
+  TextElement,
+  TextColor,
   TextFieldProps,
   TextareaProps,
 } from '@/components';
-
-// Components (to be implemented)
-// export { Text } from '@/components/Text';
-// export { Card } from '@/components/Card';

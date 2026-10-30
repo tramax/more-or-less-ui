@@ -103,6 +103,15 @@
      recipe above. */
   --color-text-inverse: oklch(from currentColor clamp(0, (0.6 - l) * 1000, 1) 0 0);
 
+  /* Text's `color` scale: how much the text stands out. Quiet, the plain text color, then the brand
+     color for the one thing that should catch the eye. `less` is the secondary text color: the
+     descriptions under an option and Select's empty message use it too, and this is the one place
+     the recipe lives. The brand color itself is too pale to read on white (2.1:1), so `more` is 30%
+     toward the text color: darker on a light page, lighter on a dark one, and 5:1 or better on both. */
+  --color-text-less: color-mix(in oklab, CanvasText 70%, transparent);
+  --color-text-normal: CanvasText;
+  --color-text-more: color-mix(in oklab, var(--color-primary) 70%, CanvasText);
+
   /* Per-component tokens. Each aliases the shared value above, so a component can be customised on
      its own while the default stays defined once. Only set one to something else when the component
      really differs; a new input component adds its aliases here rather than a new recipe. */

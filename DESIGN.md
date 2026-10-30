@@ -101,7 +101,7 @@ Checkbox / Radio options (`_shared/OptionGroup.module.css`) and the Select popup
 
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Card, Button, Banner), one opaque brand tint (`--color-primary-tint`) that Button's `normal` and Banner's `normal` alias, the opposite of the current text color (`--color-text-inverse`, which Banner's glow aliases), and one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio, Toggle and Select alias** (Banner's `less` aliases it too). No palettes, no
+Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Card, Button, Banner), one opaque brand tint (`--color-primary-tint`) that Button's `normal` and Banner's `normal` alias, the opposite of the current text color (`--color-text-inverse`, which Banner's glow aliases), one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio, Toggle and Select alias** (Banner's `less` aliases it too), **and secondary text (`--color-text-less`, 70% of the text color) that the option descriptions and Select's empty message share with Text's `color` scale**. That scale is `--color-text-less` / `-normal` / `-more` (the last is the brand color toward the text color, for contrast). No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -449,6 +449,43 @@ holds the three classes and `resolveGap`. Both render a Box for padding and marg
 
 Open: switching from row to column on narrow screens (prefer a container query over breakpoint objects).
 No `divider` prop; put a `Divider` between children.
+
+### Text — Typography
+
+`Text` is a run of text: a `span` unless `as` says otherwise. It sets type size, weight and color and
+nothing else. There is no `Heading`, `Paragraph` or `Label`: `<Text as="h2" size="more" fontWeight="more">`.
+
+```tsx
+// components/Text/Text.tsx
+interface TextProps extends Omit<HTMLAttributes<HTMLElement>, 'color'> {
+  as?: 'span' | 'p' | 'div' | 'strong' | 'em' | 'small' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'; // default span
+  size?: ScaleProp; // font-size
+  fontWeight?: ScaleProp;
+  color?: 'less' | 'normal' | 'more' | string; // a CSS color for the escape hatch; a number is not pixels here
+}
+```
+
+- **Every scale prop defaults to `normal`**, as Card's do, so a bare `<Text>` looks the same wherever
+  it sits. It does not follow its parent: a Text inside a `size="more"` Banner is still `normal`
+  unless it is given `size="more"` too, and in a Banner or Button `more`, whose text is white on the
+  brand color, its `color` needs setting as well. `as` defaults to `span`.
+- **No margin.** `Text` resets the browser's margin on `p` and headings: the space around text comes from
+  the layout it sits in, as with Card. Spacing comes from Stack and Box, not from Text. A heading close
+  to its own paragraph, and sections far apart, is a Stack inside a Stack with a bigger `gap`; a
+  one-off is a `<Box marginTop="more">`. There are no margin props because vertical margin has no effect
+  on the default inline `span`, and margin is Box's job (a margin on top of a Stack's `gap` also adds up
+  rather than collapses).
+- **`color` is a scale of how much the text stands out**, like Banner's `background`: `less` is quiet
+  secondary text (`--color-text-less`, which the option
+  descriptions and Select's empty message use too), `normal` is the plain text color (`CanvasText`),
+  `more` is the brand color, for the one thing that should catch the eye (`--color-text-more`). The
+  plain brand color is only 2.1:1 on white, so `more` mixes 30% of the text color into it: 5:1 or
+  better on a light and a dark page. It says nothing about meaning (error, success); that is an
+  escape-hatch value, `color="var(--color-danger)"`. Any other string is a CSS color, set inline.
+- **`fontWeight` as a number is unitless** (`700`, not `700px`), unlike the other props, where a number
+  is pixels.
+- `as` is for what the text _is_. Elements that are interactive or belong to a form (`label`, `a`,
+  `button`) are other components' job.
 
 ---
 
@@ -1334,7 +1371,7 @@ export const EscapeHatch: Story = {
 - [x] `Box` — padding and margin only (incl. per-side), no defaults
 - [x] `Stack` — the one flex component: `direction`, `gap`, `align`, `justify`, `wrap`; renders a Box; replaces Flex
 - [x] `Grid` — `columns` (a count, or `{ minWidth }` to fit by width), `gap`; renders a Box
-- [ ] `Text` — Typography with `size`, `weight`, `color` props
+- [x] `Text` — `as`, `size`, `fontWeight`, `color`; every scale prop defaults to `normal`, no margin
 
 ### Phase 3: Components
 

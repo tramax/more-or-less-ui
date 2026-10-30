@@ -295,7 +295,7 @@
 .empty {
   margin: 0;
   padding: 0.625em 0.75em;
-  color: color-mix(in oklab, CanvasText 70%, transparent);
+  color: var(--color-text-less);
 }
 
 .option {

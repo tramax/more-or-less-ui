@@ -16,6 +16,8 @@ export { Select } from './Select';
 export type { SelectProps, SelectOption } from './Select';
 export { Stack } from './Stack';
 export type { StackProps } from './Stack';
+export { Text } from './Text';
+export type { TextProps, TextElement, TextColor } from './Text';
 export { TextField } from './TextField';
 export type { TextFieldProps } from './TextField';
 export { Textarea } from './Textarea';
