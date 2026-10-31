@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { omitDefaults, showCode } from '../../../.storybook/snippet';
 import { Avatar, AVATAR_DEFAULTS } from './Avatar';
@@ -100,30 +100,28 @@ export const Fallbacks: Story = {
   ),
 };
 
-/** `alt=""` when the name is written beside it, so a screen reader doesn't say it twice. */
-export const BesideTheName: Story = {
-  parameters: showCode(`<Avatar name="Ada Lovelace" alt="" />
-<span>Ada Lovelace</span>`),
-  render: () => (
-    <Row>
-      <Avatar name="Ada Lovelace" alt="" />
-      <span>Ada Lovelace</span>
-    </Row>
-  ),
+/** `isTextShown` writes the name beside the circle, in the same text as an option's. */
+export const WithName: Story = {
+  args: { name: 'Ada Lovelace', isTextShown: true },
 };
 
-/** Inside a flex row it keeps its circle; it is never squeezed. */
-export const InARow: Story = {
-  parameters: showCode(`<div style={{ display: 'flex', width: 120 }}>
-  <Avatar name="Ada Lovelace" />
-  <Avatar name="Grace Hopper" />
-  <Avatar name="Alan Turing" />
-</div>`),
+/** A `description` goes under the name, smaller and quieter. `isTextShown` shows both. */
+export const WithDescription: Story = {
+  args: { name: 'Ada Lovelace', description: 'Mathematician', isTextShown: true, src: PHOTO },
+};
+
+/** The text follows `size`, so the whole row scales. */
+export const TextSize: Story = {
+  parameters: showCode(
+    VARIANTS.map(
+      (v) => `<Avatar size="${v}" name="Ada Lovelace" description="Mathematician" isTextShown />`,
+    ).join('\n'),
+  ),
   render: () => (
-    <div style={{ display: 'flex', width: 120, padding: '1rem' }}>
-      <Avatar name="Ada Lovelace" />
-      <Avatar name="Grace Hopper" />
-      <Avatar name="Alan Turing" />
+    <div style={{ display: 'grid', gap: '1rem', padding: '1rem' }}>
+      {VARIANTS.map((v) => (
+        <Avatar key={v} size={v} name="Ada Lovelace" description="Mathematician" isTextShown />
+      ))}
     </div>
   ),
 };
@@ -135,7 +133,7 @@ export const EscapeHatch: Story = {
   args: {
     size: '1.5rem',
     name: 'Ada Lovelace',
-    // The name's color is a default; a style of your own wins
-    style: { background: 'linear-gradient(135deg, #fde68a, #fca5a5)' },
+    // The hue comes from the name; a `--avatar-hue` in the style (0-359) picks another
+    style: { '--avatar-hue': 200 } as CSSProperties,
   },
 };

@@ -8,6 +8,7 @@ import {
 import { clsx } from '@/utils/clsx';
 import { resolveScaleProps } from '@/utils/scale';
 import type { ScaleProp } from '@/types/scale';
+import { OptionText } from '../_shared/OptionText';
 import styles from './Avatar.module.css';
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
@@ -20,13 +21,13 @@ export const AVATAR_DEFAULTS = {
 const SCALE_SPEC = {
   // Empty on purpose: without it `resolveScaleProps` can't tell the other props from scale props
   direct: [],
-  // `size` sets font-size only: the box is 2.5em square (see Avatar.module.css), so it, the initials
-  // and the glyph all follow it, escape-hatch values included.
+  // `size` sets font-size only: the box is 2.5em square (see Avatar.module.css), so it, the initials,
+  // the glyph and the text beside it all follow it, escape-hatch values included.
   compound: { size: ['fontSize'] },
   defaults: AVATAR_DEFAULTS,
 } as const;
 
-export type AvatarProps = Omit<HTMLAttributes<HTMLSpanElement>, 'color'> & {
+type AvatarBaseProps = Omit<HTMLAttributes<HTMLSpanElement>, 'color'> & {
   size?: ScaleProp;
   /** The picture. While it loads, and if it fails, the fallback shows instead. */
   src?: string;
@@ -36,13 +37,27 @@ export type AvatarProps = Omit<HTMLAttributes<HTMLSpanElement>, 'color'> & {
    */
   name?: string;
   /**
-   * The accessible name, when it should differ from `name`. `alt=""` marks the avatar decorative:
-   * use it beside the person's name written out, so a screen reader doesn't say it twice.
+   * Writes the `name`, and the `description` under it, beside the picture. This is the only thing
+   * that shows them; without it the picture stands alone. The picture is then decorative to a screen
+   * reader, since the name is there in words.
+   */
+  isTextShown?: boolean;
+  /**
+   * The accessible name of the picture, when it should differ from `name`. `alt=""` marks it
+   * decorative: use it when you write the person's name beside it yourself, so a screen reader doesn't
+   * say it twice. (With `isTextShown` that is already the case.)
    */
   alt?: string;
   /** The fallback, in place of the initials and the glyph: an icon, a logo's letter. */
   children?: ReactNode;
 };
+
+/**
+ * A `description` (a role, an email) goes under the name, smaller and quieter, so it needs a `name` to
+ * be under. It is shown with the name, by `isTextShown`, and not on its own.
+ */
+export type AvatarProps = AvatarBaseProps &
+  ({ description?: undefined } | { description: string; name: string });
 
 /** The first letter of the first and last words: "Ada Lovelace" → "AL", "ada" → "A". */
 export function getInitials(name: string): string {
@@ -73,12 +88,15 @@ type ImageState = { src: string | undefined; status: 'loaded' | 'error' };
 
 /**
  * A person's or an account's picture in a small circle, falling back to their initials, to content of
- * your own, or to a plain glyph, on a color taken from their name. It is not interactive: wrap it in a link or a button when it should
- * be. It is one image to assistive technology (`role="img"`, named by `alt` or `name`), or hidden when
- * it has neither.
+ * your own, or to a plain glyph, on a color taken from their name. With `isTextShown` the name (and the
+ * description under it) is written beside the circle.
+ *
+ * It is not interactive: wrap it in a link or a button when it should be. The circle is one image to
+ * assistive technology (`role="img"`, named by `alt` or `name`), or hidden when it has neither, or
+ * when the name is written beside it.
  */
 export const Avatar = forwardRef<HTMLSpanElement, AvatarProps>(function Avatar(
-  { src, name, alt, className, style, children, ...props },
+  { src, name, alt, description, isTextShown = false, className, style, children, ...props },
   ref,
 ) {
   const { classNames, style: scaleStyle, rest } = resolveScaleProps(styles, SCALE_SPEC, props);
@@ -88,26 +106,22 @@ export const Avatar = forwardRef<HTMLSpanElement, AvatarProps>(function Avatar(
   const [image, setImage] = useState<ImageState>();
   const status = src && image?.src === src ? image.status : 'loading';
 
-  const label = alt ?? name;
-  const isNamed = Boolean(label || rest['aria-label'] || rest['aria-labelledby']);
   const initials = name ? getInitials(name) : '';
-  // Only the hue varies; lightness and chroma are theme tokens. A custom property, so the CSS does the color.
+  // Only the hue varies; lightness and chroma are theme tokens. A custom property, so the CSS does the
+  // color. On the root, so a caller's `style` can set `--avatar-hue` to pick another.
   const hue = name?.trim() ? getHue(name) : undefined;
+  const rootStyle = {
+    ...scaleStyle,
+    ...(hue !== undefined && ({ '--avatar-hue': hue } as CSSProperties)),
+    ...style,
+  };
 
-  return (
-    <span
-      {...rest}
-      ref={ref}
-      role="img"
-      aria-label={label || rest['aria-label']}
-      aria-hidden={isNamed ? rest['aria-hidden'] : true}
-      className={clsx(styles.avatar, classNames, hue === undefined && styles.anonymous, className)}
-      style={{
-        ...scaleStyle,
-        ...(hue !== undefined && ({ '--avatar-hue': hue } as CSSProperties)),
-        ...style,
-      }}
-    >
+  // Asked for, and there is a name to write
+  const shownName = name?.trim() ? name : undefined;
+  const hasText = isTextShown && shownName !== undefined;
+
+  const picture = (
+    <>
       {/* Under the picture while it loads, and instead of it if it fails. Not rendered once the
           picture is in, so a transparent one doesn't show it through. */}
       {status !== 'loaded' && (
@@ -127,7 +141,7 @@ export const Avatar = forwardRef<HTMLSpanElement, AvatarProps>(function Avatar(
       {src && status !== 'error' && (
         <img
           key={src}
-          // The avatar carries the name, so the picture inside is not announced a second time
+          // The circle carries the name, so the picture inside is not announced a second time
           alt=""
           src={src}
           decoding="async"
@@ -144,6 +158,46 @@ export const Avatar = forwardRef<HTMLSpanElement, AvatarProps>(function Avatar(
           }}
         />
       )}
+    </>
+  );
+
+  if (hasText) {
+    // The root is a row; the circle inside is decorative unless the caller gave it an `alt`, because
+    // the name is written next to it
+    return (
+      <span
+        {...rest}
+        ref={ref}
+        className={clsx(styles.withText, classNames, className)}
+        style={rootStyle}
+      >
+        <span
+          className={styles.avatar}
+          role="img"
+          aria-label={alt || undefined}
+          aria-hidden={alt ? undefined : true}
+        >
+          {picture}
+        </span>
+        <OptionText label={shownName} description={description} />
+      </span>
+    );
+  }
+
+  // The circle is the root, so every prop goes on it
+  const label = alt ?? name;
+  const isNamed = Boolean(label || rest['aria-label'] || rest['aria-labelledby']);
+  return (
+    <span
+      {...rest}
+      ref={ref}
+      role="img"
+      aria-label={label || rest['aria-label']}
+      aria-hidden={isNamed ? rest['aria-hidden'] : true}
+      className={clsx(styles.avatar, classNames, hue === undefined && styles.anonymous, className)}
+      style={rootStyle}
+    >
+      {picture}
     </span>
   );
 });

@@ -1058,12 +1058,16 @@ enter / leave motion, localisation of "Dismiss", a sticky or full-width variant.
 
 ```tsx
 type AvatarProps = Omit<HTMLAttributes<HTMLSpanElement>, 'color'> & {
-  size?: ScaleProp; // font-size; the box is 2.5em square, so it and its contents follow
+  size?: ScaleProp; // font-size; the box is 2.5em square, so it, its contents and the text beside it follow
   src?: string; // the picture; while it loads, and if it fails, the fallback shows
   name?: string; // whose it is: the initials, the background color, and the accessible name unless `alt` says otherwise
+  isTextShown?: boolean; // writes the name and the description beside the circle (OptionText); the only switch
   alt?: string; // the accessible name when it differs from `name`; alt="" makes it decorative
   // children: the fallback in place of the initials and the glyph (an icon, a logo's letter)
-};
+} & (
+    | { description?: undefined }
+    | { description: string; name: string } // under the name, smaller and quieter; needs a name
+  );
 ```
 
 A person's or an account's picture in a circle. Not interactive: wrap it in a link or a button when it
@@ -1081,9 +1085,28 @@ and the text turns white without being told: it is `oklch(clamp(0, (0.6 - lightn
 the `--color-on-primary` rule fed the lightness, written in the CSS module because it needs the value
 as it is on the avatar. The tokens are plain numbers, not colors, because the hue isn't known in
 `:root`. No name (or only spaces) means no hue: the avatar takes `--color-avatar-anonymous`, an
-alias of the field fill, with `CanvasText`. A color of your own is `style={{ background }}`, which
-wins over the name's. No new color recipe is in `tokens.css`, so the duplicate-recipe test has
-nothing to say.
+alias of the field fill, with `CanvasText`. To pick another hue, set `--avatar-hue` (0-359) in `style`:
+it is on the root and the caller's `style` is merged last, so it wins, with or without a written name.
+No new color recipe is in `tokens.css`, so the duplicate-recipe test has nothing to say.
+
+**Name and description.** Closest sibling here is Toggle (and the options of Checkbox, Radio and
+Select): a control with a label and a smaller, quieter description beside it. That is
+`_shared/OptionText`, so Avatar renders it rather than its own text styles: the name in the text color,
+the description at 0.875em in `--color-text-less`, 0.125em apart. What differs is only where the text
+comes from: the avatar already has a `name` (for the initials, the color and the accessible name), so
+there is no second `label` prop that could disagree with it.
+
+**One switch.** `isTextShown` is the only thing that decides whether the name and the description are
+written beside the circle; the two are shown or hidden together, and nothing is implied by having a
+`description`. Without it the circle stands alone. The type still requires a `name` for a `description`
+to sit under, and a blank name writes nothing. The tooltip is the other half of the switch and is not
+built yet: when it is, `isTextShown={false}` will put the same name and description in a tooltip on the
+circle, so the information is there either way. Until then they are not shown at all, and no native
+`title` stands in (it would have to be taken out later, and `title` is the caller's own attribute). The
+text is beside the circle, not under it, and the description is under the name: the layout of a comment,
+a list row and a menu header. `size` scales all of it, since the gap and the description are in em. With
+text, the root is a row (`.withText`) holding the size class, the hue, `className`, `style` and the ref,
+around the circle (`.avatar`); without, the circle is the root.
 
 **Fallback order:** the picture once it has loaded; otherwise `children`; otherwise the initials of
 `name` (first letter of the first and last words, so "Ada Lovelace" is AL and "ada" is A; whole code
@@ -1094,15 +1117,19 @@ load keeps the fallback; a new `src` starts over. The load state is tagged with 
 so there is no effect to reset it. An image already complete when React attaches (cached,
 server-rendered) is picked up in the `<img>`'s ref callback.
 
-**Accessible name.** The root is `role="img"` named by `alt ?? name`; the `<img>` inside has `alt=""` so
+**Accessible name.** The circle is `role="img"` named by `alt ?? name`; the `<img>` inside has `alt=""` so
 the name isn't said twice. With no name at all, and no `aria-label` / `aria-labelledby` from the caller,
-it is `aria-hidden`, since an unnamed image would only be noise. `alt=""` is the way to say "decorative"
-when the person's name is written beside it.
+it is `aria-hidden`, since an unnamed image would only be noise. When the name is written beside it
+(`isTextShown`) the circle is `aria-hidden` too, unless the caller passes a non-empty
+`alt`, because a screen reader reads the name in the text. `alt=""` is the way to say "decorative" when
+you write the name yourself.
 
 **Size.** The box is `2.5em`, `flex: none` (never squeezed into an oval by a flex or grid parent) and
 `overflow: hidden`. The shape (a circle) and the weight are fixed, as Button's radius is.
 
-**Not yet:** a shape prop (rounded square), a group that overlaps avatars (`AvatarGroup` with a +N),
+**Not yet:** the tooltip that shows the name and description when `isTextShown` is off (waits for
+Tooltip), the text under the circle instead of beside it (an `orientation`, as Checkbox and Radio
+have), a shape prop (rounded square), a group that overlaps avatars (`AvatarGroup` with a +N),
 a status dot (wait for Badge to anchor it), `loading` / `crossOrigin` on the `<img>`, a way to pick the
 colors a name maps to (a palette, rather than a free hue).
 
@@ -1264,7 +1291,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, and Button's icon; Spinner: Button + Select; CrossIcon: Select + Banner)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, and Button's icon (OptionText also: Avatar's name and description); Spinner: Button + Select; CrossIcon: Select + Banner)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -1440,7 +1467,7 @@ export const EscapeHatch: Story = {
 - [x] `Textarea` — size, rows, resize, label, error, isDisabled, isReadOnly, isRequired; shares `_shared/TextFieldFrame` with TextField
 - [x] `Toggle` — label, description, checked/defaultChecked, isDisabled (single boolean, no `size`, no `error`); no option row, on / off shown by position, fill and icon
 - [x] `Banner` — size, background (brand color at three strengths, no info/error kinds), title, onDismiss; `role="status"`
-- [x] `Avatar` — size, src, name, alt; falls back to children, then initials, then a glyph; background color is derived from `name` (no `background` prop)
+- [x] `Avatar` — size, src, name, alt, description, isTextShown (one switch for the name and description beside it; tooltip when off, to come); falls back to children, then initials, then a glyph; background color is derived from `name` (no `background` prop); name and description beside it use `_shared/OptionText`
 - [ ] `Badge`, `Icon` — Display
 - [x] `Card` — the former Box: radius, shadow, background, padding (no margin); renders a Box. Still to add: slots, interactive variant, semantic element
 

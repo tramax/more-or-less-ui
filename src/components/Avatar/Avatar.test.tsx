@@ -1,4 +1,4 @@
-import { createRef, type ComponentProps } from 'react';
+import { createRef, type ComponentProps, type CSSProperties } from 'react';
 import { afterEach, describe, it, expect } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import { Avatar, getHue, getInitials } from './Avatar';
@@ -204,6 +204,91 @@ describe('Avatar', () => {
       expect(renderAvatar({ name: 'Ada', style: { background: 'red' } }).style.background).toBe(
         'red',
       );
+    });
+  });
+
+  describe('written name and description', () => {
+    const circle = (el: HTMLElement) => el.querySelector(`.${styles.avatar}`) as HTMLElement;
+
+    it('is just the circle by default: the root is the image', () => {
+      const el = renderAvatar({ name: 'Ada Lovelace' });
+      expect(el.classList.contains(styles.avatar as string)).toBe(true);
+      expect(el.classList.contains(styles.withText as string)).toBe(false);
+      expect(el.querySelector(`.${styles.avatar}`)).toBeNull();
+      expect(el.textContent).toBe('AL');
+    });
+
+    it('writes the name beside the circle with isTextShown', () => {
+      const el = renderAvatar({ name: 'Ada Lovelace', isTextShown: true });
+      expect(el.classList.contains(styles.withText as string)).toBe(true);
+      expect(el.classList.contains(styles.avatar as string)).toBe(false);
+      expect(circle(el).textContent).toBe('AL');
+      expect(el.textContent).toBe('ALAda Lovelace');
+    });
+
+    it('shows neither the name nor the description unless asked', () => {
+      const el = renderAvatar({ name: 'Ada Lovelace', description: 'Mathematician' });
+      expect(el.classList.contains(styles.withText as string)).toBe(false);
+      expect(el.textContent).toBe('AL');
+    });
+
+    it('puts the description after the name', () => {
+      const el = renderAvatar({
+        name: 'Ada Lovelace',
+        description: 'Mathematician',
+        isTextShown: true,
+      });
+      expect(el.textContent).toBe('ALAda LovelaceMathematician');
+      const [nameEl, descriptionEl] = circle(el).nextElementSibling?.children ?? [];
+      expect(nameEl?.textContent).toBe('Ada Lovelace');
+      expect(descriptionEl?.textContent).toBe('Mathematician');
+    });
+
+    it('is decorative to a screen reader, since the name is written beside it', () => {
+      const c = circle(renderAvatar({ name: 'Ada Lovelace', isTextShown: true }));
+      expect(c.getAttribute('aria-hidden')).toBe('true');
+      expect(c.hasAttribute('aria-label')).toBe(false);
+    });
+
+    it('still names the circle when the caller gives an alt', () => {
+      const c = circle(
+        renderAvatar({ name: 'Ada Lovelace', isTextShown: true, alt: 'Ada, smiling' }),
+      );
+      expect(c.getAttribute('aria-label')).toBe('Ada, smiling');
+      expect(c.hasAttribute('aria-hidden')).toBe(false);
+    });
+
+    it('puts the ref, className, size and style on the row, and the hue with them', () => {
+      const ref = createRef<HTMLSpanElement>();
+      const { container } = render(
+        <Avatar ref={ref} name="Ada" isTextShown className="mine" size="more" style={{ gap: 3 }} />,
+      );
+      const el = container.firstElementChild as HTMLElement;
+      expect(ref.current).toBe(el);
+      expect(el.classList.contains('mine')).toBe(true);
+      expect(el.classList.contains(styles.sizeMore as string)).toBe(true);
+      expect(el.style.gap).toBe('3px');
+      expect(hueOf(el)).toBe(String(getHue('Ada')));
+      expect(circle(el).getAttribute('style')).toBeFalsy();
+    });
+
+    it('lets the caller pick the hue', () => {
+      const style = { '--avatar-hue': 200 } as CSSProperties;
+      expect(hueOf(renderAvatar({ name: 'Ada', isTextShown: true, style }))).toBe('200');
+      expect(hueOf(renderAvatar({ name: 'Ada', style }))).toBe('200');
+    });
+
+    it.each([undefined, '', '   '])('writes nothing for the name %j', (name) => {
+      const el = renderAvatar({ name, isTextShown: true });
+      expect(el.classList.contains(styles.withText as string)).toBe(false);
+      expect(el.classList.contains(styles.avatar as string)).toBe(true);
+    });
+
+    it('does not leak its props to the DOM', () => {
+      const el = renderAvatar({ name: 'Ada', description: 'D', isTextShown: true });
+      for (const attr of ['description', 'istextshown', 'name']) {
+        expect(el.hasAttribute(attr)).toBe(false);
+      }
     });
   });
 

@@ -36,6 +36,17 @@
   user-select: none;
 }
 
+/* With the text shown (`isTextShown`): a row of the circle and OptionText, the same
+   text as an option's. It holds the size class and the hue, so the circle and the text follow both. The
+   gap is in em, so it follows `size`. */
+.withText {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75em;
+  vertical-align: middle;
+  line-height: 1.25;
+}
+
 /* No name, so no hue */
 .anonymous {
   background: var(--color-avatar-anonymous);

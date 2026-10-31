@@ -11,7 +11,7 @@ interface OptionTextProps {
   icon?: ReactNode;
 }
 
-/** The label and the optional description beside an option's control. */
+/** The label and the optional description beside an option's control, or beside an Avatar. */
 export function OptionText({ label, description, descriptionId, icon }: OptionTextProps) {
   const text = (
     <span className={shared.text}>
