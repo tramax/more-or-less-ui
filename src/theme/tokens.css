@@ -148,11 +148,24 @@
   --color-select-option-active: var(--color-field-background-hover);
   /* Opaque, unlike the field fill: the popup lies over page content */
   --color-select-popup: Canvas;
-  --color-select-chip: Canvas;
-  /* A removable chip on hover: a light brand tint on the canvas, opaque so the field fill under the
-     chip doesn't show through and darken it */
-  --color-select-chip-hover: color-mix(in oklab, var(--color-primary) 12%, Canvas);
   --color-select-check: var(--color-on-primary);
+
+  /* Chip's `background` scale: how it stands out. Outline only (transparent, with a border), a
+     semi-transparent brand tint, then the brand color itself. The tint is the chip's own, not an
+     alias of the field fill: a chip isn't a field, and changing one shouldn't change the other. It is
+     a little stronger (20%, the field's is 15%), so a chip stands out from a Select field it sits in. */
+  --color-chip-background-less: transparent;
+  --color-chip-background-normal: color-mix(in oklab, var(--color-primary) 25%, transparent);
+  --color-chip-background-more: var(--color-primary);
+  /* The outline of the `less` chip. The other two have no visible border. */
+  --color-chip-border: var(--color-primary);
+  /* Text on the `more` background; set with it, as Banner's (themes.css does) */
+  --color-chip-text-more: var(--color-on-primary);
+  /* The wash over a removable chip on hover: a light brand tint. A layer over the background, so it
+     works on every one of them, a transparent one included. */
+  --color-chip-hover: color-mix(in oklab, var(--color-primary) 12%, transparent);
+  /* The same wash, deeper, while it is pressed */
+  --color-chip-pressed: color-mix(in oklab, var(--color-primary) 24%, transparent);
 
   /* Banner's `background` scale: how loudly it speaks, in the brand color. A faint tint, an opaque tint,
      then the brand color itself. */

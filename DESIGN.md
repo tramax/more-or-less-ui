@@ -879,8 +879,8 @@ and closes (a multiple one toggles and stays open); Tab commits a single one, as
 Searchable: typing filters ("contains", ignoring case and diacritics) and the first match is active;
 Enter commits. A multiple one clears the query after each pick. In a multiple one, Backspace in an
 empty input removes the last chip that can be removed. A click anywhere on a removable chip removes it
-(the whole chip is the hover target: it takes `--color-select-chip-hover` and the × scales up); its button is the accessible name and is out of the tab order, so
-the field is one Tab stop.
+(the whole chip is the hover target: it takes `--color-chip-hover` and the × scales up); its button is
+the accessible name and is out of the tab order (`isInField`), so the field is one Tab stop.
 
 **Async search.** `onSearch` is for options fetched by what is typed. One prop, not an `isAsync` flag
 next to `isSearchable`: a flag would be meaningless without `isSearchable` (a button has no text to
@@ -961,15 +961,16 @@ out; `--ease-enter` / `--ease-leave` in `theme/tokens.css`):
 chevron that turns when open. The popup is an opaque `--color-select-popup` surface with
 `--elevation-more`; the active option uses `--color-select-option-active`. A selected option in a
 single Select has a tick after its text; in a multiple one each option is a Checkbox-style box with a
-tick (`--color-select-check`), so selection is never color alone. A chip is a `--color-select-chip` pill
-(`--color-select-chip-hover` on hover) with a remove button (`aria-label="Remove <label>"`).
+tick (`--color-select-check`), so selection is never color alone. A chip is the public
+[Chip](#chip), at the field's own size (`size="1em"`) and its default `normal` background (the
+semi-transparent brand tint, `--color-chip-background-normal`, over the field's own fill), with a remove button (`aria-label="Remove <label>"`).
 
 Shared with TextField and Textarea through `_shared/TextFieldFrame`: root, `size`, label, error, the
 id / `aria-invalid` / `aria-describedby` wiring and the look of the control. The frame's focus border
 also matches `:has(:focus-visible)`, so the multiple box shows it when its input is focused. The
 option text is `_shared/OptionText`, and `SelectOption` is `OptionBase`. The list navigation
-(`useListboxNavigation`) and `SelectChip` stay in `Select/` until a second component needs them; the
-chip becomes the shared Badge when that is built.
+(`useListboxNavigation`) stays in `Select/` until a second component needs it. The chip was
+`SelectChip`, private to Select, and is now the public `Chip`, which Select renders.
 
 **Option icons.** `SelectOption.icon` (a `ReactNode`: a flag, an avatar, a logo) is shown before the
 option's text, in the three places a Select shows an option: the popup row, the closed field of a
@@ -1130,8 +1131,68 @@ you write the name yourself.
 **Not yet:** the tooltip that shows the name and description when `isTextShown` is off (waits for
 Tooltip), the text under the circle instead of beside it (an `orientation`, as Checkbox and Radio
 have), a shape prop (rounded square), a group that overlaps avatars (`AvatarGroup` with a +N),
-a status dot (wait for Badge to anchor it), `loading` / `crossOrigin` on the `<img>`, a way to pick the
+a status dot (wait for Indicator to anchor it), `loading` / `crossOrigin` on the `<img>`, a way to pick the
 colors a name maps to (a palette, rather than a free hue).
+
+### Chip
+
+```tsx
+type ChipProps = Omit<HTMLAttributes<HTMLSpanElement>, 'color' | 'children'> & {
+  size?: ScaleProp; // font-size; the pill is 1.5em tall, so height, padding and gaps follow it
+  borderRadius?: ScaleProp; // default normal; nearly square, rounded, pill (0.25em, 0.5em, 0.75em)
+  background?: ScaleProp; // --color-chip-background-*: how it stands out
+  children: string; // the label; it also names the remove button ("Remove <label>")
+  icon?: ReactNode; // before the label (OptionIcon): a flag, an avatar, a logo
+  onRemove?: () => void; // adds the × and makes the whole chip the click target
+  isInField?: boolean; // inside a field that is one Tab stop (Select): the × leaves the tab order
+};
+```
+
+A small label in a pill: a tag, a status word ("Beta"), or a selected value that can be taken out. It
+is the label pill, not the red notification dot or count (that is `Indicator`, not built). It is Select's
+former `SelectChip`, made public when a second use was in view: the pill, the icon slot, the
+whole-chip click target and the hover-grow ×, from `_shared/OptionIcon` and `_shared/CrossIcon`. What
+the public one adds is the `size` and `background` scales (Banner and Avatar's pattern) and a label that
+can stand alone. Select now renders Chip with `size="1em"` (the field's own size) and `isInField`.
+
+**`background` is how it stands out, not a kind of label.** `less` is an outline: transparent
+(`--color-chip-background-less`) with a 1px border in the brand color (`--color-chip-border`). `normal`
+is a semi-transparent brand tint (`--color-chip-background-normal`: the brand color at 20%) with no
+shadow. The tint is the chip's own recipe, not an alias of the field fill (15%): a chip is not a field,
+and changing one should not change the other. It is a little stronger, so a chip stands out from the
+Select field it sits in. `more` is the brand color itself, with `--color-chip-text-more`
+(an alias of `--color-on-primary`) for its text; the dark theme overrides the `more` pair together (a
+test checks it), as Banner's and Button's. A chip is flat: no shadow on any background. Every chip has
+a 1px border, transparent but for `less`, so the three are the same size and sit level in a row. In a
+Select field the `normal` chip is a tint over the field's own tint, so it reads a little darker than
+the field; it used to be an opaque canvas pill.
+
+**Removing.** `onRemove` adds a real `<button aria-label="Remove <label>">` with `_shared/CrossIcon`
+and makes the whole chip the target: a click anywhere on it calls `onRemove`, the click is marked
+handled (`preventDefault`, so a field around it does not also act on it), and mousedown is cancelled
+(so a field around it keeps focus). The chip does not hide itself: the caller stops rendering it. The
+button is a Tab stop by default, so a keyboard can remove a standalone chip (Enter or Space on the
+button); `isInField` takes it out of the order for Select, where the field is one Tab stop and
+Backspace removes the last chip. Hover is a wash over the chip (`.removable::after`, 12% brand tint,
+`--color-chip-hover`; the text color at 15% on `more`) and the × grows (`--scale-icon-hover`).
+**Pressed** (`:active`, outside the hover query so a tap on touch shows it) deepens the wash (24%,
+`--color-chip-pressed`; 28% of the text color on `more`) and shrinks the whole chip to 0.95, quickly and
+without overshoot, as Banner's dismiss button does; the × gives up its hover growth so it ends at the
+chip's scale. With `prefers-reduced-motion` the motion is off and the deeper wash alone shows the press. The wash is a layer on top, not a second background,
+so it works on every `background`, a transparent or an escape-hatch one included. A chip without `onRemove` has no button, no
+pointer cursor and no hover.
+
+**Size and corners.** The pill is 1.5em tall, chosen so that a Select field with chips and an empty one
+are equally tall as a TextField. The label is set at 0.875em of the chip's `size` (the ratio of an option's description), so the text sits in more room while the pill keeps its height and padding. A long label is truncated before the × is. `borderRadius` runs from
+nearly square to a full pill: `less` 0.25em, `normal` 0.5em, `more` 0.75em, which is half the height,
+so `more` is exactly a pill. They are round corners, not Card's squircle, and in em, not the `--radius-*`
+scale: the rem radii (8, 20, 32px) don't track a pill whose height follows `size`, and `normal` and
+`more` would be the same capsule. The default `normal` is 8px at the default size, which is what the
+chips in a Select field have always had (round instead of squircle, so a hair different). The hover
+wash inherits the radius, an escape-hatch value included.
+
+**Not yet:** a leading status dot, a selected / toggled state (a filter chip), a link or button chip
+(wrap it for now), localisation of "Remove".
 
 ---
 
@@ -1278,6 +1339,7 @@ more-or-less-ui/
 │   │   │                   # lives only in the Storybook story `title`.
 │   │   ├── Avatar/
 │   │   ├── Banner/
+│   │   ├── Chip/
 │   │   ├── Box/
 │   │   │   ├── Box.tsx
 │   │   │   ├── Box.module.css
@@ -1291,7 +1353,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, and Button's icon (OptionText also: Avatar's name and description); Spinner: Button + Select; CrossIcon: Select + Banner)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Spinner: Button + Select; CrossIcon: Select + Banner + Chip)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -1467,6 +1529,7 @@ export const EscapeHatch: Story = {
 - [x] `Textarea` — size, rows, resize, label, error, isDisabled, isReadOnly, isRequired; shares `_shared/TextFieldFrame` with TextField
 - [x] `Toggle` — label, description, checked/defaultChecked, isDisabled (single boolean, no `size`, no `error`); no option row, on / off shown by position, fill and icon
 - [x] `Banner` — size, background (brand color at three strengths, no info/error kinds), title, onDismiss; `role="status"`
+- [x] `Chip` — size, background (less: outline, normal: semi-transparent brand tint, more: brand color; all flat), children (the label), icon, onRemove (× and a whole-chip click target), isInField; Select's former `SelectChip`, now public and used by Select
 - [x] `Avatar` — size, src, name, alt, description, isTextShown (one switch for the name and description beside it; tooltip when off, to come); falls back to children, then initials, then a glyph; background color is derived from `name` (no `background` prop); name and description beside it use `_shared/OptionText`
 - [x] `Card` — the former Box: radius, shadow, background, padding (no margin); renders a Box. Still to add: slots, interactive variant, semantic element
 
@@ -1486,7 +1549,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 
 **Display and feedback** (no overlay, no state machine):
 
-- [ ] `Badge` — size, background; removable and with an optional icon, so it is also the chip. Sibling: Banner / Avatar (a `size` and the brand color at three strengths), and Select's `SelectChip` (`--color-select-chip*`), which becomes this (see Select) and moves its tokens with it. Anchors Avatar's status dot
+- [ ] `Indicator` — the **dot or count** pinned to a corner of what it wraps (an unread "3", an online dot). Wraps a child, as Avatar's status dot and an icon button's count need. Sibling: Chip (the same strengths of color, in a smaller circle), Box (the positioned wrapper)
 - [ ] `Divider` — Sibling: Box (spacing) and Stack (direction)
 - [ ] `Progress` — bar and circle. Sibling: Spinner
 - [ ] `Skeleton` — Sibling: Card (a surface), Text (sizes)

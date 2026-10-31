@@ -1,0 +1,183 @@
+/*
+ * Chip: base styles first, then one class per scale variant, named <prop><Variant> (looked up by
+ * resolveScaleProps). The base has no scale values: `normal` is a real class too, and every prop gets
+ * it from CHIP_DEFAULTS in Chip.tsx.
+ *
+ * A pill in em, so `size` (which only sets font-size) scales the height, the padding and the gaps, and
+ * so does an escape-hatch size such as size="1.5rem". The height (1.5em) is chosen so that a Select
+ * field with chips and an empty one are equally tall as a TextField (see .box in Select.module.css).
+ * `borderRadius` runs from nearly square to a full pill, in em so it follows `size`: 0.25em, 0.5em
+ * and 0.75em, which is half the 1.5em height, so `more` is exactly a pill. Round corners, not the
+ * squircle Card has, and not the --radius-* scale, whose rem values don't track the pill's height.
+ *
+ * `background` uses the --color-chip-background-* tokens (see theme/tokens.css). A chip is flat: no
+ * shadow on any background.
+ */
+
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  max-width: 100%;
+  box-sizing: border-box;
+  height: 1.5em;
+  padding-inline: 0.625em;
+  /* Every chip has the border, transparent but for `less`, so they are all the same size */
+  border: 1px solid transparent;
+  color: CanvasText;
+  line-height: 1.25;
+  /* The washes a removable chip takes on hover and when pressed. Hooks so `more` can use others. */
+  --chip-hover: var(--color-chip-hover);
+  --chip-pressed: var(--color-chip-pressed);
+}
+
+/* The remove button supplies the right-hand space, so there is less padding there */
+.removable {
+  padding-inline-end: 0.125em;
+  cursor: pointer;
+  transition: transform 300ms var(--ease-pop);
+}
+
+/* The whole chip removes on click, so the whole chip is the hover target: a wash over it, and the ×
+   grows (see .icon). A layer on top, not a second background, so it works on every `background`,
+   an escape-hatch one included, and stays opaque where the background is. It is drawn over the label
+   and the ×, which it only tints, and takes no pointer events. */
+.removable::after {
+  content: '';
+  position: absolute;
+  /* Over the border too: the wash covers the whole chip, its outline included */
+  inset: -1px;
+  border-radius: inherit;
+  background: var(--chip-hover);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+
+@media (hover: hover) {
+  .removable:hover::after {
+    opacity: 1;
+  }
+}
+
+/* Pressed: the whole chip shrinks, quickly and without overshoot, and the wash deepens, so a press
+   reads as a press even where there is no hover (touch). Outside the hover query, and after the hover
+   rules, which it outranks by order. Releasing returns on the springy base transition. */
+.removable:active {
+  transform: scale(0.95);
+  transition: transform 120ms var(--ease-leave);
+}
+.removable:active::after {
+  background: var(--chip-pressed);
+  opacity: 1;
+}
+
+/* The option's icon (OptionIcon), a little smaller than in the popup so the chip keeps its height */
+.leading {
+  --option-icon-size: 1em;
+}
+
+/* A long label gives way before the remove button does. The text is smaller than the chip's `size`
+   (0.875em, the description's ratio in _shared/OptionText), while the chip keeps its height and
+   padding, so it sits in more room. `overflow: hidden` clips at the box, so the line height is 1.5
+   (not the chip's 1.25): at 1.25 the tails of g, j, p and y were cut off in fonts with tall glyphs. */
+.label {
+  min-width: 0;
+  font-size: 0.875em;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.25em;
+  height: 1.25em;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  /* A button doesn't inherit the font size, and the em sizes here follow the chip's `size` */
+  font: inherit;
+  cursor: pointer;
+}
+/* Tabbing to it (a chip outside a field) shows where it is; a pointer press doesn't */
+.remove:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 0;
+}
+
+.icon {
+  width: 0.875em;
+  height: 0.875em;
+  transition: transform 300ms var(--ease-pop);
+}
+
+@media (hover: hover) {
+  .removable:hover .icon {
+    transform: scale(var(--scale-icon-hover));
+  }
+}
+
+/* Pressed: the hover growth gives way to the chip's own shrink above, so the × ends up at the chip's
+   scale instead of 1.3 × 0.95. After the hover rule, which it outranks by order. */
+.removable:active .icon {
+  transform: none;
+  transition: transform 120ms var(--ease-leave);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .removable,
+  .removable::after,
+  .icon {
+    transition: none;
+  }
+  /* The deeper wash is the pressed cue; nothing scales */
+  .removable:active {
+    transform: none;
+  }
+}
+
+.borderRadiusLess {
+  border-radius: 0.25em;
+}
+.borderRadiusNormal {
+  border-radius: 0.5em;
+}
+/* Half the height: the ends are semicircles */
+.borderRadiusMore {
+  border-radius: 0.75em;
+}
+
+.sizeLess {
+  font-size: var(--size-less);
+}
+.sizeNormal {
+  font-size: var(--size-normal);
+}
+.sizeMore {
+  font-size: var(--size-more);
+}
+
+/* Outline only: nothing behind the label, a line around it */
+.backgroundLess {
+  background: var(--color-chip-background-less);
+  border-color: var(--color-chip-border);
+}
+/* A semi-transparent brand tint, flat: no shadow on any background */
+.backgroundNormal {
+  background: var(--color-chip-background-normal);
+}
+.backgroundMore {
+  background: var(--color-chip-background-more);
+  /* The base CanvasText is unreadable on a dark brand fill */
+  color: var(--color-chip-text-more);
+  /* The brand color is already the strongest tint, so wash with the text color instead */
+  --chip-hover: color-mix(in oklab, currentColor 15%, transparent);
+  --chip-pressed: color-mix(in oklab, currentColor 28%, transparent);
+}

@@ -63,4 +63,11 @@ describe('theme/themes.css', () => {
     expect(css.includes('--color-banner-background-more:')).toBe(true);
     expect(css.includes('--color-banner-text-more:')).toBe(true);
   });
+
+  it('overrides the Chip `more` text whenever it overrides its background', () => {
+    // Same reason as Banner's: --color-chip-text-more follows --color-primary, not the background
+    const css = readFileSync(resolve(process.cwd(), 'src/theme/themes.css'), 'utf8');
+    expect(css.includes('--color-chip-background-more:')).toBe(true);
+    expect(css.includes('--color-chip-text-more:')).toBe(true);
+  });
 });

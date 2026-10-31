@@ -19,7 +19,7 @@ import { OptionText } from '../_shared/OptionText';
 import { Spinner } from '../_shared/Spinner';
 import type { NameProps, OptionBase } from '../_shared/types';
 import { CrossIcon } from '../_shared/CrossIcon';
-import { SelectChip } from './SelectChip';
+import { Chip } from '../Chip';
 import { useListboxNavigation } from './useListboxNavigation';
 import { useSelectPopup } from './useSelectPopup';
 import styles from './Select.module.css';
@@ -372,9 +372,11 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
               }}
             >
               {selectedOptions.map((option) => (
-                <SelectChip
+                <Chip
                   key={option.value}
-                  label={option.label}
+                  // The field's own size, not a size of the chip's
+                  size="1em"
+                  isInField
                   icon={option.icon}
                   onRemove={
                     disabled || option.isDisabled
@@ -384,7 +386,9 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                           comboRef.current?.focus();
                         }
                   }
-                />
+                >
+                  {option.label}
+                </Chip>
               ))}
               <input
                 {...inputProps}
