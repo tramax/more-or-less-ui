@@ -164,6 +164,15 @@
   /* The glow in the corner: the opposite of the banner's text, so it lightens under dark text and
      darkens under light text, whichever background */
   --color-banner-glow: var(--color-text-inverse);
+
+  /* Avatar's background: a color from the name. Avatar sets the hue on each avatar (--avatar-hue); the
+     lightness and the chroma are the same for all, so they weigh the same and the text on them is
+     black or white by one rule (see Avatar.module.css). Plain numbers, not a color: the hue is not
+     known here. The dark theme lowers the lightness. */
+  --color-avatar-lightness: 0.82;
+  --color-avatar-chroma: 0.08;
+  /* An avatar without a name has no hue: the plain field fill */
+  --color-avatar-anonymous: var(--color-field-background);
 }
 
 @supports (color: contrast-color(red)) {

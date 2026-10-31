@@ -1,3 +1,5 @@
+export { Avatar } from './Avatar';
+export type { AvatarProps } from './Avatar';
 export { Banner } from './Banner';
 export type { BannerProps } from './Banner';
 export { Box } from './Box';

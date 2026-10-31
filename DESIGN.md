@@ -1054,6 +1054,58 @@ a plain native prop. `className`, `style`, `ref` and the other native props go o
 **Not yet:** an icon or leading slot, an action slot (put a link or a Button in the children for now),
 enter / leave motion, localisation of "Dismiss", a sticky or full-width variant.
 
+### Avatar
+
+```tsx
+type AvatarProps = Omit<HTMLAttributes<HTMLSpanElement>, 'color'> & {
+  size?: ScaleProp; // font-size; the box is 2.5em square, so it and its contents follow
+  src?: string; // the picture; while it loads, and if it fails, the fallback shows
+  name?: string; // whose it is: the initials, the background color, and the accessible name unless `alt` says otherwise
+  alt?: string; // the accessible name when it differs from `name`; alt="" makes it decorative
+  // children: the fallback in place of the initials and the glyph (an icon, a logo's letter)
+};
+```
+
+A person's or an account's picture in a circle. Not interactive: wrap it in a link or a button when it
+should be. Closest sibling is Banner (a `size` over the brand's look, flat, no shadow), but it differs
+in the one place that matters: there is **no `background` prop**. The color is a function of `name`, so
+the same person is the same color everywhere, with nothing for the caller to keep in step.
+
+**Color from the name.** `getHue(name)` hashes the name (FNV-1a over its code points, after trimming,
+collapsing spaces and lowercasing, so "Ada Lovelace" and " ada lovelace" agree) to a hue in 0-359.
+Avatar sets it on its root as `--avatar-hue`; the CSS makes the color
+`oklch(var(--color-avatar-lightness) var(--color-avatar-chroma) var(--avatar-hue))`. Lightness (0.82)
+and chroma (0.08) are the same for every avatar, in `tokens.css`, so they carry the same weight and sit
+well with the sand brand color; a pastel, so the text is black. The dark theme sets lightness to 0.45
+and the text turns white without being told: it is `oklch(clamp(0, (0.6 - lightness) * 1000, 1) 0 0)`,
+the `--color-on-primary` rule fed the lightness, written in the CSS module because it needs the value
+as it is on the avatar. The tokens are plain numbers, not colors, because the hue isn't known in
+`:root`. No name (or only spaces) means no hue: the avatar takes `--color-avatar-anonymous`, an
+alias of the field fill, with `CanvasText`. A color of your own is `style={{ background }}`, which
+wins over the name's. No new color recipe is in `tokens.css`, so the duplicate-recipe test has
+nothing to say.
+
+**Fallback order:** the picture once it has loaded; otherwise `children`; otherwise the initials of
+`name` (first letter of the first and last words, so "Ada Lovelace" is AL and "ada" is A; whole code
+points, so an emoji isn't split); otherwise a plain person glyph. The fallback sits under the picture
+while it loads (the `<img>` is transparent until `load`, so a half-drawn or broken picture is never
+seen) and is removed once the picture is in, so a transparent PNG doesn't show it through. A failed
+load keeps the fallback; a new `src` starts over. The load state is tagged with the `src` it belongs to,
+so there is no effect to reset it. An image already complete when React attaches (cached,
+server-rendered) is picked up in the `<img>`'s ref callback.
+
+**Accessible name.** The root is `role="img"` named by `alt ?? name`; the `<img>` inside has `alt=""` so
+the name isn't said twice. With no name at all, and no `aria-label` / `aria-labelledby` from the caller,
+it is `aria-hidden`, since an unnamed image would only be noise. `alt=""` is the way to say "decorative"
+when the person's name is written beside it.
+
+**Size.** The box is `2.5em`, `flex: none` (never squeezed into an oval by a flex or grid parent) and
+`overflow: hidden`. The shape (a circle) and the weight are fixed, as Button's radius is.
+
+**Not yet:** a shape prop (rounded square), a group that overlaps avatars (`AvatarGroup` with a +N),
+a status dot (wait for Badge to anchor it), `loading` / `crossOrigin` on the `<img>`, a way to pick the
+colors a name maps to (a palette, rather than a free hue).
+
 ---
 
 ## Theme Provider (Optional React API)
@@ -1197,6 +1249,7 @@ more-or-less-ui/
 │   │   └── clsx.ts         # Re-export
 │   ├── components/         # Flat: one folder per component. Grouping (Layout, Actions, ...)
 │   │   │                   # lives only in the Storybook story `title`.
+│   │   ├── Avatar/
 │   │   ├── Banner/
 │   │   ├── Box/
 │   │   │   ├── Box.tsx
@@ -1387,6 +1440,7 @@ export const EscapeHatch: Story = {
 - [x] `Textarea` — size, rows, resize, label, error, isDisabled, isReadOnly, isRequired; shares `_shared/TextFieldFrame` with TextField
 - [x] `Toggle` — label, description, checked/defaultChecked, isDisabled (single boolean, no `size`, no `error`); no option row, on / off shown by position, fill and icon
 - [x] `Banner` — size, background (brand color at three strengths, no info/error kinds), title, onDismiss; `role="status"`
+- [x] `Avatar` — size, src, name, alt; falls back to children, then initials, then a glyph; background color is derived from `name` (no `background` prop)
 - [ ] `Badge`, `Icon` — Display
 - [x] `Card` — the former Box: radius, shadow, background, padding (no margin); renders a Box. Still to add: slots, interactive variant, semantic element
 

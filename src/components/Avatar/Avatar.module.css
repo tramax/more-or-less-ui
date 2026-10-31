@@ -1,0 +1,86 @@
+/*
+ * Avatar: base styles first, then one class per scale variant, named <prop><Variant> (looked up by
+ * resolveScaleProps). The base has no scale values: `normal` is a real class too, and every prop gets
+ * it from AVATAR_DEFAULTS in Avatar.tsx.
+ *
+ * The box is 2.5em square, so `size` (which only sets font-size) scales it, the initials and the glyph
+ * together, and so does an escape-hatch size such as size="4rem". The shape (a circle) and the font
+ * weight are fixed here, not props.
+ *
+ * There is no `background` prop: the color comes from the name. Avatar.tsx sets --avatar-hue (0-359)
+ * from it; the lightness and chroma are the --color-avatar-* tokens (theme/tokens.css), so every
+ * avatar has the same weight and the dark theme changes them all at once. A photo covers the color.
+ * Without a name there is no hue, and the avatar is the plain field fill. A caller who wants a color
+ * of their own passes `style={{ background }}`. An avatar is flat: no shadow.
+ */
+
+.avatar {
+  position: relative;
+  /* Never squeezed into an oval by a flex or grid parent */
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 2.5em;
+  height: 2.5em;
+  overflow: hidden;
+  border-radius: 50%;
+  background: oklch(var(--color-avatar-lightness) var(--color-avatar-chroma) var(--avatar-hue));
+  /* Black on a light color, white on a dark one: the same recipe as --color-on-primary, fed the
+     lightness instead of the primary. It is here, not a token, because it needs the lightness as it is
+     where the avatar is. */
+  color: oklch(clamp(0, (0.6 - var(--color-avatar-lightness)) * 1000, 1) 0 0);
+  font-weight: var(--weight-more);
+  line-height: 1;
+  vertical-align: middle;
+  user-select: none;
+}
+
+/* No name, so no hue */
+.anonymous {
+  background: var(--color-avatar-anonymous);
+  color: CanvasText;
+}
+
+/* The initials, custom content or glyph. Fills the box so a wide child is centered, not overflowing. */
+.fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* A person's shoulders and head: 60% of the box, in the text color */
+.glyph {
+  width: 60%;
+  height: 60%;
+}
+
+/* Over the fallback, filling the box. cover crops a non-square photo instead of squashing it. */
+.image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 150ms ease;
+}
+.loading {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image {
+    transition: none;
+  }
+}
+
+.sizeLess {
+  font-size: var(--size-less);
+}
+.sizeNormal {
+  font-size: var(--size-normal);
+}
+.sizeMore {
+  font-size: var(--size-more);
+}

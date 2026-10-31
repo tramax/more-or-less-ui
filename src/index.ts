@@ -28,6 +28,7 @@ export {} from '@/styles.css';
 
 // Components
 export {
+  Avatar,
   Banner,
   Box,
   Button,
@@ -42,6 +43,7 @@ export {
   Textarea,
 } from '@/components';
 export type {
+  AvatarProps,
   BannerProps,
   BoxProps,
   ButtonProps,

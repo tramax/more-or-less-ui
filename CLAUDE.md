@@ -54,7 +54,7 @@ same recipe is defined under two names.
     callback that hides each component's input in another file, and only two components would use
     it. Extract it when a third option-group component appears, and not before. Until then, keep the
     two in step: a fix to one is a fix to the other.
-  - The `size*` classes in Button, Banner, Text and `_shared/TextFieldFrame`, which `resolveScaleProps` looks up in
+  - The `size*` classes in Button, Banner, Avatar, Text and `_shared/TextFieldFrame`, which `resolveScaleProps` looks up in
     each component's own CSS module.
 
 ## Before you finish
