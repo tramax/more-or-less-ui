@@ -1468,8 +1468,54 @@ export const EscapeHatch: Story = {
 - [x] `Toggle` — label, description, checked/defaultChecked, isDisabled (single boolean, no `size`, no `error`); no option row, on / off shown by position, fill and icon
 - [x] `Banner` — size, background (brand color at three strengths, no info/error kinds), title, onDismiss; `role="status"`
 - [x] `Avatar` — size, src, name, alt, description, isTextShown (one switch for the name and description beside it; tooltip when off, to come); falls back to children, then initials, then a glyph; background color is derived from `name` (no `background` prop); name and description beside it use `_shared/OptionText`
-- [ ] `Badge`, `Icon` — Display
 - [x] `Card` — the former Box: radius, shadow, background, padding (no margin); renders a Box. Still to add: slots, interactive variant, semantic element
+
+### Phase 3b: Components still to build
+
+What is missing, from comparing the built set with the inventories of shadcn/ui, Radix, MUI, Chakra
+and Mantine (a comparison from knowledge, not a survey). The built set covers forms and layout; what
+is missing is display, overlays, navigation and feedback. The order is the order to build in. Each
+item names its closest existing sibling, as CLAUDE.md asks, so the plan starts from what is shared.
+
+**Foundations first** (small, and the rest stand on them):
+
+- [ ] `Icon` — a sized glyph slot. Sibling: `_shared/OptionIcon` (the square slot Button, Select and options use), `_shared/CrossIcon`
+- [ ] `VisuallyHidden`, `Portal` — utilities the overlays and Progress need
+- [ ] `Spinner` — already in `_shared/` (Button, Select); only needs exporting, plus a `size`
+- [ ] Overlay primitive in `_shared/` — positioning, outside-click and Escape dismissal, focus return. Extract it from `Select/useSelectPopup.ts` in the same change as the first overlay below (a second consumer appears; CLAUDE.md says extract then). Check the Popover API and anchor positioning support first, as Select's section notes
+
+**Display and feedback** (no overlay, no state machine):
+
+- [ ] `Badge` — size, background; removable and with an optional icon, so it is also the chip. Sibling: Banner / Avatar (a `size` and the brand color at three strengths), and Select's `SelectChip` (`--color-select-chip*`), which becomes this (see Select) and moves its tokens with it. Anchors Avatar's status dot
+- [ ] `Divider` — Sibling: Box (spacing) and Stack (direction)
+- [ ] `Progress` — bar and circle. Sibling: Spinner
+- [ ] `Skeleton` — Sibling: Card (a surface), Text (sizes)
+- [ ] `List` — rows of Avatar + OptionText; Sibling: Avatar with `isTextShown`
+
+**Overlays** (build on the primitive above):
+
+- [ ] `Tooltip` — **next**: Avatar's `isTextShown={false}` shows the name and description in one
+- [ ] `Popover`
+- [ ] `Menu` (dropdown) — Sibling: Select's list and options (`OptionText`, active-option token)
+- [ ] `Dialog` (modal) and `Drawer` — focus trap; the native `<dialog>` may cover most of it
+- [ ] `Toast` — Sibling: Banner (it is a Banner that floats and times out; Banner's section says so)
+
+**Navigation and disclosure:**
+
+- [ ] `Tabs` — Sibling: Radio (one of several, arrow-key roving, `orientation`)
+- [ ] `Accordion` / `Collapsible`
+- [ ] `Breadcrumb`, `Pagination`, `Link` (or `Text as="a"`)
+
+**Inputs still missing:**
+
+- [ ] `Slider` — Sibling: Toggle (a custom control on `OptionGroup` classes) and TextFieldFrame for label and error
+- [ ] `SegmentedControl` / `ToggleGroup` — Sibling: Radio
+- [ ] `NumberInput`, password reveal — variants of TextField, not new components (add to `TextFieldFrame` only what they share)
+- [ ] `FileUpload`, `DatePicker` (and Calendar) — the largest; last
+
+**Data display:** `Table` (Sibling: Grid, Card).
+
+**Later, only if asked for:** Stepper, Rating, Tree, Command palette, Carousel.
 
 ### Phase 4: Developer Experience
 
