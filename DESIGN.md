@@ -520,7 +520,9 @@ gets light text. A theme or consumer that recolors `--color-button-background-mo
 Border radius, font weight and box shadow are not props: the Button defines them itself in its CSS
 module (currently placeholders on the `normal` tokens). Its shadow is the shared elevation scale, not
 its own: `--elevation-normal` at rest, `-more` on hover, `-less` while pressed, so a theme that
-changes `--elevation-*` changes Button with Card and the rest.
+changes `--elevation-*` changes Button with Card and the rest. Filled buttons (`normal`, `more`, and
+an escape-hatch background) also get a 1px light line along the bottom edge, `--color-button-edge`,
+drawn by `::before` so it doesn't depend on the elevation token; `background="less"` has none.
 
 Boolean props use the `is*` prefix. While `isLoading`, the content stays in the layout (transparent)
 so the button keeps its width and its accessible name. The spinner is `_shared/Spinner`, also used by

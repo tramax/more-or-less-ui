@@ -74,6 +74,8 @@
      Aliases --color-on-primary because the background is the primary here; a theme or consumer that
      sets --color-button-background-more to something else sets this one with it (themes.css does). */
   --color-button-text-more: var(--color-on-primary);
+  /* The light line along the bottom edge of a filled Button, separating it from its shadow */
+  --color-button-edge: color-mix(in oklab, white 35%, transparent);
 
   /* Error color: the TextField's error message and its error fill */
   --color-danger: #c62828;

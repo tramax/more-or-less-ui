@@ -78,6 +78,20 @@
   }
 }
 
+/* A light line along the bottom edge, so the button reads as separate from its shadow. A pseudo-element
+   rather than an inset layer in the button's box-shadow: that list is the elevation token, which a
+   theme may set to `none`, and an extra layer would make the whole declaration invalid and would
+   have to be repeated in every state to keep the shadow transition interpolating. */
+.button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  corner-shape: inherit;
+  box-shadow: inset 0 -2px 0 var(--color-button-edge);
+  pointer-events: none;
+}
+
 /* Hover and pressed sheen: a white-to-transparent overlay blended with `overlay`, so it lifts
    the button's own colour (dark tones get richer, light ones brighter) instead of laying a flat
    tint on it, and works on any background, escape-hatch gradients included. The light comes from
@@ -179,6 +193,10 @@
 
 .backgroundLess {
   background: var(--color-button-background-less);
+}
+/* Transparent: the line would float on the page with nothing to be the edge of */
+.backgroundLess::before {
+  display: none;
 }
 .backgroundNormal {
   background: var(--color-button-background-normal);
