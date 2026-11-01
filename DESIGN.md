@@ -448,7 +448,7 @@ gap counts against it, so `25%` with a gap fits 3 columns, not 4. Use a length f
 holds the three classes and `resolveGap`. Both render a Box for padding and margin.
 
 Open: switching from row to column on narrow screens (prefer a container query over breakpoint objects).
-No `divider` prop; put a `Divider` between children.
+No `divider` prop; put a [`Divider`](#divider) between children.
 
 ### Text — Typography
 
@@ -1343,6 +1343,32 @@ filled length and `aria-valuenow`, not from color alone. A theme that needs more
 buffer segment (a second, lighter value), segments, `color` for success or error, a determinate
 `shape="circle"` that can start from another angle, a `onFinished` callback (announce it yourself).
 
+### Divider
+
+```tsx
+type DividerProps = Omit<HTMLAttributes<HTMLHRElement>, 'children' | 'color'> & {
+  orientation?: 'horizontal' | 'vertical'; // default 'horizontal'
+};
+```
+
+A hairline between two groups. It is meant to be felt more than seen: one pixel, in `--color-divider`,
+the brand color at 35% over transparent (more than Progress's 20% track only because a one-pixel line
+needs more alpha than a filled bar to show). That is the one new color recipe; there was no faint line to alias
+(`--color-text-less` is 70% of the text color, `--color-chip-border` the full brand color).
+
+Closest sibling is Card, for the rule that it has **no margin**: the space on either side is the
+layout's (a Stack's `gap`, or a wrapping Box), so it is not a Box and takes none of Box's props. It is
+an `<hr>`, a separator already, drawn as its background with the border and margin reset; sizes are
+logical (`block-size` / `inline-size`), so it reads the same right-to-left. `align-self: stretch` makes
+it span a Stack on the cross axis whatever the Stack's `align` (a column with `align="center"` would
+otherwise collapse it to nothing); a vertical one in a row stretches to the row's height, with a `1em`
+minimum for when it sits outside a flex container.
+
+`orientation="vertical"` adds `aria-orientation="vertical"` (a horizontal one needs nothing).
+
+**Not yet:** a label in the middle ("or"), a decorative-only mode (`role="presentation"`), a `strength`
+or `color` prop, a dashed style.
+
 ---
 
 ## Theme Provider (Optional React API)
@@ -1489,6 +1515,7 @@ more-or-less-ui/
 │   │   ├── Avatar/
 │   │   ├── Banner/
 │   │   ├── Chip/
+│   │   ├── Divider/
 │   │   ├── Spinner/
 │   │   ├── Progress/
 │   │   ├── Box/
@@ -1701,7 +1728,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 **Display and feedback** (no overlay, no state machine):
 
 - [ ] `Indicator` — the **dot or count** pinned to a corner of what it wraps (an unread "3", an online dot). Wraps a child, as Avatar's status dot and an icon button's count need. Sibling: Chip (the same strengths of color, in a smaller circle), Box (the positioned wrapper)
-- [ ] `Divider` — Sibling: Box (spacing) and Stack (direction)
+- [x] `Divider` — orientation (`horizontal` / `vertical`); a one-pixel `<hr>` in `--color-divider`, no margin (the layout's gap spaces it, as Card's); no scale props
 - [x] `Progress` — shape (`bar` / `circle`), size, value / max (no value: indeterminate), named by `aria-label` or `aria-labelledby`; the indeterminate circle is Spinner
 - [ ] `Skeleton` — Sibling: Card (a surface), Text (sizes)
 - [ ] `List` — rows of Avatar + OptionText; Sibling: Avatar with `isTextShown`

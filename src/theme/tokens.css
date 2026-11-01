@@ -183,6 +183,11 @@
   --color-progress-track: color-mix(in oklab, var(--color-primary) 20%, transparent);
   --color-progress-fill: var(--color-primary);
 
+  /* Divider's line: the brand color faint enough to sit behind the content, on a light or a dark page.
+     Stronger than the Progress track (20%) only because a one-pixel line needs more alpha than a
+     filled bar to show at all; it should still be felt more than seen. */
+  --color-divider: color-mix(in oklab, var(--color-primary) 35%, transparent);
+
   /* Avatar's background: a color from the name. Avatar sets the hue on each avatar (--avatar-hue); the
      lightness and the chroma are the same for all, so they weigh the same and the text on them is
      black or white by one rule (see Avatar.module.css). Plain numbers, not a color: the hue is not

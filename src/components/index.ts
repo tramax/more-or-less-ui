@@ -12,6 +12,8 @@ export { Chip } from './Chip';
 export type { ChipProps } from './Chip';
 export { Checkbox } from './Checkbox';
 export type { CheckboxProps, CheckboxOption } from './Checkbox';
+export { Divider } from './Divider';
+export type { DividerProps } from './Divider';
 export { Grid } from './Grid';
 export type { GridProps } from './Grid';
 export { Progress } from './Progress';

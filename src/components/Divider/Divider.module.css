@@ -1,0 +1,23 @@
+/*
+ * Divider: a one-pixel line in --color-divider, drawn as the background of an hr with its border and
+ * margin reset. Logical sizes, so it reads the same in a right-to-left page. `align-self: stretch`
+ * makes it span a Stack on the cross axis whatever the Stack's `align`.
+ */
+
+.divider {
+  flex-shrink: 0;
+  align-self: stretch;
+  margin: 0;
+  border: 0;
+  background: var(--color-divider);
+}
+
+.horizontal {
+  block-size: 1px;
+}
+
+.vertical {
+  inline-size: 1px;
+  /* Outside a row there is nothing to stretch to: stay visible */
+  min-block-size: 1em;
+}
