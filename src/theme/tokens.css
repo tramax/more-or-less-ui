@@ -65,6 +65,12 @@
      Banner's `normal` background alias it. This is the one place the recipe lives. */
   --color-primary-tint: color-mix(in oklab, var(--color-primary) 35%, Canvas);
 
+  /* The brand color made dark enough to be seen on the page: 30% toward the text color, so darker on a
+     light page and lighter on a dark one, 5:1 or better on both (the brand color itself is 2.1:1 on
+     white). For a brand-colored thing that must stand out on its own: Text's `more` and Indicator's
+     mark alias it. This is the one place the recipe lives. */
+  --color-primary-strong: color-mix(in oklab, var(--color-primary) 70%, CanvasText);
+
   /* Button background scale — affects Button background. Separate from Card's so each can be
      customised on its own. */
   --color-button-background-less: transparent;
@@ -103,11 +109,11 @@
   /* Text's `color` scale: how much the text stands out. Quiet, the plain text color, then the brand
      color for the one thing that should catch the eye. `less` is the secondary text color: the
      descriptions under an option and Select's empty message use it too, and this is the one place
-     the recipe lives. The brand color itself is too pale to read on white (2.1:1), so `more` is 30%
-     toward the text color: darker on a light page, lighter on a dark one, and 5:1 or better on both. */
+     the recipe lives. The brand color itself is too pale to read on white (2.1:1), so `more` is the
+     strong primary (see --color-primary-strong). */
   --color-text-less: color-mix(in oklab, CanvasText 70%, transparent);
   --color-text-normal: CanvasText;
-  --color-text-more: color-mix(in oklab, var(--color-primary) 70%, CanvasText);
+  --color-text-more: var(--color-primary-strong);
 
   /* Per-component tokens. Each aliases the shared value above, so a component can be customised on
      its own while the default stays defined once. Only set one to something else when the component
@@ -187,6 +193,16 @@
      Stronger than the Progress track (20%) only because a one-pixel line needs more alpha than a
      filled bar to show at all; it should still be felt more than seen. */
   --color-divider: color-mix(in oklab, var(--color-primary) 35%, transparent);
+
+  /* Indicator's mark: the brand color, never red. A red dot says "something is wrong" and hurries the
+     reader; this one says "something is here". It is the strong primary, not the primary itself: the
+     primary is 2.1:1 on white, too pale for a dot that is the whole message. The digits on it are the
+     page color, which contrasts with it the same amount in either theme. A theme that changes the fill
+     sets the text with it. */
+  --color-indicator-background: var(--color-primary-strong);
+  --color-indicator-text: Canvas;
+  /* The cut-out between the mark and what it overlaps. Set it to the surface the content sits on. */
+  --color-indicator-ring: Canvas;
 
   /* Avatar's background: a color from the name. Avatar sets the hue on each avatar (--avatar-hue); the
      lightness and the chroma are the same for all, so they weigh the same and the text on them is

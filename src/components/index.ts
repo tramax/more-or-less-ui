@@ -16,6 +16,8 @@ export { Divider } from './Divider';
 export type { DividerProps } from './Divider';
 export { Grid } from './Grid';
 export type { GridProps } from './Grid';
+export { Indicator } from './Indicator';
+export type { IndicatorProps } from './Indicator';
 export { Progress } from './Progress';
 export type { ProgressProps } from './Progress';
 export { Radio } from './Radio';

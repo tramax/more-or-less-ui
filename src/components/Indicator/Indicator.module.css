@@ -1,0 +1,114 @@
+/*
+ * Indicator: a dot or a count on the corner of what it wraps.
+ *
+ * The root is an inline box that hugs its child; the mark hangs off it. The corner is a zero-size
+ * anchor (`.anchor`) placed with logical insets, and the mark is centered on that point by the anchor's
+ * flexbox: no transform, so it mirrors right-to-left, and a wider count needs no extra offset.
+ *
+ * In em on the mark, so `size` (which sets the mark's font-size, via _shared/Size.module.css) scales
+ * the dot, the count's height and its padding, and an escape-hatch size such as size="1rem" does too.
+ */
+
+.indicator {
+  position: relative;
+  display: inline-flex;
+  /* Sits on the text baseline like an image, not above it */
+  vertical-align: middle;
+  /* A rectangle's corner is the box's corner */
+  --indicator-inset: 0%;
+}
+/* A circle's corner is inside its box: 14.6% (1 - cos 45°, halved) in from each edge puts the center
+   of the mark on the rim at 45° */
+.circle {
+  --indicator-inset: 14.6%;
+}
+
+.anchor {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 0;
+  block-size: 0;
+  /* Never takes a click meant for what it wraps */
+  pointer-events: none;
+}
+.topEnd {
+  inset-block-start: var(--indicator-inset);
+  inset-inline-end: var(--indicator-inset);
+}
+.topStart {
+  inset-block-start: var(--indicator-inset);
+  inset-inline-start: var(--indicator-inset);
+}
+.bottomEnd {
+  inset-block-end: var(--indicator-inset);
+  inset-inline-end: var(--indicator-inset);
+}
+.bottomStart {
+  inset-block-end: var(--indicator-inset);
+  inset-inline-start: var(--indicator-inset);
+}
+
+/* The mark: the fill, the text on it, and a ring in the page color that cuts it out of what it
+   overlaps. The ring is a shadow, so it adds no size. */
+.mark {
+  flex: none;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  background: var(--color-indicator-background);
+  color: var(--color-indicator-text);
+  box-shadow: 0 0 0 0.125em var(--color-indicator-ring);
+  /* Arrives with a pop. Small marks use the gentler overshoot; the animation is off under
+     prefers-reduced-motion by styles.css's global rule. */
+  animation: pop 300ms var(--ease-pop) both;
+}
+/* Leaves by shrinking away, quickly and without overshoot (nothing grows on the way out), and stays at
+   zero until the component unmounts it on animationend. Showing again drops the class, which restarts
+   the pop. */
+.leaving {
+  animation: shrink 180ms var(--ease-leave) both;
+}
+
+.dot {
+  inline-size: 0.625em;
+  block-size: 0.625em;
+  border-radius: 50%;
+}
+
+.count {
+  min-inline-size: 1.25em;
+  block-size: 1.25em;
+  padding-inline: 0.3em;
+  /* Half the height: semicircular ends, as Chip's */
+  border-radius: 0.625em;
+}
+
+/* The digits are smaller than the mark's size so they sit in room. Line height 1, so the box is the
+   mark's height and nothing more. */
+.text {
+  font-size: 0.75em;
+  font-weight: var(--weight-more);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes shrink {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(0);
+  }
+}

@@ -479,8 +479,8 @@ interface TextProps extends Omit<HTMLAttributes<HTMLElement>, 'color'> {
   secondary text (`--color-text-less`, which the option
   descriptions and Select's empty message use too), `normal` is the plain text color (`CanvasText`),
   `more` is the brand color, for the one thing that should catch the eye (`--color-text-more`). The
-  plain brand color is only 2.1:1 on white, so `more` mixes 30% of the text color into it: 5:1 or
-  better on a light and a dark page. It says nothing about meaning (error, success); that is an
+  plain brand color is only 2.1:1 on white, so `more` is `--color-primary-strong`, which mixes 30% of
+  the text color into it: 5:1 or better on a light and a dark page. It says nothing about meaning (error, success); that is an
   escape-hatch value, `color="var(--color-danger)"`. Any other string is a CSS color, set inline.
 - **`fontWeight` as a number is unitless** (`700`, not `700px`), unlike the other props, where a number
   is pixels.
@@ -1141,7 +1141,7 @@ Pass a placeholder `name` such as "Loading name" while the data is on its way. S
 **Not yet:** the tooltip that shows the name and description when `isTextShown` is off (waits for
 Tooltip), the text under the circle instead of beside it (an `orientation`, as Checkbox and Radio
 have), a shape prop (rounded square), a group that overlaps avatars (`AvatarGroup` with a +N),
-a status dot (wait for Indicator to anchor it), `loading` / `crossOrigin` on the `<img>`, a way to pick the
+a status dot as a prop (wrap it in `<Indicator overlap="circle" label="Online">` instead), `loading` / `crossOrigin` on the `<img>`, a way to pick the
 colors a name maps to (a palette, rather than a free hue).
 
 ### Chip
@@ -1177,8 +1177,8 @@ type SelectableChipProps = Omit<
 
 A small pill. With no handler it is a **label**: a status word ("Beta"), a category, a keyword. With
 `onRemove` it is a **value the user can take out**; with `isSelected` and `onSelectedChange` it is a
-**choice the user switches on and off**. It is not the red notification dot or count (that is
-`Indicator`, not built). It is Select's former `SelectChip`, made public when a second use was in view.
+**choice the user switches on and off**. It is not the notification dot or count (that is
+`Indicator`). It is Select's former `SelectChip`, made public when a second use was in view.
 It was briefly split into a `Tag` (the label) and a `Chip`; the two shared everything but a border
 color, and a semantic name for a label was not worth a second component, so they are one again. **The
 rule that tells a label from a control: an outline is information, a fill is something you can
@@ -1376,6 +1376,86 @@ minimum for when it sits outside a flex container.
 **Not yet:** a label in the middle ("or"), a decorative-only mode (`role="presentation"`), a `strength`
 or `color` prop, a dashed style.
 
+### Indicator
+
+```tsx
+type IndicatorProps = Omit<HTMLAttributes<HTMLSpanElement>, 'color' | 'children'> & {
+  children: ReactNode; // what the mark is pinned to
+  count?: number; // absent: a dot. 0 (or less) shows nothing unless isZeroShown
+  max?: number; // default 99; above it the mark reads "99+"; zero or negative falls back to it
+  isZeroShown?: boolean;
+  isHidden?: boolean; // takes the mark away; the children stay mounted
+  placement?: 'top-end' | 'top-start' | 'bottom-end' | 'bottom-start'; // default 'top-end'; logical
+  overlap?: 'rectangle' | 'circle'; // the shape of what is wrapped; default 'rectangle'
+  size?: ScaleProp; // font-size of the mark; the dot, the count's height and its padding follow
+  label?: string; // what assistive tech hears; without it the mark is decorative
+};
+```
+
+A dot or a count pinned to a corner of what it wraps: an unread "3", an online dot. Closest sibling is
+Chip: the same pill-ended count, flat and in the brand color, smaller. What differs is that it hangs off
+something else, so it wraps a child, and it has no kinds. It is **not a Box**: Box is a block-level `div`
+with padding and margin props, and the wrapper here is an inline box that hugs its child (`inline-flex`,
+`vertical-align: middle`) and takes none of them.
+
+**Not red, on purpose.** Red is the convention (Material's badge defaults to its error color; Shopify's
+POS badge calls red its "critical" tone; the Ontario design system keeps red for alerts), and that is
+the reason to leave it: a red mark says "something is wrong, hurry", and a count of unread messages is
+not that. Used on everything, it also stops being seen; Braze calls it "red dot blindness". Here the mark
+says "something is here", and gets noticed by being a mark on a corner and by arriving with a pop, not by
+alarm. A library with no `info` / `error` kinds on Banner has no status colors to pick from either.
+
+**Why not `--color-primary` itself.** The sand primary is 2.09:1 on white, below the 3:1 that WCAG asks of
+a graphic, and a dot is the whole message, not a decoration beside text as Progress's fill is. (It is
+fine on a dark page, 9:1.) The fill is `--color-indicator-background`, an alias of
+`--color-primary-strong`: the primary mixed 30% toward the text color, 5.1:1 on white and 11.4:1 on dark.
+That recipe used to be written inside `--color-text-more`; it is now its own shared token, named for what
+it is rather than for one consumer, and Text's `more` aliases it too. So a component token never points
+at another component's or role's token, and the recipe is still defined once (`tokens.test.ts` has
+nothing to say). The digits are `--color-indicator-text: Canvas`: the page color
+contrasts with the fill as much in either theme, so `themes.css` has nothing to override. A theme that
+sets the fill to something else sets the text with it. To use the plain primary, set
+`--color-indicator-background: var(--color-primary)` and `--color-indicator-text: var(--color-on-primary)`.
+
+**The mark.** A ring in `--color-indicator-ring` (default `Canvas`, 2px, drawn as a shadow so it adds no
+size) cuts it out of what it overlaps; set it to the surface the content sits on. A dot is `0.625em`; a
+count is `1.25em` tall with `0.3em` side padding and semicircular ends, its digits at `0.75em`, weight
+`more`, tabular. It arrives with a 300ms scale from zero on `--ease-pop` (the gentle overshoot the library
+uses for small marks) and leaves with a 180ms scale to zero on `--ease-leave`, which does not overshoot:
+nothing grows on the way out. Both are off under `prefers-reduced-motion` through `styles.css`'s global rule. It
+takes no pointer events, so a click lands on what it wraps. `size` sets the font-size of the **mark**
+(`_shared/Size.module.css`), not the root, so a bigger indicator does not enlarge the wrapped text.
+
+**Placement is two nested boxes, not a transform.** A zero-size anchor (`position: absolute`) sits on the
+corner by logical insets (`inset-block-start`, `inset-inline-end`, ...), and the mark is centered on it by
+the anchor's flexbox, overflowing equally every way. So the corner mirrors in a right-to-left page (a
+`translate(50%, -50%)` would not), and a wider count needs no offset to know its own width.
+`overlap="circle"` moves the anchor 14.6% in from each edge: a circle's corner is inside its bounding box,
+and that puts the center of the mark on the rim at 45°. Use it for an Avatar (without `isTextShown`: with
+the name beside it, the Avatar is wider than its circle and the mark goes to the corner of both).
+
+**Count.** `count` set means a number; a count that is not finite is a dot. `0` and below show nothing,
+because there is nothing to count, unless `isZeroShown`. Above `max` the mark reads `max+`. `isHidden`
+removes the mark and leaves the children mounted, so toggling it does not remount what is wrapped.
+
+**Leaving.** The mark is not unmounted the moment it is told to go. What it draws (`{ text }`) is kept in
+state and replaced while rendering, as Progress keeps its previous percent; when `isHidden` turns on or
+the count falls to 0, `.leaving` swaps the pop for the shrink and the mark keeps showing what it last
+showed (a "3" does not turn into an empty dot on the way out). `onAnimationEnd` of the leave unmounts it.
+A leaving mark is `aria-hidden` at once: it is already gone for assistive tech. Showing again before it
+has gone drops `.leaving`, which restarts the pop. A count that changes while shown updates in place and
+plays nothing. A mark that starts hidden is never drawn. If the animation never runs (the page is not
+rendered), the invisible mark stays mounted, scaled to zero and hidden from assistive tech.
+
+**Accessible name.** Decorative until named, as Spinner is. With `label`, the mark is `role="img"` with
+that name ("3 unread messages", "Online"); without it, it is `aria-hidden`, because a dot would say
+nothing and a bare "3" next to "Inbox" is not a sentence. Name it, or say it where the wrapped content is
+named (`<Button aria-label="Inbox, 3 unread">`). It is not a live region: announce a change some other way.
+
+**Not yet:** a text label ("New"), a colour for another meaning (there is deliberately none), a bump when
+the count changes, a `Tooltip`, wrapping Avatar's name and circle separately, a
+`offset` for fine placement.
+
 ---
 
 ## Loading
@@ -1568,6 +1648,7 @@ more-or-less-ui/
 │   │   ├── Banner/
 │   │   ├── Chip/
 │   │   ├── Divider/
+│   │   ├── Indicator/
 │   │   ├── Spinner/
 │   │   ├── Progress/
 │   │   ├── Box/
@@ -1779,7 +1860,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 
 **Display and feedback** (no overlay, no state machine):
 
-- [ ] `Indicator` — the **dot or count** pinned to a corner of what it wraps (an unread "3", an online dot). Wraps a child, as Avatar's status dot and an icon button's count need. Sibling: Chip (the same strengths of color, in a smaller circle), Box (the positioned wrapper)
+- [x] `Indicator` — the **dot or count** pinned to a corner of what it wraps (an unread "3", an online dot). count / max / isZeroShown / isHidden, placement (logical corners), overlap (`rectangle` / `circle`), size, label (decorative until named). Brand color, never red; the fill aliases `--color-primary-strong` (the plain primary is 2.1:1 on white). Avatar's status dot is `<Indicator overlap="circle">`
 - [x] `Divider` — orientation (`horizontal` / `vertical`); a one-pixel `<hr>` in `--color-divider`, no margin (the layout's gap spaces it, as Card's); no scale props
 - [x] `Progress` — shape (`bar` / `circle`), size, value / max (no value: indeterminate), named by `aria-label` or `aria-labelledby`; the indeterminate circle is Spinner
 - [x] ~~`Skeleton`~~ — not a component: loading is `aria-busy` on a region, and Text, Avatar and `OptionText` become blocks (`_shared/Placeholder`; see Loading). A wrapper means a second layout to keep in step and heights to match by hand. Still open: Button, Chip, fields, a block for an image or chart
