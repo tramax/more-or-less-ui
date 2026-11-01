@@ -150,22 +150,22 @@
   --color-select-popup: Canvas;
   --color-select-check: var(--color-on-primary);
 
-  /* Chip's `background` scale: how it stands out. Outline only (transparent, with a border), a
-     semi-transparent brand tint, then the brand color itself. The tint is the chip's own, not an
-     alias of the field fill: a chip isn't a field, and changing one shouldn't change the other. It is
-     a little stronger (20%, the field's is 15%), so a chip stands out from a Select field it sits in. */
-  --color-chip-background-less: transparent;
-  --color-chip-background-normal: color-mix(in oklab, var(--color-primary) 25%, transparent);
-  --color-chip-background-more: var(--color-primary);
-  /* The outline of the `less` chip. The other two have no visible border. */
-  --color-chip-border: var(--color-primary);
-  /* Text on the `more` background; set with it, as Banner's (themes.css does) */
-  --color-chip-text-more: var(--color-on-primary);
-  /* The wash over a removable chip on hover: a light brand tint. A layer over the background, so it
-     works on every one of them, a transparent one included. */
+  /* Chip is filled, and a fill says "pressable", as a field's does. A removable chip (a value in a
+     field) takes the stronger field tint, so it stands out from the Select field it sits in; a
+     selectable one takes the field fill itself, off, and the brand color, on, as Checkbox and Toggle do. */
+  --color-chip-background-removable: var(--color-field-background-hover);
+  --color-chip-background-selectable: var(--color-field-background);
+  --color-chip-background-selected: var(--color-primary);
+  /* Text on the selected background; set with it, as Banner's (themes.css does) */
+  --color-chip-text-selected: var(--color-on-primary);
+  /* The wash over a chip on hover: a light brand tint. A layer over the fill, so it works on every
+     one of them. The selected chip is the brand color already, so it washes with its text color. */
   --color-chip-hover: color-mix(in oklab, var(--color-primary) 12%, transparent);
   /* The same wash, deeper, while it is pressed */
   --color-chip-pressed: color-mix(in oklab, var(--color-primary) 24%, transparent);
+
+  /* The static chip (no handler) is outlined, never filled: the line is what says it isn't pressable */
+  --color-chip-border: var(--color-primary);
 
   /* Banner's `background` scale: how loudly it speaks, in the brand color. A faint tint, an opaque tint,
      then the brand color itself. */

@@ -1,6 +1,7 @@
 import { forwardRef, useId, useState, type FieldsetHTMLAttributes } from 'react';
 import { clsx } from '@/utils/clsx';
 import shared from '../_shared/OptionGroup.module.css';
+import { CheckIcon } from '../_shared/CheckIcon';
 import { FieldError } from '../_shared/FieldError';
 import { FieldLabel } from '../_shared/FieldLabel';
 import { OptionText } from '../_shared/OptionText';
@@ -123,13 +124,7 @@ export const Checkbox = forwardRef<HTMLFieldSetElement, CheckboxProps>(function 
                     if (!isBlocked && !optionDisabled) toggle(option.value);
                   }}
                 />
-                <svg
-                  className={clsx(shared.mark, styles.check)}
-                  viewBox="0 0 16 16"
-                  aria-hidden="true"
-                >
-                  <path d="M3.5 8.5l3 3 6-7" pathLength={1} />
-                </svg>
+                <CheckIcon className={clsx(shared.mark, styles.check)} />
               </span>
               <OptionText
                 label={option.label}

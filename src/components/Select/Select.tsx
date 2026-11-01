@@ -18,6 +18,7 @@ import { OptionIcon } from '../_shared/OptionIcon';
 import { OptionText } from '../_shared/OptionText';
 import { Spinner } from '../_shared/Spinner';
 import type { NameProps, OptionBase } from '../_shared/types';
+import { CheckIcon } from '../_shared/CheckIcon';
 import { CrossIcon } from '../_shared/CrossIcon';
 import { Chip } from '../Chip';
 import { useListboxNavigation } from './useListboxNavigation';
@@ -159,12 +160,6 @@ function assignRef<T>(ref: ForwardedRef<T>, node: T | null) {
 const Chevron = () => (
   <svg className={styles.chevron} viewBox="0 0 16 16" aria-hidden="true">
     <path d="M4 6l4 4 4-4" />
-  </svg>
-);
-
-const Tick = ({ className }: { className: string | undefined }) => (
-  <svg className={className} viewBox="0 0 16 16" aria-hidden="true">
-    <path d="M3.5 8.5l3 3 6-7" />
   </svg>
 );
 
@@ -377,15 +372,14 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                   // The field's own size, not a size of the chip's
                   size="1em"
                   isInField
+                  className={styles.chip}
                   icon={option.icon}
-                  onRemove={
-                    disabled || option.isDisabled
-                      ? undefined
-                      : () => {
-                          remove(option.value);
-                          comboRef.current?.focus();
-                        }
-                  }
+                  // A locked chip is dimmed and has no ×; it stays filled rather than turning into a static (outlined) chip
+                  isDisabled={disabled || option.isDisabled}
+                  onRemove={() => {
+                    remove(option.value);
+                    comboRef.current?.focus();
+                  }}
                 >
                   {option.label}
                 </Chip>
@@ -539,7 +533,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                         >
                           {isMultiple && (
                             <span className={styles.checkbox} aria-hidden="true">
-                              <Tick className={styles.checkboxTick} />
+                              <CheckIcon className={styles.checkboxTick} />
                             </span>
                           )}
                           <span className={styles.optionText}>
@@ -550,7 +544,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                               icon={option.icon}
                             />
                           </span>
-                          {!isMultiple && isSelected && <Tick className={styles.tick} />}
+                          {!isMultiple && isSelected && <CheckIcon className={styles.tick} />}
                         </li>
                       );
                     })}

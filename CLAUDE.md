@@ -44,6 +44,8 @@ same recipe is defined under two names.
   `className`; a new input component renders it rather than its own `<p>` and `<svg>`.
 - `_shared/FieldLabel` is the visible name (a `<label>` for TextField, a `<legend>` for groups) with
   its required asterisk. Spacing goes through `className`.
+- `_shared/CheckIcon` and `_shared/CrossIcon` are the ✓ and ×, drawn with attributes; a consumer's
+  class sets only size, color and motion.
 - `_shared/Gap` is the `gap` scale (classes + `resolveGap`) for Stack and Grid, which both render a Box
   for padding and margin. A new layout component takes `gap` from it rather than its own classes.
 - `_shared/OptionText` is the label + description beside an option's control; `_shared/types.ts` has
@@ -60,7 +62,7 @@ same recipe is defined under two names.
 ## Before you finish
 
 Run `pnpm test`, `pnpm typecheck`, `pnpm lint` and `pnpm check:dup`. `check:dup` has a ceiling set at
-the current level, 2.1% (`.jscpd.json`, clones under 10 lines are ignored); if you add duplication it fails. Remove the duplication rather than
+the current level, 1.7% (`.jscpd.json`, clones under 10 lines are ignored); if you add duplication it fails. Remove the duplication rather than
 raising the ceiling. Lower the ceiling when you remove some. Note that `jscpd` can't see the same
 value under different names, which is what the tokens test is for.
 

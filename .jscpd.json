@@ -4,7 +4,7 @@
   "ignore": ["**/*.test.ts", "**/*.test.tsx", "**/*.stories.tsx", "**/*.d.ts"],
   "minLines": 10,
   "minTokens": 50,
-  "threshold": 2.1,
+  "threshold": 1.7,
   "reporters": ["console"],
   "gitignore": true
 }

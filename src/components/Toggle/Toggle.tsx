@@ -1,6 +1,7 @@
 import { forwardRef, useId, type InputHTMLAttributes } from 'react';
 import { clsx } from '@/utils/clsx';
 import shared from '../_shared/OptionGroup.module.css';
+import { CheckIcon } from '../_shared/CheckIcon';
 import { OptionText } from '../_shared/OptionText';
 import type { NameProps } from '../_shared/types';
 import styles from './Toggle.module.css';
@@ -83,9 +84,7 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(function Toggle(
         {/* The thumb says the state itself, not only by position and color: a tick when on, a cross
             when off. Both icons are drawn; CSS shows the one that matches. */}
         <span className={clsx(shared.mark, styles.thumb)} aria-hidden="true">
-          <svg className={clsx(styles.icon, styles.on)} viewBox="0 0 16 16">
-            <path d="M3.5 8.5l3 3 6-7" />
-          </svg>
+          <CheckIcon className={clsx(styles.icon, styles.on)} />
           <svg className={clsx(styles.icon, styles.off)} viewBox="0 0 16 16">
             <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" />
           </svg>
