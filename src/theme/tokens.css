@@ -178,6 +178,11 @@
      darkens under light text, whichever background */
   --color-banner-glow: var(--color-text-inverse);
 
+  /* Progress: the part that is done is the brand color; the empty track is a tint of it. Both come
+     from the primary directly, not from a field token, so changing the fields doesn't change Progress. */
+  --color-progress-track: color-mix(in oklab, var(--color-primary) 20%, transparent);
+  --color-progress-fill: var(--color-primary);
+
   /* Avatar's background: a color from the name. Avatar sets the hue on each avatar (--avatar-hue); the
      lightness and the chroma are the same for all, so they weigh the same and the text on them is
      black or white by one rule (see Avatar.module.css). Plain numbers, not a color: the hue is not

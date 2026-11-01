@@ -6,7 +6,7 @@ import { filterOptions, findByPrefix, stepEnabled } from './useListboxNavigation
 import frameStyles from '../_shared/TextFieldFrame.module.css';
 import labelStyles from '../_shared/FieldLabel.module.css';
 import errorStyles from '../_shared/FieldError.module.css';
-import spinnerStyles from '../_shared/Spinner.module.css';
+import spinnerStyles from '../Spinner/Spinner.module.css';
 
 const OPTIONS: SelectOption[] = [
   { value: 'a', label: 'Apple' },

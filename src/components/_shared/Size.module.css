@@ -1,0 +1,15 @@
+/*
+ * The `size` scale as font-size, for a component whose only scale prop is `size` (Spinner, Progress):
+ * it passes this module to resolveScaleProps in place of its own, so it has no copy of these classes.
+ * A component with other scale props (Button, Avatar, ...) needs its classes in one module and keeps its
+ * own copy for now (see CLAUDE.md).
+ */
+.sizeLess {
+  font-size: var(--size-less);
+}
+.sizeNormal {
+  font-size: var(--size-normal);
+}
+.sizeMore {
+  font-size: var(--size-more);
+}

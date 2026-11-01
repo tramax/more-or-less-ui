@@ -1,0 +1,31 @@
+/*
+ * Spinner: a ring with a gap, turning. 1em square, border included, so `size` (which only sets
+ * font-size) scales it, and with no `size` it is as big as the text around it. It takes the text color.
+ * Button and Select position it over their content with their own class; Progress sets its font-size
+ * and color for the circle shape.
+ */
+.spinner {
+  display: inline-block;
+  /* Never squeezed into an oval by a flex or grid parent */
+  flex: none;
+  box-sizing: border-box;
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+  border: 0.125em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2s;
+  }
+}

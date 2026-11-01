@@ -165,7 +165,7 @@
   display: none;
 }
 
-/* The ring itself is _shared/Spinner; this centers it over the content */
+/* The ring itself is Spinner; this centers it over the content */
 .spinner {
   position: absolute;
   top: 50%;

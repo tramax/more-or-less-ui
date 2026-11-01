@@ -3,7 +3,7 @@ import { clsx } from '@/utils/clsx';
 import { resolveScaleProps } from '@/utils/scale';
 import type { ScaleProp } from '@/types/scale';
 import { OptionIcon } from '../_shared/OptionIcon';
-import { Spinner } from '../_shared/Spinner';
+import { Spinner } from '../Spinner';
 import styles from './Button.module.css';
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults

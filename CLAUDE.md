@@ -50,6 +50,8 @@ same recipe is defined under two names.
   for padding and margin. A new layout component takes `gap` from it rather than its own classes.
 - `_shared/OptionText` is the label + description beside an option's control; `_shared/types.ts` has
   `NameProps` (the accessible-name union for every labelled input) and `OptionBase` (one option).
+- `_shared/Size.module.css` is the `size` scale as font-size. A component whose only scale prop is
+  `size` (Spinner, Progress) passes it to `resolveScaleProps` instead of copying the classes.
 - Left duplicated on purpose (`pnpm check:dup` reports them):
   - The group frame in Checkbox and Radio: id and error-id wiring, controlled/uncontrolled state, the
     fieldset, legend, options container and error footer. Extracting it needs a `renderControl`
@@ -57,7 +59,8 @@ same recipe is defined under two names.
     it. Extract it when a third option-group component appears, and not before. Until then, keep the
     two in step: a fix to one is a fix to the other.
   - The `size*` classes in Button, Banner, Avatar, Chip, Text and `_shared/TextFieldFrame`, which `resolveScaleProps` looks up in
-    each component's own CSS module.
+    each component's own CSS module. They could take `size` from `_shared/Size.module.css` by passing
+    `{ ...sizes, ...styles }` to it; that is not done yet.
 
 ## Before you finish
 

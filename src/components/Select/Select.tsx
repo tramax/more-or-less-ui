@@ -16,7 +16,7 @@ import type { ScaleProp } from '@/types/scale';
 import { TextFieldFrame } from '../_shared/TextFieldFrame';
 import { OptionIcon } from '../_shared/OptionIcon';
 import { OptionText } from '../_shared/OptionText';
-import { Spinner } from '../_shared/Spinner';
+import { Spinner } from '../Spinner';
 import type { NameProps, OptionBase } from '../_shared/types';
 import { CheckIcon } from '../_shared/CheckIcon';
 import { CrossIcon } from '../_shared/CrossIcon';

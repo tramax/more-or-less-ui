@@ -525,7 +525,7 @@ an escape-hatch background) also get a 1px light line along the bottom edge, `--
 drawn by `::before` so it doesn't depend on the elevation token; `background="less"` has none.
 
 Boolean props use the `is*` prefix. While `isLoading`, the content stays in the layout (transparent)
-so the button keeps its width and its accessible name. The spinner is `_shared/Spinner`, also used by
+so the button keeps its width and its accessible name. The spinner is the public `Spinner`, also used by
 Select; Button only centers it.
 
 **Icons.** `icon` (a `ReactNode`: an inline `<svg>`, an emoji, an `<img>`) goes in `_shared/OptionIcon`,
@@ -902,7 +902,7 @@ input and the types reject `isSearchable={false}` with it. What it changes, and 
   searches there is no stable `options` order (and chips that reshuffle as the user types are worse),
   so with it chips stay where they are and a new pick goes last.
 
-`isLoading` is independent of it and works on any Select. The field shows `_shared/Spinner` (the ring
+`isLoading` is independent of it and works on any Select. The field shows `Spinner` (the ring
 Button uses) in the chevron's corner, which fades out under it but stays mounted, so it doesn't jump
 back to its open or closed angle afterwards; the field's width and text don't move. The ring is the
 cue for sighted users whatever the list holds; it is `aria-hidden`, like Button's. For assistive tech:
@@ -1245,6 +1245,81 @@ like `CrossIcon`.
 uncontrolled selectable chip (`defaultSelected`), a chip group (single or multiple selection, a
 toolbar's arrow keys), a link chip (wrap it for now), localisation of "Remove".
 
+### Spinner
+
+```tsx
+type SpinnerProps = Omit<HTMLAttributes<HTMLSpanElement>, 'color'> & {
+  size?: ScaleProp; // font-size; the ring is 1em square. No default: unset, it follows the surrounding text
+};
+```
+
+The loading ring, for work of unknown length. It was `_shared/Spinner` (Button, Select); it is public
+now, with the same CSS, so their positioning is unchanged. Closest sibling is Avatar (a `size` that only
+sets font-size over a box in em); what differs is the default. `size` has **no default**: a spinner in a
+Button or a line of text must be as big as that text, so unset it is `1em`, not `normal`. It takes the
+text color (`currentColor`). Pass `size` to free it from the text, with the three variants or an
+escape-hatch value.
+
+**Accessible name.** Decorative until named. Button and Select say what is loading with `aria-busy` or a
+status, so their ring is `aria-hidden` (no name). Standing alone, give it `aria-label` or
+`aria-labelledby` and it becomes `role="progressbar"` with **no `aria-valuenow`**, which is how ARIA
+says "in progress, how far unknown". There is no `label` prop: it would only repeat `aria-label`.
+
+**Motion.** 700ms linear turn. `prefers-reduced-motion` slows it to 2s in the module; `styles.css`'s global
+reduced-motion rule (iteration count 1) goes further and stops it, leaving a still ring.
+
+**Size classes.** `size` is its only scale prop, so it passes `_shared/Size.module.css` (`sizeLess` /
+`sizeNormal` / `sizeMore`) to `resolveScaleProps` instead of copying them into its own module. Progress
+does the same.
+
+**Not yet:** a label beside the ring ("Loading…"), a color prop, a delay before it appears (so a fast
+load doesn't flash it).
+
+### Progress
+
+```tsx
+type ProgressProps = Omit<HTMLAttributes<HTMLDivElement>, 'color'> & {
+  size?: ScaleProp; // font-size; the bar's thickness (0.5em) and the circle's diameter (2.5em) follow
+  shape?: 'bar' | 'circle'; // default 'bar'
+  value?: number; // 0 to max, held to it; absent or not finite: indeterminate
+  max?: number; // default 100; zero or negative falls back to it
+} & ({ 'aria-label': string } | { 'aria-labelledby': string }); // must be named
+```
+
+How far a task has got. Closest sibling is Spinner, which it uses: an indeterminate **circle is the
+Spinner**, so there is one turning ring in the library. What differs from Spinner is the known value,
+the track, and the bar. Spinner is for a wait with no end in sight and no room for a bar.
+
+**One number draws both shapes.** Progress sets `--progress-value` (0-100, `value / max`) on its root;
+the bar's fill is `width: calc(var(--progress-value) * 1%)` and the circle's arc is
+`stroke-dasharray: var(--progress-value) 100` on a circle with `pathLength="100"`, started at 12 o'clock.
+A caller's `style` is merged last, so it can override the property. Both ease to a new value in 300ms
+with `--ease-leave`, which does not overshoot: a bar that overshoots shows more done than there is.
+The circle's thickness is 4 of 32 units, an eighth of its width, the same as Spinner's border.
+
+**Indeterminate.** No `value` (or `NaN` / `Infinity`): no `aria-valuenow`, and `.indeterminate` is set.
+The bar slides a segment 40% of the track long across it (`translate`, in percent of the segment). The
+circle renders Spinner at 2.5em over an inset shadow in the track color, so the gap in the ring shows the
+track as the finished ring does. Under `prefers-reduced-motion` the bar becomes a still, half-strength
+full bar ("in progress" without moving).
+
+**Accessible name.** `role="progressbar"` with `aria-valuemin=0`, `aria-valuemax` and `aria-valuenow`
+(the held value), named by `aria-label` or `aria-labelledby`, which the types require, as an icon-only
+Button's do. There is no visible `label` prop. `aria-valuetext` passes through for a value in words ("3
+of 12 files"). It is not a live region: announce milestones some other way.
+
+**Colors.** Both come from `--color-primary` directly, not through a field token: the fill is the primary
+itself, and the track is the primary at 20% over transparent. The 20% is deliberately not the field
+fill's 15% or 25%, so Progress doesn't move when the fields do, and `tokens.test.ts` (which rejects the
+same recipe under two names) has nothing to say. The sand primary is
+2.1:1 on white, below the 3:1 that WCAG asks of a graphic; how far along it is stays readable from the
+filled length and `aria-valuenow`, not from color alone. A theme that needs more contrast sets
+`--color-progress-fill`. The shape (a pill, a ring) is fixed, not a prop.
+
+**Not yet:** a visible label and percentage (`isValueShown`), content in the middle of the circle, a
+buffer segment (a second, lighter value), segments, `color` for success or error, a determinate
+`shape="circle"` that can start from another angle.
+
 ---
 
 ## Theme Provider (Optional React API)
@@ -1391,6 +1466,8 @@ more-or-less-ui/
 │   │   ├── Avatar/
 │   │   ├── Banner/
 │   │   ├── Chip/
+│   │   ├── Spinner/
+│   │   ├── Progress/
 │   │   ├── Box/
 │   │   │   ├── Box.tsx
 │   │   │   ├── Box.module.css
@@ -1404,7 +1481,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Spinner: Button + Select; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Size.module.css: Spinner + Progress; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -1593,16 +1670,16 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 
 **Foundations first** (small, and the rest stand on them):
 
-- [ ] `Icon` — a sized glyph slot. Sibling: `_shared/OptionIcon` (the square slot Button, Select and options use), `_shared/CrossIcon`
-- [ ] `VisuallyHidden`, `Portal` — utilities the overlays and Progress need
-- [ ] `Spinner` — already in `_shared/` (Button, Select); only needs exporting, plus a `size`
+- No `Icon` component, and no icon set. The consumer brings the icon library; every `icon` prop takes a `ReactNode` and `_shared/OptionIcon` is its one slot (decorative, `aria-hidden`). A second glyph slot beside it would only repeat it, and a library's own `size` and `color` props already cover sizing. If standalone icons outside an `icon` prop are ever needed, export `OptionIcon` under a better name rather than adding a new component
+- [ ] `VisuallyHidden`, `Portal` — utilities the overlays need
+- [x] `Spinner` — size (unset: 1em, as big as the surrounding text), named by `aria-label` or hidden; moved out of `_shared/` (Button, Select use it)
 - [ ] Overlay primitive in `_shared/` — positioning, outside-click and Escape dismissal, focus return. Extract it from `Select/useSelectPopup.ts` in the same change as the first overlay below (a second consumer appears; CLAUDE.md says extract then). Check the Popover API and anchor positioning support first, as Select's section notes
 
 **Display and feedback** (no overlay, no state machine):
 
 - [ ] `Indicator` — the **dot or count** pinned to a corner of what it wraps (an unread "3", an online dot). Wraps a child, as Avatar's status dot and an icon button's count need. Sibling: Chip (the same strengths of color, in a smaller circle), Box (the positioned wrapper)
 - [ ] `Divider` — Sibling: Box (spacing) and Stack (direction)
-- [ ] `Progress` — bar and circle. Sibling: Spinner
+- [x] `Progress` — shape (`bar` / `circle`), size, value / max (no value: indeterminate), named by `aria-label` or `aria-labelledby`; the indeterminate circle is Spinner
 - [ ] `Skeleton` — Sibling: Card (a surface), Text (sizes)
 - [ ] `List` — rows of Avatar + OptionText; Sibling: Avatar with `isTextShown`
 
