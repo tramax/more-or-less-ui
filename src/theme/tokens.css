@@ -201,8 +201,6 @@
      sets the text with it. */
   --color-indicator-background: var(--color-primary-strong);
   --color-indicator-text: Canvas;
-  /* The cut-out between the mark and what it overlaps. Set it to the surface the content sits on. */
-  --color-indicator-ring: Canvas;
 
   /* Avatar's background: a color from the name. Avatar sets the hue on each avatar (--avatar-hue); the
      lightness and the chroma are the same for all, so they weigh the same and the text on them is

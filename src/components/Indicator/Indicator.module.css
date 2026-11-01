@@ -50,16 +50,27 @@
   inset-inline-start: var(--indicator-inset);
 }
 
-/* The mark: the fill, the text on it, and a ring in the page color that cuts it out of what it
-   overlaps. The ring is a shadow, so it adds no size. */
+/* The mark: the fill, the text on it, and a shadow that lifts it off what it overlaps. */
 .mark {
   flex: none;
   box-sizing: border-box;
   display: grid;
   place-items: center;
-  background: var(--color-indicator-background);
+  /* The fill lit from above: white at 22% along the top, gone by 45%, and black at 22% along the
+     bottom. Fixed here, not tokens: it is the mark's finish, not a color to customise, and it is a
+     layer over the fill, so a theme that changes the fill keeps it. The highlight fades out before the
+     middle, where the digits are, and the shade only deepens the fill under them: white digits on the
+     light page gain contrast, dark digits on the dark page keep 8:1 or better. */
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, white 22%, transparent),
+      transparent 45%,
+      color-mix(in oklab, black 22%, transparent)
+    ),
+    var(--color-indicator-background);
   color: var(--color-indicator-text);
-  box-shadow: 0 0 0 0.125em var(--color-indicator-ring);
+  box-shadow: var(--elevation-normal);
   /* Arrives with a pop. Small marks use the gentler overshoot; the animation is off under
      prefers-reduced-motion by styles.css's global rule. */
   animation: pop 300ms var(--ease-pop) both;

@@ -1417,8 +1417,16 @@ contrasts with the fill as much in either theme, so `themes.css` has nothing to 
 sets the fill to something else sets the text with it. To use the plain primary, set
 `--color-indicator-background: var(--color-primary)` and `--color-indicator-text: var(--color-on-primary)`.
 
-**The mark.** A ring in `--color-indicator-ring` (default `Canvas`, 2px, drawn as a shadow so it adds no
-size) cuts it out of what it overlaps; set it to the surface the content sits on. A dot is `0.625em`; a
+**The mark.** It has no ring (an earlier version had a 2px cut-out in the page color): the shadow and the
+shade lift it off what it overlaps, and a ring would have to be set to the surface behind it to look
+right. The shadow is `--elevation-normal`, the library's middle step, with no token of its own
+(`--elevation-less` is 6% alpha and does not show on a mark this small; a custom shadow was tried and
+dropped). The fill is lit from above: a gradient runs top to bottom over
+`--color-indicator-background` from white at 22%, gone by 45%, to black at 22%. Those two are written in
+`Indicator.module.css`, not as tokens: they are the mark's finish, not a color anyone customises, and as a
+layer over the fill they survive a theme that changes the fill. The highlight fades out
+before the digits, which sit in the middle, and the shade only deepens the fill under them: white digits on
+the light page gain contrast, and dark digits on the dark page keep 8:1 or better. A dot is `0.625em`; a
 count is `1.25em` tall with `0.3em` side padding and semicircular ends, its digits at `0.75em`, weight
 `more`, tabular. It arrives with a 300ms scale from zero on `--ease-pop` (the gentle overshoot the library
 uses for small marks) and leaves with a 180ms scale to zero on `--ease-leave`, which does not overshoot:
