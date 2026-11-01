@@ -54,6 +54,10 @@ same recipe is defined under two names.
   `size` (Spinner, Progress) passes it to `resolveScaleProps` instead of copying the classes.
 - `_shared/Ring` is the ring's drawing (viewBox, radius, stroke width, `pathLength` 100) for Spinner's
   arc and Progress's track and arc. A new circular mark takes it rather than its own SVG numbers.
+- `_shared/Placeholder` is what text and pictures look like inside `aria-busy="true"`: the one recipe
+  for loading (there is no `Skeleton` component or `isLoading` prop). A component puts
+  `placeholder.placeholder` on the part that becomes a block and has nothing else to write. A new
+  component that shows text or a picture does the same, rather than its own loading styles.
 - Left duplicated on purpose (`pnpm check:dup` reports them):
   - The group frame in Checkbox and Radio: id and error-id wiring, controlled/uncontrolled state, the
     fieldset, legend, options container and error footer. Extracting it needs a `renderControl`

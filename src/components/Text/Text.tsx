@@ -2,6 +2,7 @@ import { forwardRef, type HTMLAttributes } from 'react';
 import { clsx } from '@/utils/clsx';
 import { resolveScaleProps } from '@/utils/scale';
 import type { ScaleProp, Variant } from '@/types/scale';
+import placeholder from '../_shared/Placeholder.module.css';
 import styles from './Text.module.css';
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
@@ -70,7 +71,8 @@ export const Text = forwardRef<HTMLElement, TextProps>(function Text(
     <Element
       {...rest}
       ref={ref}
-      className={clsx(styles.text, classNames, className)}
+      // A block as long as its content inside aria-busy="true" (see _shared/Placeholder)
+      className={clsx(styles.text, placeholder.placeholder, classNames, className)}
       style={{ ...scaleStyle, ...style }}
     />
   );

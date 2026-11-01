@@ -2,6 +2,7 @@ import { createRef, type ComponentProps } from 'react';
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import { Text, type TextElement } from './Text';
+import placeholder from '../_shared/Placeholder.module.css';
 import styles from './Text.module.css';
 
 const renderText = (props: ComponentProps<typeof Text> = {}) => {
@@ -64,6 +65,7 @@ describe('Text', () => {
       const el = renderText();
       expect([...el.classList]).toEqual([
         styles.text,
+        placeholder.placeholder,
         styles.fontWeightNormal,
         styles.colorNormal,
         styles.sizeNormal,
@@ -106,6 +108,7 @@ describe('Text', () => {
       const el = renderText({ size: 'more', fontWeight: 'less', color: 'more' });
       expect([...el.classList]).toEqual([
         styles.text,
+        placeholder.placeholder,
         styles.fontWeightLess,
         styles.colorMore,
         styles.sizeMore,
@@ -119,7 +122,7 @@ describe('Text', () => {
       expect(el.style.fontSize).toBe('1.5rem');
       expect(el.style.fontWeight).toBe('700');
       expect(el.style.color).toBe('rebeccapurple');
-      expect([...el.classList]).toEqual([styles.text]);
+      expect([...el.classList]).toEqual([styles.text, placeholder.placeholder]);
     });
 
     it('accepts a CSS variable as a color', () => {
@@ -152,6 +155,15 @@ describe('Text', () => {
       const el = renderText({ size: 10, color: 'red', style: { fontSize: 20, color: 'blue' } });
       expect(el.style.fontSize).toBe('20px');
       expect(el.style.color).toBe('blue');
+    });
+  });
+  describe('loading', () => {
+    it('has the placeholder class, which does nothing until the region is aria-busy', () => {
+      expect(renderText().classList.contains(placeholder.placeholder as string)).toBe(true);
+    });
+
+    it('passes aria-busy through, so a Text can be the busy region itself', () => {
+      expect(renderText({ 'aria-busy': true }).getAttribute('aria-busy')).toBe('true');
     });
   });
 });

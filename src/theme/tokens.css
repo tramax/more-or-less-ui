@@ -196,6 +196,11 @@
   --color-avatar-chroma: 0.08;
   /* An avatar without a name has no hue: the plain field fill */
   --color-avatar-anonymous: var(--color-field-background);
+
+  /* The block that stands in for text and pictures inside aria-busy="true" (_shared/Placeholder). Its
+     own recipe, not a field token, so changing the fields doesn't change it. Strong enough to show on
+     a card, whose fill is 15% of the brand color, while still reading as quieter than content. */
+  --color-placeholder: color-mix(in oklab, var(--color-primary) 22%, transparent);
 }
 
 @supports (color: contrast-color(red)) {

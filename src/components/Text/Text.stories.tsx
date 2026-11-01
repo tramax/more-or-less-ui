@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { omitDefaults, showCode } from '../../../.storybook/snippet';
+import { Avatar } from '../Avatar';
+import { Button } from '../Button';
 import { Stack } from '../Stack';
 import { Text, TEXT_DEFAULTS } from './Text';
 
@@ -127,4 +130,42 @@ export const EscapeHatch: Story = {
     color: 'var(--color-danger)',
     children: 'Any CSS value, or a number for pixels (not for color)',
   },
+};
+
+const LoadingDemo = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  return (
+    <Stack gap="more" style={{ maxWidth: '24rem' }}>
+      {/* The only switch is aria-busy on the region. Each child is the real component with
+          placeholder content, so the layout is the real one and nothing jumps when the data comes. */}
+      <Stack gap="normal" aria-busy={isLoading}>
+        <Avatar
+          isTextShown
+          name={isLoading ? 'Loading name' : 'Ada Lovelace'}
+          description={isLoading ? 'Loading role' : 'Mathematician'}
+        />
+        <Text as="p">
+          {isLoading
+            ? 'A placeholder about as long as the text that will replace it, so the block is about as wide.'
+            : 'Ada Lovelace wrote the first published program, for the Analytical Engine, in 1843.'}
+        </Text>
+      </Stack>
+      <Button onClick={() => setIsLoading((v) => !v)}>
+        {isLoading ? 'Show the content' : 'Show the placeholders'}
+      </Button>
+    </Stack>
+  );
+};
+
+/**
+ * Loading is a state of the region, not a prop of each component: set `aria-busy` on a Stack, a Card
+ * or the Text itself, and the Text, Avatar and option text inside become blocks as long as their
+ * content. Give them placeholder content of about the right length.
+ */
+export const Loading: Story = {
+  parameters: showCode(`<Stack aria-busy={isLoading}>
+  <Avatar isTextShown name={user?.name ?? 'Loading name'} description={user?.role ?? 'Loading role'} />
+  <Text as="p">{user?.bio ?? 'A placeholder about as long as the real bio'}</Text>
+</Stack>`),
+  render: () => <LoadingDemo />,
 };

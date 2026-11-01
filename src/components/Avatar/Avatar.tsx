@@ -9,6 +9,7 @@ import { clsx } from '@/utils/clsx';
 import { resolveScaleProps } from '@/utils/scale';
 import type { ScaleProp } from '@/types/scale';
 import { OptionText } from '../_shared/OptionText';
+import placeholder from '../_shared/Placeholder.module.css';
 import styles from './Avatar.module.css';
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
@@ -172,7 +173,7 @@ export const Avatar = forwardRef<HTMLSpanElement, AvatarProps>(function Avatar(
         style={rootStyle}
       >
         <span
-          className={styles.avatar}
+          className={clsx(styles.avatar, placeholder.placeholder)}
           role="img"
           aria-label={alt || undefined}
           aria-hidden={alt ? undefined : true}
@@ -194,7 +195,13 @@ export const Avatar = forwardRef<HTMLSpanElement, AvatarProps>(function Avatar(
       role="img"
       aria-label={label || rest['aria-label']}
       aria-hidden={isNamed ? rest['aria-hidden'] : true}
-      className={clsx(styles.avatar, classNames, hue === undefined && styles.anonymous, className)}
+      className={clsx(
+        styles.avatar,
+        placeholder.placeholder,
+        classNames,
+        hue === undefined && styles.anonymous,
+        className,
+      )}
       style={rootStyle}
     >
       {picture}

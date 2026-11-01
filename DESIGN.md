@@ -486,6 +486,9 @@ interface TextProps extends Omit<HTMLAttributes<HTMLElement>, 'color'> {
   is pixels.
 - `as` is for what the text _is_. Elements that are interactive or belong to a form (`label`, `a`,
   `button`) are other components' job.
+- **Loading is the region's state, not a prop.** Text carries `_shared/Placeholder`: inside an element
+  with `aria-busy="true"` (a Stack, a Card, or the Text itself) it becomes a quiet block as long as its
+  content, with the text hidden. See Loading below.
 
 ---
 
@@ -1131,6 +1134,10 @@ you write the name yourself.
 **Size.** The box is `2.5em`, `flex: none` (never squeezed into an oval by a flex or grid parent) and
 `overflow: hidden`. The shape (a circle) and the weight are fixed, as Button's radius is.
 
+**Loading.** Inside `aria-busy="true"` the circle becomes the placeholder block (its picture, initials and
+glyph hidden, the circle kept) and so do the name and the description beside it (they are `OptionText`).
+Pass a placeholder `name` such as "Loading name" while the data is on its way. See Loading below.
+
 **Not yet:** the tooltip that shows the name and description when `isTextShown` is off (waits for
 Tooltip), the text under the circle instead of beside it (an `orientation`, as Checkbox and Radio
 have), a shape prop (rounded square), a group that overlaps avatars (`AvatarGroup` with a +N),
@@ -1371,6 +1378,51 @@ or `color` prop, a dashed style.
 
 ---
 
+## Loading
+
+There is no `Skeleton` component and no `isLoading` prop. Loading is the **state of a region**: set
+`aria-busy="true"` on any element (a Stack, a Card, a Text) and the Text, Avatar and option text inside
+become quiet blocks. The caller's only switch is one attribute.
+
+```tsx
+<Stack aria-busy={isLoading}>
+  <Avatar
+    isTextShown
+    name={user?.name ?? 'Loading name'}
+    description={user?.role ?? 'Loading role'}
+  />
+  <Text as="p">{user?.bio ?? 'A placeholder about as long as the real bio'}</Text>
+</Stack>
+```
+
+- **The real components are rendered, with placeholder content**, so the layout is the real one and the
+  height matches by construction. There is no second, skeleton-shaped layout to keep in step, and no
+  blank space reserved for it. The width of a block is the width of its placeholder text, so pick one of
+  about the right length.
+- **`_shared/Placeholder.module.css`** holds the whole recipe once. A component puts `placeholder.placeholder`
+  on the part that becomes a block (Text's root, Avatar's circle, `OptionText`'s label and description);
+  the class does nothing until that part or an ancestor has `aria-busy="true"` (`:global([aria-busy='true'])`,
+  since the switch is the caller's attribute, not a class of the module). In it: the block's color
+  (`--color-placeholder`, its own recipe: the brand color at 22%, so the fields' tokens can change without it), the text
+  and a child's drawing hidden (`color: transparent`, `visibility: hidden` on children), `user-select: none`,
+  `box-decoration-break: clone` so an inline Text wrapping onto lines gets a block per line, and a slow
+  opacity pulse. A block-level element (`as="p"`) is one rectangle, not one per line.
+- **Motion** is the pulse only, and its last frame equals its first, so with `prefers-reduced-motion` it
+  rests on a solid block.
+- **Radius** is `0.25em`, set through `:where()` so it has no specificity and Avatar keeps its circle.
+- **Accessibility.** `aria-busy` is the standard way to say a region is updating. The placeholder text is
+  still in the DOM, so keep it neutral; it is not read where a screen reader skips a busy region, but this
+  is not guaranteed. Placeholder state is **not** `disabled`: buttons and fields inside stay clickable.
+- **The count of rows is not solved here.** A region does not know how many results are coming. Render a
+  few placeholder rows (what fits above the fold), keep the old content while refetching
+  (`useTransition`), or use Spinner when the shape is unknown, so the page does not jump.
+
+**Not yet:** Button, Chip, the fields, Card and Banner do not turn into blocks (only text and pictures
+do); a standalone placeholder for something with no content to render (an image, a chart), a
+`1lh`-high block for that.
+
+---
+
 ## Theme Provider (Optional React API)
 
 ```tsx
@@ -1531,7 +1583,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Size.module.css: Spinner + Progress; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -1730,7 +1782,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 - [ ] `Indicator` — the **dot or count** pinned to a corner of what it wraps (an unread "3", an online dot). Wraps a child, as Avatar's status dot and an icon button's count need. Sibling: Chip (the same strengths of color, in a smaller circle), Box (the positioned wrapper)
 - [x] `Divider` — orientation (`horizontal` / `vertical`); a one-pixel `<hr>` in `--color-divider`, no margin (the layout's gap spaces it, as Card's); no scale props
 - [x] `Progress` — shape (`bar` / `circle`), size, value / max (no value: indeterminate), named by `aria-label` or `aria-labelledby`; the indeterminate circle is Spinner
-- [ ] `Skeleton` — Sibling: Card (a surface), Text (sizes)
+- [x] ~~`Skeleton`~~ — not a component: loading is `aria-busy` on a region, and Text, Avatar and `OptionText` become blocks (`_shared/Placeholder`; see Loading). A wrapper means a second layout to keep in step and heights to match by hand. Still open: Button, Chip, fields, a block for an image or chart
 - [ ] `List` — rows of Avatar + OptionText; Sibling: Avatar with `isTextShown`
 
 **Overlays** (build on the primitive above):

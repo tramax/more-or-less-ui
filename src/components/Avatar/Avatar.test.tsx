@@ -2,6 +2,7 @@ import { createRef, type ComponentProps, type CSSProperties } from 'react';
 import { afterEach, describe, it, expect } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import { Avatar, getHue, getInitials } from './Avatar';
+import placeholder from '../_shared/Placeholder.module.css';
 import styles from './Avatar.module.css';
 
 const renderAvatar = (props: ComponentProps<typeof Avatar> = {}) => {
@@ -10,7 +11,7 @@ const renderAvatar = (props: ComponentProps<typeof Avatar> = {}) => {
 };
 
 const VARIANTS = ['less', 'normal', 'more'] as const;
-const DEFAULT_CLASSES = [styles.avatar, styles.sizeNormal];
+const DEFAULT_CLASSES = [styles.avatar, placeholder.placeholder, styles.sizeNormal];
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const hueOf = (el: HTMLElement) => el.style.getPropertyValue('--avatar-hue');
 
@@ -327,6 +328,34 @@ describe('Avatar', () => {
       const el = renderAvatar({ size: 20, style: { fontSize: 30, color: 'red' } });
       expect(el.style.fontSize).toBe('30px');
       expect(el.style.color).toBe('red');
+    });
+  });
+  describe('loading', () => {
+    it('marks the circle as a placeholder, alone or beside its text', () => {
+      const alone = renderAvatar({ name: 'Ada Lovelace' });
+      expect(alone.classList.contains(placeholder.placeholder as string)).toBe(true);
+
+      const withText = renderAvatar({ name: 'Ada Lovelace', isTextShown: true });
+      expect(withText.querySelector(`.${styles.avatar}`)?.classList).toContain(
+        placeholder.placeholder,
+      );
+    });
+
+    it('marks the name and the description as placeholders', () => {
+      const el = renderAvatar({
+        name: 'Ada Lovelace',
+        description: 'Mathematician',
+        isTextShown: true,
+      });
+      const marked = [...el.querySelectorAll(`.${placeholder.placeholder}`)].map(
+        (node) => node.textContent,
+      );
+      expect(marked).toEqual(['AL', 'Ada Lovelace', 'Mathematician']);
+    });
+
+    it('is not itself the placeholder when the circle is inside it', () => {
+      const el = renderAvatar({ name: 'Ada Lovelace', isTextShown: true });
+      expect(el.classList.contains(placeholder.placeholder as string)).toBe(false);
     });
   });
 });

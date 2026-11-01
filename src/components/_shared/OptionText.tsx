@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
+import { clsx } from '@/utils/clsx';
 import { OptionIcon } from './OptionIcon';
+import placeholder from './Placeholder.module.css';
 import shared from './OptionGroup.module.css';
 
 interface OptionTextProps {
@@ -15,9 +17,9 @@ interface OptionTextProps {
 export function OptionText({ label, description, descriptionId, icon }: OptionTextProps) {
   const text = (
     <span className={shared.text}>
-      <span>{label}</span>
+      <span className={placeholder.placeholder}>{label}</span>
       {description && (
-        <span id={descriptionId} className={shared.description}>
+        <span id={descriptionId} className={clsx(shared.description, placeholder.placeholder)}>
           {description}
         </span>
       )}

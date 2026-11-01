@@ -1,0 +1,55 @@
+/*
+ * Placeholder: what text and a picture look like while the region around them is loading. A component
+ * puts `.placeholder` on the part that becomes a block (Text, Avatar's circle, OptionText's lines). The
+ * class does nothing until that part, or an ancestor, has aria-busy="true", so the caller's only
+ * switch is `aria-busy={isLoading}` on a Stack, a Card, or the Text itself, not a prop on each child.
+ *
+ * The real components are rendered, with placeholder content, so the layout is the real one and the
+ * height matches by construction. Text becomes a block as long as its content; a picture's children
+ * are hidden and the box keeps its size.
+ *
+ * :global is needed because the switch is an attribute the caller sets, not a class of this module.
+ */
+
+:global([aria-busy='true']) .placeholder,
+.placeholder:global([aria-busy='true']) {
+  background: var(--color-placeholder);
+  /* The text is still there (it sets the width and the height), just not seen or selected */
+  color: transparent;
+  user-select: none;
+  /* A block per line when the text wraps, not one block with a hole in it */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  /* As long as its text, not as wide as a flex column (OptionText's label and description) */
+  align-self: flex-start;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+/* The children draw something of their own (Avatar's picture and initials, a <strong> in a Text) */
+:global([aria-busy='true']) .placeholder > *,
+.placeholder:global([aria-busy='true']) > * {
+  visibility: hidden;
+}
+
+/* :where gives it no specificity, so the avatar keeps its circle (border-radius: 50%) */
+:where(:global([aria-busy='true']) .placeholder, .placeholder:global([aria-busy='true'])) {
+  border-radius: 0.25em;
+}
+
+/* The last frame is the first, so with the motion off it rests on a solid block */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global([aria-busy='true']) .placeholder,
+  .placeholder:global([aria-busy='true']) {
+    animation: none;
+  }
+}
