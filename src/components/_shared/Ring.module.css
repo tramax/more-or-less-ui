@@ -1,0 +1,5 @@
+/* Stroke only; the width is 4 of the 32 units the viewBox spans (see Ring.tsx) */
+.circle {
+  fill: none;
+  stroke-width: 4;
+}

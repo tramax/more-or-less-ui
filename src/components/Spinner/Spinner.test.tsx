@@ -38,6 +38,15 @@ describe('Spinner', () => {
     });
   });
 
+  describe('drawing', () => {
+    it('is an arc on a hidden svg, so only the span is named or hidden', () => {
+      const svg = renderSpinner().querySelector('svg');
+      expect(svg?.getAttribute('aria-hidden')).toBe('true');
+      expect(svg?.querySelectorAll('circle')).toHaveLength(1);
+      expect(svg?.querySelector('circle')?.getAttribute('pathLength')).toBe('100');
+    });
+  });
+
   describe('size', () => {
     it('has no size class by default: it follows the surrounding text', () => {
       const el = renderSpinner();

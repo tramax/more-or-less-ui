@@ -1265,8 +1265,15 @@ status, so their ring is `aria-hidden` (no name). Standing alone, give it `aria-
 `aria-labelledby` and it becomes `role="progressbar"` with **no `aria-valuenow`**, which is how ARIA
 says "in progress, how far unknown". There is no `label` prop: it would only repeat `aria-label`.
 
-**Motion.** 700ms linear turn. `prefers-reduced-motion` slows it to 2s in the module; `styles.css`'s global
-reduced-motion rule (iteration count 1) goes further and stops it, leaving a still ring.
+**Drawing and motion.** An SVG arc (`_shared/Ring`, shared with Progress's determinate circle), 4 of
+32 units thick, the same as the border ring it replaced, so Button's and Select's positioning is
+unchanged. Two motions with periods that don't match: the whole ring turns steadily (1.6s, linear) while
+the arc breathes (2.2s, ease-in-out). Its head runs ahead to a 70% arc and its tail catches up, then it
+shrinks to a dot, so the arc stretches and shrinks as it turns and is never twice in the same place at
+the same length. Round caps. The animation is on `stroke-dasharray` / `stroke-dashoffset` of a circle
+whose `pathLength` is 100, so the numbers are percentages. Its resting style (what shows with the
+animation off) is a ring with a gap, as before. `prefers-reduced-motion` slows the turn to 4s and holds
+the arc; `styles.css`'s global reduced-motion rule goes further and stops both.
 
 **Size classes.** `size` is its only scale prop, so it passes `_shared/Size.module.css` (`sizeLess` /
 `sizeNormal` / `sizeMore`) to `resolveScaleProps` instead of copying them into its own module. Progress
@@ -1298,10 +1305,26 @@ with `--ease-leave`, which does not overshoot: a bar that overshoots shows more 
 The circle's thickness is 4 of 32 units, an eighth of its width, the same as Spinner's border.
 
 **Indeterminate.** No `value` (or `NaN` / `Infinity`): no `aria-valuenow`, and `.indeterminate` is set.
-The bar slides a segment 40% of the track long across it (`translate`, in percent of the segment). The
-circle renders Spinner at 2.5em over an inset shadow in the track color, so the gap in the ring shows the
-track as the finished ring does. Under `prefers-reduced-motion` the bar becomes a still, half-strength
-full bar ("in progress" without moving).
+The bar has two segments (the second fainter, `.trail`), each moving by its own `inset-inline-start` and
+`-end` on its own curve: the head runs ahead and the tail catches up, so each stretches and shrinks as it
+crosses, and the second starts 1.15s later, so the two overlap and part. (Animating insets is layout, on
+an element a few pixels high; it also mirrors in a right-to-left page.) The circle renders Spinner (its
+breathing arc) at 2.5em over an inset shadow in the track color, so the gap in the ring shows the track
+as the finished ring does. Under `prefers-reduced-motion` the bar becomes a still, half-strength full bar
+("in progress" without moving).
+
+**Moving to a new value.** The time is `--progress-duration`, set on the root from the distance moved: 180ms
+plus 6ms per percent, at most 780ms. A one-percent tick settles quickly and a jump across the bar is
+followed by the eye. The previous percent is kept in state and replaced while rendering (React re-renders
+before drawing), so the first frame of a move already has its duration; an effect would be a frame late.
+From or to indeterminate there is no distance and it is 300ms. The easing is `--ease-leave`; the caller's
+`style` can override `--progress-duration`.
+
+**Finishing.** Arriving at the end _from below_ adds `.finished` (the state is `isFinished`, kept with the
+previous percent): the fill brightens and settles once, and the ring also swells 8% on `--ease-pop`. It
+starts at 80% of the move's duration, so it marks the arrival, not the departure. A progress that is full
+on first render, one held at the end by a value above `max`, and one going indeterminate do not play it;
+leaving the end and arriving again does. Off under `prefers-reduced-motion`.
 
 **Accessible name.** `role="progressbar"` with `aria-valuemin=0`, `aria-valuemax` and `aria-valuenow`
 (the held value), named by `aria-label` or `aria-labelledby`, which the types require, as an icon-only
@@ -1318,7 +1341,7 @@ filled length and `aria-valuenow`, not from color alone. A theme that needs more
 
 **Not yet:** a visible label and percentage (`isValueShown`), content in the middle of the circle, a
 buffer segment (a second, lighter value), segments, `color` for success or error, a determinate
-`shape="circle"` that can start from another angle.
+`shape="circle"` that can start from another angle, a `onFinished` callback (announce it yourself).
 
 ---
 
@@ -1481,7 +1504,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Size.module.css: Spinner + Progress; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Size.module.css: Spinner + Progress; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx

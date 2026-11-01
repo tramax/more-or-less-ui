@@ -16,6 +16,9 @@ const textControl = { control: 'text' } as const;
 
 const VARIANTS = ['less', 'normal', 'more'] as const;
 
+// Small steps and large jumps, ending at the full bar before starting over
+const STEPS = [0, 6, 9, 55, 60, 100];
+
 const meta: Meta<typeof Progress> = {
   title: 'Display/Progress',
   component: Progress,
@@ -101,18 +104,22 @@ export const Clamped: Story = {
   ),
 };
 
-/** Each new value eases in rather than jumping. */
+/**
+ * Each move takes longer the further it goes: the small steps settle quickly and the jumps are
+ * followed by the eye. Reaching 100 from below plays a short flourish.
+ */
 export const Animated: Story = {
   parameters: showCode(`const [value, setValue] = useState(0);
 // ...
 <Progress value={value} aria-label="Upload" />
 <Progress shape="circle" value={value} aria-label="Upload" />`),
   render: function Render() {
-    const [value, setValue] = useState(0);
+    const [step, setStep] = useState(0);
     useEffect(() => {
-      const id = setInterval(() => setValue((v) => (v >= 100 ? 0 : v + 10)), 800);
+      const id = setInterval(() => setStep((s) => (s + 1) % STEPS.length), 1600);
       return () => clearInterval(id);
     }, []);
+    const value = STEPS[step] ?? 0;
     return (
       <div style={{ display: 'grid', gap: '1.5rem', padding: '1rem' }}>
         <Progress value={value} aria-label="Upload" />

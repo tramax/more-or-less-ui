@@ -1,8 +1,8 @@
 /*
- * Spinner: a ring with a gap, turning. 1em square, border included, so `size` (which only sets
+ * Spinner: an arc that turns while it grows and shrinks. 1em square, so `size` (which only sets
  * font-size) scales it, and with no `size` it is as big as the text around it. It takes the text color.
  * Button and Select position it over their content with their own class; Progress sets its font-size
- * and color for the circle shape.
+ * and color for the circle shape. The drawing is _shared/Ring.
  */
 .spinner {
   display: inline-block;
@@ -12,20 +12,58 @@
   width: 1em;
   height: 1em;
   vertical-align: middle;
-  border: 0.125em solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: spin 700ms linear infinite;
 }
 
-@keyframes spin {
+/* Two motions that don't share a period (1.6s and 2.2s), so the arc is never twice in the same place
+   at the same length: the turn is steady, the breathing is not. */
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: turn 1.6s linear infinite;
+}
+
+/* Where it rests, and what it shows if the animation is off: a ring with a gap, as the old border
+   spinner was */
+.arc {
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-dasharray: 70 100;
+  stroke-dashoffset: -15;
+  animation: breathe 2.2s ease-in-out infinite;
+}
+
+@keyframes turn {
   to {
     transform: rotate(360deg);
   }
 }
 
+/* pathLength is 100, so these are percentages of the circle. A dash starts at -offset and ends
+   dash-length after it: the head (the end) runs ahead to 85 while the tail (the start) trails at 15,
+   then the tail catches up, so the arc stretches and shrinks as it goes. The last frame is the first
+   one, a lap on. */
+@keyframes breathe {
+  0% {
+    stroke-dasharray: 2 100;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 70 100;
+    stroke-dashoffset: -15;
+  }
+  100% {
+    stroke-dasharray: 2 100;
+    stroke-dashoffset: -98;
+  }
+}
+
+/* Slower turn and a steady arc. (styles.css's global reduced-motion rule goes further and stops both.) */
 @media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation-duration: 2s;
+  .svg {
+    animation-duration: 4s;
+  }
+  .arc {
+    animation: none;
   }
 }

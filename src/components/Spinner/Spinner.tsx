@@ -2,6 +2,7 @@ import { forwardRef, type HTMLAttributes } from 'react';
 import { clsx } from '@/utils/clsx';
 import { resolveScaleProps } from '@/utils/scale';
 import type { ScaleProp } from '@/types/scale';
+import { Ring, RingCircle } from '../_shared/Ring';
 import sizes from '../_shared/Size.module.css';
 import styles from './Spinner.module.css';
 
@@ -15,7 +16,7 @@ const SCALE_SPEC = {
   compound: { size: ['fontSize'] },
 } as const;
 
-export type SpinnerProps = Omit<HTMLAttributes<HTMLSpanElement>, 'color'> & {
+export type SpinnerProps = Omit<HTMLAttributes<HTMLSpanElement>, 'color' | 'children'> & {
   /** The ring's size: `less` / `normal` / `more`. Unset, it is as big as the surrounding text. */
   size?: ScaleProp;
 };
@@ -45,6 +46,10 @@ export const Spinner = forwardRef<HTMLSpanElement, SpinnerProps>(function Spinne
       aria-hidden={isNamed ? rest['aria-hidden'] : true}
       className={clsx(styles.spinner, classNames, className)}
       style={{ ...scaleStyle, ...style }}
-    />
+    >
+      <Ring className={styles.svg}>
+        <RingCircle className={styles.arc} />
+      </Ring>
+    </span>
   );
 });

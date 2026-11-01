@@ -117,7 +117,7 @@ describe('Progress', () => {
       expect(has(el, styles.bar)).toBe(false);
       const svg = el.querySelector('svg');
       expect(svg?.getAttribute('aria-hidden')).toBe('true');
-      expect(svg?.querySelector(`.${styles.ring}`)).not.toBeNull();
+      expect(svg?.querySelector(`.${styles.track}`)).not.toBeNull();
       expect(svg?.querySelector(`.${styles.arc}`)?.getAttribute('pathLength')).toBe('100');
     });
 
@@ -127,7 +127,8 @@ describe('Progress', () => {
       expect(ring).not.toBeNull();
       expect(ring?.getAttribute('aria-hidden')).toBe('true');
       expect(ring?.hasAttribute('role')).toBe(false);
-      expect(el.querySelector('svg')).toBeNull();
+      // Spinner draws its own svg; Progress's track and arc are not there
+      expect(el.querySelector(`.${styles.track}`)).toBeNull();
     });
 
     it('has no spinner in a determinate circle or in a bar', () => {
@@ -136,6 +137,111 @@ describe('Progress', () => {
       ).toBeNull();
       cleanup();
       expect(renderProgress().querySelector(`.${spinnerStyles.spinner}`)).toBeNull();
+    });
+  });
+
+  describe('indeterminate bar', () => {
+    it('has a lead segment and a fainter one that follows', () => {
+      const el = renderProgress();
+      const fills = el.querySelectorAll(`.${styles.fill}`);
+      expect(fills).toHaveLength(2);
+      expect(has(fills[0] as Element, styles.trail)).toBe(false);
+      expect(has(fills[1] as Element, styles.trail)).toBe(true);
+    });
+
+    it('has a single fill once it has a value', () => {
+      const el = renderProgress({ value: 20 });
+      expect(el.querySelectorAll(`.${styles.fill}`)).toHaveLength(1);
+      expect(el.querySelector(`.${styles.trail}`)).toBeNull();
+    });
+  });
+
+  describe('motion', () => {
+    const durationOf = (el: HTMLElement) => el.style.getPropertyValue('--progress-duration');
+    const ms = (el: HTMLElement) => Number.parseInt(durationOf(el), 10);
+
+    it('takes longer to cover a longer distance', () => {
+      const { container, rerender } = render(<Progress aria-label="Upload" value={10} />);
+      const el = container.firstElementChild as HTMLElement;
+      rerender(<Progress aria-label="Upload" value={12} />);
+      const nudge = ms(el);
+      rerender(<Progress aria-label="Upload" value={90} />);
+      const jump = ms(el);
+      expect(nudge).toBeLessThan(jump);
+      expect(nudge).toBeGreaterThanOrEqual(180);
+      expect(jump).toBeLessThanOrEqual(780);
+    });
+
+    it('counts the distance in percent of max, whichever max', () => {
+      const { container, rerender } = render(<Progress aria-label="Upload" value={0} max={10} />);
+      const el = container.firstElementChild as HTMLElement;
+      rerender(<Progress aria-label="Upload" value={5} max={10} />);
+      const half = ms(el);
+      rerender(<Progress aria-label="Upload" value={50} max={100} />);
+      // 50% to 50%: no move, so the duration stays what the last move set
+      expect(ms(el)).toBe(half);
+    });
+
+    it('has a duration only while it has a value', () => {
+      expect(durationOf(renderProgress())).toBe('');
+      cleanup();
+      expect(durationOf(renderProgress({ value: 5 }))).not.toBe('');
+    });
+
+    it('uses the default for a change from or to indeterminate', () => {
+      const { container, rerender } = render(<Progress aria-label="Upload" />);
+      rerender(<Progress aria-label="Upload" value={80} />);
+      expect(ms(container.firstElementChild as HTMLElement)).toBe(300);
+    });
+
+    it('lets the caller override the duration through style', () => {
+      const el = renderProgress({ value: 5, style: { '--progress-duration': '1s' } as never });
+      expect(durationOf(el)).toBe('1s');
+    });
+  });
+
+  describe('finishing', () => {
+    it('marks the arrival at the end from below', () => {
+      const { container, rerender } = render(<Progress aria-label="Upload" value={60} />);
+      const el = container.firstElementChild as HTMLElement;
+      expect(has(el, styles.finished)).toBe(false);
+      rerender(<Progress aria-label="Upload" value={100} />);
+      expect(has(el, styles.finished)).toBe(true);
+    });
+
+    it('does not mark a progress that is full when it first appears', () => {
+      expect(has(renderProgress({ value: 100 }), styles.finished)).toBe(false);
+    });
+
+    it('does not mark a value above max, held to the end, as a second arrival', () => {
+      const { container, rerender } = render(<Progress aria-label="Upload" value={100} />);
+      const el = container.firstElementChild as HTMLElement;
+      rerender(<Progress aria-label="Upload" value={140} />);
+      expect(has(el, styles.finished)).toBe(false);
+    });
+
+    it('clears the mark when the value leaves the end, and sets it again on the next arrival', () => {
+      const { container, rerender } = render(<Progress aria-label="Upload" value={50} />);
+      const el = container.firstElementChild as HTMLElement;
+      rerender(<Progress aria-label="Upload" value={100} />);
+      rerender(<Progress aria-label="Upload" value={40} />);
+      expect(has(el, styles.finished)).toBe(false);
+      rerender(<Progress aria-label="Upload" value={100} />);
+      expect(has(el, styles.finished)).toBe(true);
+    });
+
+    it('does not mark an indeterminate progress', () => {
+      const { container, rerender } = render(<Progress aria-label="Upload" value={50} />);
+      rerender(<Progress aria-label="Upload" />);
+      expect(has(container.firstElementChild as Element, styles.finished)).toBe(false);
+    });
+
+    it('marks a circle too', () => {
+      const { container, rerender } = render(
+        <Progress aria-label="Upload" shape="circle" value={20} />,
+      );
+      rerender(<Progress aria-label="Upload" shape="circle" value={100} />);
+      expect(has(container.firstElementChild as Element, styles.finished)).toBe(true);
     });
   });
 

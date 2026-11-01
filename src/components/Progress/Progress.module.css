@@ -1,14 +1,18 @@
 /*
  * Progress: a bar or a ring. Progress.tsx sets --progress-value (0-100) on the root, and both shapes
- * are drawn from it. With no value there is no property and `.indeterminate` is set: the bar slides,
- * and the ring is Spinner's.
+ * are drawn from it. With no value there is no property and `.indeterminate` is set: the bar's two
+ * segments slide, and the ring is Spinner's.
  *
  * `size` only sets font-size; the bar's thickness and the ring's diameter are in em, so they follow it.
- * The track and fill colors are the --color-progress-* tokens (theme/tokens.css). Moving to a new value
- * eases with --ease-leave: a value that overshoots would show more done than there is.
+ * The track and fill colors are the --color-progress-* tokens (theme/tokens.css).
+ *
+ * Moving to a new value takes --progress-duration (set from the distance moved, see Progress.tsx) with
+ * --ease-leave, which does not overshoot: a bar that overshoots shows more done than there is. Arriving
+ * at the end adds `.finished`, a short glow (and, for the ring, a pop) after that move has landed.
  */
 
 .bar {
+  position: relative;
   display: block;
   width: 100%;
   height: 0.5em;
@@ -22,22 +26,42 @@
   height: 100%;
   border-radius: inherit;
   background: var(--color-progress-fill);
-  transition: width 300ms var(--ease-leave);
+  transition: width var(--progress-duration, 300ms) var(--ease-leave);
 }
 
-/* A segment 40% of the track long, entering from the left and leaving at the right. A percentage in
-   `translate` is of the segment's own width, so -100% is clear of the track and 250% is past its end. */
+/* Indeterminate: two segments whose two edges move on their own curves, so each stretches as its head
+   runs ahead and shrinks as its tail catches up, then leaves. The second starts 1.15s later, fainter.
+   They are animated by `inset-inline-start` / `-end` (a few pixels' height, so layout is cheap), which
+   also mirrors them in a right-to-left page. */
 .indeterminate .fill {
-  width: 40%;
-  animation: slide 1.4s ease-in-out infinite;
+  position: absolute;
+  inset-block: 0;
+  width: auto;
+  animation: lead 2.1s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+}
+.indeterminate .trail {
+  opacity: 0.6;
+  animation-name: follow;
+  animation-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
+  animation-delay: 1.15s;
 }
 
-@keyframes slide {
-  from {
-    translate: -100% 0;
+@keyframes lead {
+  0% {
+    inset-inline: -35% 100%;
   }
-  to {
-    translate: 250% 0;
+  60%,
+  100% {
+    inset-inline: 100% -90%;
+  }
+}
+@keyframes follow {
+  0% {
+    inset-inline: -200% 100%;
+  }
+  60%,
+  100% {
+    inset-inline: 107% -8%;
   }
 }
 
@@ -45,9 +69,12 @@
    strength bar says "in progress" without it */
 @media (prefers-reduced-motion: reduce) {
   .indeterminate .fill {
-    width: 100%;
+    inset-inline: 0;
     opacity: 0.5;
     animation: none;
+  }
+  .indeterminate .trail {
+    display: none;
   }
 }
 
@@ -66,24 +93,20 @@
   height: 100%;
 }
 
-/* 4 of the 32 units across: the same thickness as Spinner's ring, an eighth of its width */
-.ring,
-.arc {
-  fill: none;
-  stroke-width: 4;
-}
-.ring {
+/* The stroke width is _shared/Ring's: an eighth of the diameter, as Spinner's arc */
+.track {
   stroke: var(--color-progress-track);
 }
 .arc {
   stroke: var(--color-progress-fill);
   /* pathLength is 100, so the dash is the value itself, then a gap long enough for the rest */
   stroke-dasharray: var(--progress-value, 0) 100;
-  transition: stroke-dasharray 300ms var(--ease-leave);
+  transition: stroke-dasharray var(--progress-duration, 300ms) var(--ease-leave);
 }
 
 /* Spinner draws the turning part; the track under it is an inset shadow of the same thickness
-   (0.125em of Spinner's 2.5em), so the gap in the ring shows the track as the finished ring does */
+   (an eighth of the diameter: 0.125em of Spinner's 2.5em), so the gap in the ring shows the track as
+   the finished ring does */
 .circle.indeterminate {
   border-radius: 50%;
   box-shadow: inset 0 0 0 0.3125em var(--color-progress-track);
@@ -91,4 +114,32 @@
 .spinner {
   font-size: 2.5em;
   color: var(--color-progress-fill);
+}
+
+/* Arriving at the end: the fill brightens and settles, once. It waits for most of the move to the end
+   to finish, so it marks the arrival and not the departure. The ring also swells a little, on the
+   library's small-mark curve (a bar is clipped to its track, so it only brightens). A keyframe with
+   only the middle step eases out to, and back from, the element's own values. */
+.finished .fill {
+  animation: glow 700ms ease-out calc(var(--progress-duration, 300ms) * 0.8);
+}
+.finished .svg {
+  animation: pop 800ms var(--ease-pop) calc(var(--progress-duration, 300ms) * 0.8);
+}
+@keyframes glow {
+  40% {
+    filter: brightness(1.25);
+  }
+}
+@keyframes pop {
+  40% {
+    filter: brightness(1.25);
+    scale: 1.08;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .finished .fill,
+  .finished .svg {
+    animation: none;
+  }
 }

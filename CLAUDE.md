@@ -52,6 +52,8 @@ same recipe is defined under two names.
   `NameProps` (the accessible-name union for every labelled input) and `OptionBase` (one option).
 - `_shared/Size.module.css` is the `size` scale as font-size. A component whose only scale prop is
   `size` (Spinner, Progress) passes it to `resolveScaleProps` instead of copying the classes.
+- `_shared/Ring` is the ring's drawing (viewBox, radius, stroke width, `pathLength` 100) for Spinner's
+  arc and Progress's track and arc. A new circular mark takes it rather than its own SVG numbers.
 - Left duplicated on purpose (`pnpm check:dup` reports them):
   - The group frame in Checkbox and Radio: id and error-id wiring, controlled/uncontrolled state, the
     fieldset, legend, options container and error footer. Extracting it needs a `renderControl`
