@@ -19,7 +19,7 @@ import styles from './Tooltip.module.css';
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
 export const TOOLTIP_DEFAULTS = {
   placement: 'top',
-  delay: 400,
+  delay: 0,
 } as const;
 
 // Long enough to cross the gap between the trigger and the tooltip, which is hoverable
@@ -46,7 +46,7 @@ export type TooltipProps = {
   content: ReactNode;
   /** Above the trigger, or below it. It flips to the other side when there is no room. Default `top`. */
   placement?: 'top' | 'bottom';
-  /** Milliseconds the pointer rests on the trigger before it shows. Keyboard focus shows it at once. Default 400. */
+  /** Milliseconds the pointer rests on the trigger before it shows. Default 0: at once. Keyboard focus is always at once. */
   delay?: number;
   /** Render the trigger alone. */
   isDisabled?: boolean;

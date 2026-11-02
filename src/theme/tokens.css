@@ -94,6 +94,11 @@
   --color-field-background-error: color-mix(in oklab, var(--color-danger) 15%, transparent);
   --color-field-background-error-hover: color-mix(in oklab, var(--color-danger) 25%, transparent);
 
+  /* What every overlay (Select's popup, Tooltip) is drawn on: the page color at 60%, so the page shows
+     through. Overlay.module.css blurs what is behind it, which is what keeps the
+     text readable. Each overlay's own token aliases this one. */
+  --color-overlay-background: color-mix(in oklab, Canvas 60%, transparent);
+
   /* Text, a check mark or a dot drawn on the brand color. That color doesn't change between themes,
      so this is black or white, whichever contrasts more with --color-primary, not CanvasText. This is
      the fallback: black when the primary's OKLCH lightness is above 0.6, white below. A supporting
@@ -152,13 +157,11 @@
   --color-select-background-error-hover: var(--color-field-background-error-hover);
   /* The option the keyboard or pointer is on */
   --color-select-option-active: var(--color-field-background-hover);
-  /* Opaque, unlike the field fill: the popup lies over page content */
-  --color-select-popup: Canvas;
+  --color-select-popup: var(--color-overlay-background);
   --color-select-check: var(--color-on-primary);
 
-  /* Inverted against the page, so a tooltip can't be taken for part of it */
-  --color-tooltip-background: CanvasText;
-  --color-tooltip-text: Canvas;
+  --color-tooltip-background: var(--color-overlay-background);
+  --color-tooltip-text: CanvasText;
 
   /* Chip is filled, and a fill says "pressable", as a field's does. A removable chip (a value in a
      field) takes the stronger field tint, so it stands out from the Select field it sits in; a

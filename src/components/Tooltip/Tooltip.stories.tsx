@@ -44,8 +44,8 @@ export const Bottom: Story = {
 };
 
 /** The tooltip flips to the other side when there is no room; place the trigger at the top edge to see it. */
-export const NoDelay: Story = {
-  args: { delay: 0 },
+export const Delayed: Story = {
+  args: { delay: 400 },
 };
 
 /** It describes the trigger, it doesn't name it: an icon button still needs its own `aria-label`. */

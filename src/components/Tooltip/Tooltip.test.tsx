@@ -1,7 +1,7 @@
 import { createRef } from 'react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { act, cleanup, createEvent, fireEvent, render, screen } from '@testing-library/react';
-import { Tooltip, TOOLTIP_DEFAULTS } from './Tooltip';
+import { Tooltip } from './Tooltip';
 import overlayStyles from '../_shared/Overlay.module.css';
 import styles from './Tooltip.module.css';
 
@@ -36,12 +36,18 @@ afterEach(() => {
 
 describe('Tooltip', () => {
   describe('showing', () => {
-    it('shows after the delay while the pointer rests on the trigger', () => {
-      vi.useFakeTimers();
+    it('shows at once by default', () => {
       renderTooltip();
       fireEvent.pointerEnter(trigger(), { pointerType: 'mouse' });
+      expect(tip()?.textContent).toBe('Save the file');
+    });
+
+    it('shows after a delay while the pointer rests on the trigger', () => {
+      vi.useFakeTimers();
+      renderTooltip({ delay: 400 });
+      fireEvent.pointerEnter(trigger(), { pointerType: 'mouse' });
       expect(tip()).toBeNull();
-      advance(TOOLTIP_DEFAULTS.delay - 1);
+      advance(399);
       expect(tip()).toBeNull();
       advance(1);
       expect(tip()?.textContent).toBe('Save the file');
@@ -49,19 +55,12 @@ describe('Tooltip', () => {
 
     it('does not show if the pointer leaves first', () => {
       vi.useFakeTimers();
-      renderTooltip();
+      renderTooltip({ delay: 400 });
       fireEvent.pointerEnter(trigger(), { pointerType: 'mouse' });
       advance(100);
       fireEvent.pointerLeave(trigger());
       advance(1000);
       expect(tip()).toBeNull();
-    });
-
-    it('takes a custom delay, and no delay at 0', () => {
-      vi.useFakeTimers();
-      renderTooltip({ delay: 0 });
-      fireEvent.pointerEnter(trigger(), { pointerType: 'mouse' });
-      expect(tip()).not.toBeNull();
     });
 
     it('ignores a touch: there is no resting pointer', () => {

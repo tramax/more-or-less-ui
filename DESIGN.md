@@ -963,7 +963,7 @@ out; `--ease-enter` / `--ease-leave` in `theme/tokens.css`):
   jumps.
 
 **Look.** The TextField's fill block (`--color-select-*`, aliases of the shared field fill) with a
-chevron that turns when open. The popup is an opaque `--color-select-popup` surface with
+chevron that turns when open. The popup is a frosted `--color-select-popup` surface (translucent, with the page blurred behind it; see Overlay) with
 `--elevation-more`; the active option uses `--color-select-option-active`. A selected option in a
 single Select has a tick after its text; in a multiple one each option is a Checkbox-style box with a
 tick (`--color-select-check`), so selection is never color alone. A chip is the public
@@ -1489,7 +1489,7 @@ layer), the 200 ms it is kept mounted to animate out (`data-state="closed"`, `ar
 name (generated; `anchor-name` on the anchor, `position-anchor` on the overlay, both inline), and
 `data-side`, read after placement to tell whether it flipped above. `Overlay.module.css` owns the rest:
 `inset: auto`, the gap to the anchor (`--overlay-offset`, default 0.375em), `flip-block`, and the
-motion described under Select's Motion. A consumer adds only its own `position-area`, size and surface.
+motion described under Select's Motion. Every overlay is frosted glass: the consumer's background token aliases `--color-overlay-background` (the page color at 60%), and `Overlay.module.css` blurs what is behind it (`backdrop-filter`, a fixed finish, not a token). A consumer adds only its own `position-area`, size and surface.
 This pair is the one place that knows an overlay is a popover; replace it to change how overlays are
 shown or placed (floating-ui). The overlay stays a DOM child of its consumer, so font size reaches it.
 
@@ -1503,7 +1503,7 @@ type TooltipProps = {
   children: ReactElement; // the trigger: one element that takes ref, style and pointer / focus handlers
   content: ReactNode;
   placement?: 'top' | 'bottom'; // default 'top'; flips when there is no room
-  delay?: number; // ms the pointer rests before it shows; default 400. Keyboard focus is immediate
+  delay?: number; // ms the pointer rests before it shows; default 0 (at once). Keyboard focus is always at once
   isDisabled?: boolean; // renders the trigger alone
 };
 ```
@@ -1515,14 +1515,15 @@ to add the anchor name, handlers and `aria-describedby`, and composes with the t
 `style` and handlers. (A wrapper element would change the trigger's layout, and `display: contents`
 can't be an anchor.)
 
-**Behavior.** Shows after `delay` of resting (a touch pointer never shows it: there is no hover), at
-once on keyboard focus (`:focus-visible` only, so a click's focus doesn't show it). Hides on pointer
+**Behavior.** Shows at once when the pointer arrives, or after `delay` of resting if one is set (a touch
+pointer never shows it: there is no hover), and at once on keyboard focus (`:focus-visible` only, so a click's focus doesn't show it). Hides on pointer
 leave (after 100 ms, so the pointer can cross the gap and rest on the tooltip, WCAG 1.4.13), on blur, on
 Escape and when the trigger is pressed. It is `role="tooltip"` and the trigger gets `aria-describedby`
 only while it is shown: it describes, it doesn't name, so an icon button still needs an `aria-label`.
 
-**Look.** Inverted against the page (`--color-tooltip-background: CanvasText`,
-`--color-tooltip-text: Canvas`), 0.875em, `--elevation-normal`, at most 20em wide. Motion is the overlay's.
+**Look.** Text color on the overlay's frosted page-colored background (`--color-tooltip-background`
+aliases `--color-overlay-background`; `--color-tooltip-text: CanvasText`: black on white, white on black
+in dark mode), 0.875em, `--elevation-normal`, at most 20em wide. Motion is the overlay's.
 
 **Not yet:** a touch way to show it (press and hold), a shared delay so moving between triggers shows
 the next at once, a `size` prop, an arrow, Avatar's use of it for `isTextShown={false}`, a disabled

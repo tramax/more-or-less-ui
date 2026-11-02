@@ -22,6 +22,14 @@
 /* --- End of positioning ------------------------------------------------------------------------ */
 
 /*
+ * The look every overlay shares: what is behind it is blurred, under the consumer's translucent
+ * background (--color-overlay-background), so it reads as frosted glass. A fixed finish, not a token.
+ */
+.overlay {
+  backdrop-filter: blur(16px) saturate(1.6);
+}
+
+/*
  * Opening and closing. The overlay grows out of its anchor: it starts a little small and a little
  * toward it (--overlay-shift; the other way when it flips above, data-side is set by useOverlay), and
  * enters with the springy --ease-enter, so it overshoots its size by a few percent and settles, as a
