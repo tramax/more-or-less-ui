@@ -1,7 +1,7 @@
 /*
  * An overlay: a Popover API element in the top layer, placed with CSS anchor positioning, that grows
  * out of its anchor when it opens (see useOverlay.ts, which shows it and names the anchor). Select's
- * popup and Tooltip use it; a consumer adds its own `position-area`, width and surface (background,
+ * popup, Tooltip and Popover use it; a consumer adds its own `position-area`, width and surface (background,
  * padding, shadow), and nothing about where it sits or how it moves.
  *
  * The popover's own defaults centre it in the viewport (inset: 0; margin: auto); `inset: auto` and
@@ -15,18 +15,62 @@
  * `position-anchor` is set inline by useOverlay. `--overlay-offset` is the gap to the anchor.
  */
 .overlay {
-  position-try-fallbacks: flip-block;
+  /* Above when there is no room below, then the other edge of the anchor when it overflows the side */
+  position-try-fallbacks:
+    flip-block,
+    flip-inline,
+    flip-block flip-inline;
   inset: auto;
   margin: var(--overlay-offset, 0.375em) 0;
+}
+
+/*
+ * Which side of the anchor, and which edge of it the overlay lines up with: `placement` and `align`
+ * of Tooltip and Popover (see Overlay.ts, which picks the class). Centered on the anchor, or its
+ * inline-start edge on the anchor's (`span-inline-end`: the area runs from the anchor's start toward
+ * the end), or the end edges together. Logical, so they follow the writing direction. Select's popup
+ * sets its own `position-area` and uses none of these.
+ */
+.top {
+  position-area: block-start;
+}
+.topStart {
+  position-area: block-start span-inline-end;
+}
+.topEnd {
+  position-area: block-start span-inline-start;
+}
+.bottom {
+  position-area: block-end;
+}
+.bottomStart {
+  position-area: block-end span-inline-end;
+}
+.bottomEnd {
+  position-area: block-end span-inline-start;
 }
 /* --- End of positioning ------------------------------------------------------------------------ */
 
 /*
  * The look every overlay shares: what is behind it is blurred, under the consumer's translucent
- * background (--color-overlay-background), so it reads as frosted glass. A fixed finish, not a token.
+ * background (--color-overlay-background), so it reads as frosted glass, with the corners and the
+ * reset of the popover's own border and font. A fixed finish, not a token. The consumer adds its
+ * background token, padding and shadow.
  */
 .overlay {
+  box-sizing: border-box;
+  border: 0;
+  border-radius: var(--radius-normal);
+  corner-shape: squircle;
+  font: inherit;
   backdrop-filter: blur(16px) saturate(1.6);
+}
+
+@media (forced-colors: active) {
+  /* box-shadow is dropped there, so an overlay needs a border to be seen */
+  .overlay {
+    border: 1px solid CanvasText;
+  }
 }
 
 /*

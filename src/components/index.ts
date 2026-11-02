@@ -18,6 +18,8 @@ export { Grid } from './Grid';
 export type { GridProps } from './Grid';
 export { Indicator } from './Indicator';
 export type { IndicatorProps } from './Indicator';
+export { Popover } from './Popover';
+export type { PopoverProps } from './Popover';
 export { Progress } from './Progress';
 export type { ProgressProps } from './Progress';
 export { Radio } from './Radio';

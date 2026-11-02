@@ -1469,12 +1469,19 @@ the count changes, a `Tooltip`, wrapping Avatar's name and circle separately, a
 
 ### Overlay
 
-`_shared/useOverlay.ts` and `_shared/Overlay.module.css`: what Select's popup and Tooltip share, and
-what Popover, Menu and the rest will. Extracted from Select's former `useSelectPopup` when Tooltip became
+`_shared/useOverlay.ts` and `_shared/Overlay.module.css`: what Select's popup, Tooltip and Popover share,
+and what Menu and the rest will. Extracted from Select's former `useSelectPopup` when Tooltip became
 the second consumer.
 
 ```tsx
-const overlay = useOverlay({ isEscapeClosing }); // isEscapeClosing: close on Escape anywhere; default false
+const overlay = useOverlay({
+  isEscapeClosing, // close on Escape anywhere; default false
+  isOutsideClosing, // close on a press or focus outside the overlay and its anchor; default false
+  isFocusReturned, // on close, focus inside it goes back to the anchor; default false
+  isOpen, // controlled: leave out and it keeps its own state
+  defaultIsOpen, // starts open, when uncontrolled; default false
+  onOpenChange, // (isOpen) => void, called when open or close changes it
+});
 // isOpen, isPresent, open, close, toggle, overlayRef, anchorRef, anchorStyle, overlayProps
 <button ref={overlay.anchorRef} style={overlay.anchorStyle} />;
 {
@@ -1488,13 +1495,44 @@ The hook owns the open state and showing (`showPopover()` on a `popover="manual"
 layer), the 200 ms it is kept mounted to animate out (`data-state="closed"`, `aria-hidden`), the anchor
 name (generated; `anchor-name` on the anchor, `position-anchor` on the overlay, both inline), and
 `data-side`, read after placement to tell whether it flipped above. `Overlay.module.css` owns the rest:
-`inset: auto`, the gap to the anchor (`--overlay-offset`, default 0.375em), `flip-block`, and the
-motion described under Select's Motion. Every overlay is frosted glass: the consumer's background token aliases `--color-overlay-background` (the page color at 60%), and `Overlay.module.css` blurs what is behind it (`backdrop-filter`, a fixed finish, not a token). A consumer adds only its own `position-area`, size and surface.
+`inset: auto`, the gap to the anchor (`--overlay-offset`, default 0.375em), the fallbacks when it
+overflows (`flip-block`, then `flip-inline`, then both), the six placement classes below, and the
+motion described under Select's Motion. Every overlay is frosted glass: the consumer's background token aliases `--color-overlay-background` (the page color at 60%), and `Overlay.module.css` blurs what is behind it (`backdrop-filter`, a fixed finish, not a token). It also owns the finish that was
+repeated in each consumer: `box-sizing`, no border, `--radius-less` squircle corners, `font: inherit`,
+and the 1px `CanvasText` border under `forced-colors`. A consumer adds only its size, padding,
+background token and shadow (and its own `position-area`, if it places itself as Select's popup does).
 This pair is the one place that knows an overlay is a popover; replace it to change how overlays are
 shown or placed (floating-ui). The overlay stays a DOM child of its consumer, so font size reaches it.
 
-**Not yet** (Popover brings them): outside-click dismissal, focus return, a focus trap, nested overlays.
-Light dismiss is never the native one (`popover="auto"`): the consumer decides what closes it.
+**Placement.** `_shared/Overlay.ts` exports `overlayClass(placement, align = 'center')`, which returns
+the `overlay` class and one of `top`, `topStart`, `topEnd`, `bottom`, `bottomStart`, `bottomEnd` from
+`Overlay.module.css`, and the types `OverlayPlacement` (`'top' | 'bottom'`) and `OverlayAlign`
+(`'start' | 'center' | 'end'`). Tooltip and Popover pass their props to it, so the six `position-area`
+values are written once. They are logical: `start` puts the overlay's start edge on the anchor's
+(`block-end span-inline-end`), `end` puts the end edges together (`span-inline-start`), `center` centers
+it on the anchor. The overlay flips to the other side when it doesn't fit (`data-side` follows), and to
+the other edge when it overflows the side of the viewport; the inline fallback is not checked in a
+browser yet.
+
+**Dismissal is opt-in, and each option is the whole of its behavior.** Light dismiss is never the native
+one (`popover="auto"`): the consumer decides what closes it, so Select and Tooltip, which turn nothing on
+here, are closed only by their own handlers.
+
+- `isEscapeClosing`: a `keydown` listener on the document while open (Tooltip, Popover).
+- `isOutsideClosing`: while open, a capture-phase `pointerdown` and a `focusin` on the document close it
+  when the target is in neither the overlay nor the anchor. The anchor is excluded because its own press
+  toggles; closing on it too would close and reopen. Capture, so a handler inside that stops the event
+  can't hide it. Select doesn't need it: its focus stays on the control, so a blur already says it.
+  A Popover's content takes focus, so a blur can't tell "outside" from "inside".
+- `isFocusReturned`: when it goes from open to closed, if focus is inside the overlay (still mounted,
+  leaving) or has fallen to `document.body`, focus goes to the anchor. Not after a press outside
+  (`pointerdown` marks it): focus goes where that press went. Focus elsewhere is left alone.
+- `isOpen` / `defaultIsOpen` / `onOpenChange`: controlled or not. Controlled, `open()` and `close()` only
+  call `onOpenChange`; the state is the prop, so a caller that doesn't follow keeps the overlay as it
+  was. Leaving (the exit animation) starts in the render where `isOpen` turns false, whoever changed it.
+
+**Not yet:** a focus trap (Dialog's), nested overlays (a press in a child overlay counts as outside its
+parent), `popover="auto"`.
 
 ### Tooltip
 
@@ -1525,9 +1563,58 @@ only while it is shown: it describes, it doesn't name, so an icon button still n
 aliases `--color-overlay-background`; `--color-tooltip-text: CanvasText`: black on white, white on black
 in dark mode), 0.875em, `--elevation-normal`, at most 20em wide. Motion is the overlay's.
 
-**Not yet:** a touch way to show it (press and hold), a shared delay so moving between triggers shows
+**Not yet:** an `align` (Popover has one; `overlayClass` already takes it, so it is a prop and a story),
+a touch way to show it (press and hold), a shared delay so moving between triggers shows
 the next at once, a `size` prop, an arrow, Avatar's use of it for `isTextShown={false}`, a disabled
 trigger (the browser sends it no pointer events).
+
+### Popover
+
+```tsx
+type PopoverProps = ({ 'aria-label': string } | { 'aria-labelledby': string }) & {
+  trigger: ReactElement; // one element that takes ref, style and onClick
+  children: ReactNode; // what it holds: text, a form, buttons
+  placement?: 'top' | 'bottom'; // default 'bottom'; flips when there is no room
+  align?: 'start' | 'center' | 'end'; // which edge of the trigger; default 'center'; logical (RTL-aware)
+  isOpen?: boolean; // controlled; pair with onOpenChange
+  defaultIsOpen?: boolean; // starts open, when uncontrolled
+  onOpenChange?: (isOpen: boolean) => void;
+};
+```
+
+**The content is `children` and the trigger is a prop**, the reverse of Tooltip. A popover's content is a
+layout (a form, a list of actions), often dozens of lines, and reads as JSX children; a trigger is one
+element and reads fine as a prop. A tooltip's content is a short string, so there it is the prop and
+the trigger stays the child. A compound `Popover.Trigger` / `Popover.Content` would let the trigger live
+away from the anchor, which nothing needs yet; the rest of the library takes flat props.
+
+Closest sibling is Tooltip, through [Overlay](#overlay). Shared: the overlay's placement (`placement`
+and `align` through `overlayClass`), motion and frosted surface, `--overlay-offset`, the cloned trigger
+(no wrapper; `_shared/useTriggerRef` composes the trigger's own `ref` with the anchor, extracted from
+Tooltip when Popover became its second user), and Escape. What differs: it opens on the trigger's press, not a resting pointer; it holds content a person
+acts on, so it can be pressed and tabbed into; it takes focus and gives it back; and an outside press
+closes it. Closest on the _state_ side is Select's popup, which is also open-by-press, but Select's focus
+never leaves the control.
+
+**Behavior.** Pressing the trigger toggles it (a trigger `onClick` that calls `preventDefault` does not).
+It closes on Escape, on a press or focus outside it and its trigger, and on the trigger again. Opening it
+from the trigger moves focus to the panel (`tabIndex={-1}`, so Tab goes on into the content, which follows
+the trigger in the DOM); a popover that starts open, or that a caller opens, does not take focus. Closing
+it with focus inside, or lost to the page, returns focus to the trigger, and a press elsewhere does not
+(focus goes where it was pressed). It is not modal: no `aria-modal`, no focus trap, the page stays live.
+
+**Accessibility.** The panel is `role="dialog"` and must be named (`aria-label` or `aria-labelledby`,
+required by the type). The trigger gets `aria-haspopup="dialog"`, `aria-expanded`, and `aria-controls`
+while open.
+
+**Look.** Content on the overlay's frosted page-colored background (`--color-popover-background` aliases
+`--color-overlay-background`), 1em padding, `--elevation-more` as Select's popup, at most 24em wide and
+tall (it scrolls past that). Centered on the trigger by default, as Tooltip is; `align` moves it to the
+trigger's start or end edge. Motion is the overlay's.
+
+**Not yet:** an arrow, `size`, a `Portal` (it is a DOM child of the trigger's parent, so `overflow` does
+not clip it in the top layer, but a `transform` ancestor changes how it is placed), a focus trap (use
+Dialog), nested popovers, opening on hover, a way to move focus to a chosen element inside.
 
 ---
 
@@ -1930,7 +2017,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 - No `Icon` component, and no icon set. The consumer brings the icon library; every `icon` prop takes a `ReactNode` and `_shared/OptionIcon` is its one slot (decorative, `aria-hidden`). A second glyph slot beside it would only repeat it, and a library's own `size` and `color` props already cover sizing. If standalone icons outside an `icon` prop are ever needed, export `OptionIcon` under a better name rather than adding a new component
 - [ ] `VisuallyHidden`, `Portal` — utilities the overlays need
 - [x] `Spinner` — size (unset: 1em, as big as the surrounding text), named by `aria-label` or hidden; moved out of `_shared/` (Button, Select use it)
-- [x] Overlay primitive in `_shared/` (`useOverlay` + `Overlay.module.css`; see [Overlay](#overlay)) — extracted from Select's former `useSelectPopup` in the same change as Tooltip, its second consumer. Outside-click dismissal and focus return are not in it: nothing needed them yet, so they arrive with Popover
+- [x] Overlay primitive in `_shared/` (`useOverlay` + `Overlay.module.css`; see [Overlay](#overlay)) — extracted from Select's former `useSelectPopup` in the same change as Tooltip, its second consumer. Outside-click dismissal, focus return and controlled state arrived with Popover, as opt-in options
 
 **Display and feedback** (no overlay, no state machine):
 
@@ -1943,7 +2030,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 **Overlays** (build on the primitive above):
 
 - [x] `Tooltip` — content, placement, delay, isDisabled; wraps nothing. Still to do: Avatar's `isTextShown={false}` shows the name and description in one
-- [ ] `Popover` — **next**; adds outside-click dismissal and focus return to `useOverlay`
+- [x] `Popover` — trigger prop and content as children (the reverse of Tooltip), placement, align, isOpen / defaultIsOpen / onOpenChange, a required name; non-modal. Added outside-click dismissal, focus return and controlled state to `useOverlay` as opt-in options, and `_shared/useTriggerRef`
 - [ ] `Menu` (dropdown) — Sibling: Select's list and options (`OptionText`, active-option token)
 - [ ] `Dialog` (modal) and `Drawer` — focus trap; the native `<dialog>` may cover most of it
 - [ ] `Toast` — Sibling: Banner (it is a Banner that floats and times out; Banner's section says so)

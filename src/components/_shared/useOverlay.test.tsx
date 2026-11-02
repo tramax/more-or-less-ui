@@ -75,4 +75,156 @@ describe('useOverlay', () => {
     fireEvent.keyDown(document.body, { key: 'Escape' });
     expect(overlayEl()?.dataset.state).toBe('closed');
   });
+
+  describe('isOutsideClosing', () => {
+    const renderOpen = (options: UseOverlayOptions = { isOutsideClosing: true }) => {
+      render(
+        <>
+          <Probe {...options} />
+          <p>elsewhere</p>
+        </>,
+      );
+      fireEvent.click(screen.getByText('anchor'));
+    };
+
+    it('does nothing unless asked to', () => {
+      renderOpen({});
+      fireEvent.pointerDown(screen.getByText('elsewhere'));
+      expect(overlayEl()?.dataset.state).toBe('open');
+    });
+
+    it('closes on a press outside', () => {
+      renderOpen();
+      fireEvent.pointerDown(screen.getByText('elsewhere'));
+      expect(overlayEl()?.dataset.state).toBe('closed');
+    });
+
+    it('stays open for a press inside the overlay or on the anchor', () => {
+      renderOpen();
+      fireEvent.pointerDown(overlayEl() as HTMLElement);
+      fireEvent.pointerDown(screen.getByText('anchor'));
+      expect(overlayEl()?.dataset.state).toBe('open');
+    });
+
+    it('lets the anchor’s own press toggle it, not close it and reopen it', () => {
+      renderOpen();
+      fireEvent.pointerDown(screen.getByText('anchor'));
+      fireEvent.click(screen.getByText('anchor'));
+      expect(overlayEl()?.dataset.state).toBe('closed');
+    });
+
+    it('sees a press whose handler stops it', () => {
+      render(
+        <>
+          <Probe isOutsideClosing />
+          <p onPointerDown={(event) => event.stopPropagation()}>elsewhere</p>
+        </>,
+      );
+      fireEvent.click(screen.getByText('anchor'));
+      fireEvent.pointerDown(screen.getByText('elsewhere'));
+      expect(overlayEl()?.dataset.state).toBe('closed');
+    });
+
+    it('closes when focus moves outside, and not when it moves inside', () => {
+      render(
+        <>
+          <Probe isOutsideClosing />
+          <button>elsewhere</button>
+        </>,
+      );
+      fireEvent.click(screen.getByText('anchor'));
+      act(() => screen.getByText('anchor').focus());
+      expect(overlayEl()?.dataset.state).toBe('open');
+      act(() => screen.getByText('elsewhere').focus());
+      expect(overlayEl()?.dataset.state).toBe('closed');
+    });
+
+    it('stops listening once it is closed', () => {
+      renderOpen();
+      const remove = vi.spyOn(document, 'removeEventListener');
+      fireEvent.click(screen.getByText('close'));
+      expect(remove).toHaveBeenCalledWith('pointerdown', expect.anything(), true);
+      expect(remove).toHaveBeenCalledWith('focusin', expect.anything());
+      remove.mockRestore();
+    });
+  });
+
+  describe('isFocusReturned', () => {
+    function Focusable(options: UseOverlayOptions) {
+      const overlay = useOverlay(options);
+      return (
+        <>
+          <button ref={overlay.anchorRef} onClick={overlay.toggle}>
+            anchor
+          </button>
+          <button>elsewhere</button>
+          {overlay.isPresent && (
+            <div {...overlay.overlayProps} data-testid="overlay">
+              <button>inside</button>
+            </div>
+          )}
+        </>
+      );
+    }
+
+    it('puts focus back on the anchor when it closes with focus inside', () => {
+      render(<Focusable isFocusReturned isEscapeClosing />);
+      fireEvent.click(screen.getByText('anchor'));
+      act(() => screen.getByText('inside').focus());
+      fireEvent.keyDown(document.body, { key: 'Escape' });
+      expect(document.activeElement).toBe(screen.getByText('anchor'));
+    });
+
+    it('leaves focus alone when it was elsewhere', () => {
+      render(<Focusable isFocusReturned isEscapeClosing />);
+      fireEvent.click(screen.getByText('anchor'));
+      act(() => screen.getByText('elsewhere').focus());
+      fireEvent.keyDown(document.body, { key: 'Escape' });
+      expect(document.activeElement).toBe(screen.getByText('elsewhere'));
+    });
+
+    it('does not take focus back from a press outside', () => {
+      render(<Focusable isFocusReturned isOutsideClosing />);
+      fireEvent.click(screen.getByText('anchor'));
+      act(() => screen.getByText('inside').focus());
+      fireEvent.pointerDown(screen.getByText('elsewhere'));
+      expect(document.activeElement).not.toBe(screen.getByText('anchor'));
+    });
+
+    it('does nothing unless asked to, and not when it never opened', () => {
+      render(<Focusable isEscapeClosing />);
+      fireEvent.click(screen.getByText('anchor'));
+      act(() => screen.getByText('inside').focus());
+      fireEvent.keyDown(document.body, { key: 'Escape' });
+      expect(document.activeElement).not.toBe(screen.getByText('anchor'));
+      cleanup();
+
+      render(<Focusable isFocusReturned />);
+      expect(document.activeElement).toBe(document.body);
+    });
+  });
+
+  describe('controlled', () => {
+    it('follows isOpen and reports what open and close ask for, without changing it itself', () => {
+      const onOpenChange = vi.fn();
+      const { rerender } = render(<Probe isOpen={false} onOpenChange={onOpenChange} />);
+      fireEvent.click(screen.getByText('anchor'));
+      expect(onOpenChange).toHaveBeenCalledWith(true);
+      expect(overlayEl()).toBeNull();
+
+      rerender(<Probe isOpen onOpenChange={onOpenChange} />);
+      expect(overlayEl()?.dataset.state).toBe('open');
+      fireEvent.click(screen.getByText('close'));
+      expect(onOpenChange).toHaveBeenLastCalledWith(false);
+      expect(overlayEl()?.dataset.state).toBe('open');
+
+      rerender(<Probe isOpen={false} onOpenChange={onOpenChange} />);
+      expect(overlayEl()?.dataset.state).toBe('closed');
+    });
+
+    it('starts open with defaultIsOpen', () => {
+      render(<Probe defaultIsOpen />);
+      expect(overlayEl()?.dataset.state).toBe('open');
+    });
+  });
 });

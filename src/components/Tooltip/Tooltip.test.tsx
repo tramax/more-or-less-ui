@@ -3,7 +3,6 @@ import { afterEach, describe, it, expect, vi } from 'vitest';
 import { act, cleanup, createEvent, fireEvent, render, screen } from '@testing-library/react';
 import { Tooltip } from './Tooltip';
 import overlayStyles from '../_shared/Overlay.module.css';
-import styles from './Tooltip.module.css';
 
 const renderTooltip = (props: Partial<Parameters<typeof Tooltip>[0]> = {}) =>
   render(
@@ -182,13 +181,13 @@ describe('Tooltip', () => {
       renderTooltip();
       focus();
       expect(tip()?.classList.contains(overlayStyles.overlay ?? '')).toBe(true);
-      expect(tip()?.classList.contains(styles.top ?? '')).toBe(true);
+      expect(tip()?.classList.contains(overlayStyles.top ?? '')).toBe(true);
     });
 
     it('can be placed below', () => {
       renderTooltip({ placement: 'bottom' });
       focus();
-      expect(tip()?.classList.contains(styles.bottom ?? '')).toBe(true);
+      expect(tip()?.classList.contains(overlayStyles.bottom ?? '')).toBe(true);
     });
   });
 });

@@ -1,0 +1,24 @@
+/*
+ * Popover: the overlay (_shared/Overlay.module.css) supplies the top layer, the side and edge it sits
+ * on, the flip, the motion, the corners and the frosted blur. What is here is its surface: room for
+ * content on the overlay's frosted page-colored background. Everything is in em, so it follows the font size
+ * of where it is rendered.
+ */
+
+.popover {
+  --overlay-offset: 0.5em;
+  width: max-content;
+  max-width: min(24em, calc(100vw - 2em));
+  max-height: 24em;
+  overflow: auto;
+  padding: 1em;
+  background: var(--color-popover-background);
+  color: CanvasText;
+  box-shadow: var(--elevation-more);
+  line-height: 1.4;
+}
+
+/* It takes focus when opened from the trigger; the ring would sit on the whole panel */
+.popover:focus {
+  outline: none;
+}

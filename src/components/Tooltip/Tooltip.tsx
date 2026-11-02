@@ -1,10 +1,8 @@
 import {
   cloneElement,
-  useCallback,
   useEffect,
   useId,
   useRef,
-  version,
   type FocusEvent,
   type PointerEvent,
   type ReactElement,
@@ -13,7 +11,8 @@ import {
 } from 'react';
 import { clsx } from '@/utils/clsx';
 import { useOverlay } from '../_shared/useOverlay';
-import overlayStyles from '../_shared/Overlay.module.css';
+import { useTriggerRef } from '../_shared/useTriggerRef';
+import { overlayClass } from '../_shared/Overlay';
 import styles from './Tooltip.module.css';
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
@@ -93,19 +92,7 @@ export function Tooltip({
   };
 
   const trigger = children.props as TriggerProps;
-  // React 18 keeps `ref` on the element, 19 in its props (and warns when 18's way is read there)
-  const triggerRef =
-    Number.parseInt(version, 10) >= 19
-      ? trigger.ref
-      : (children as ReactElement & { ref?: Ref<HTMLElement> }).ref;
-  const setRef = useCallback(
-    (node: HTMLElement | null) => {
-      overlay.anchorRef(node);
-      if (typeof triggerRef === 'function') triggerRef(node);
-      else if (triggerRef) (triggerRef as { current: HTMLElement | null }).current = node;
-    },
-    [overlay.anchorRef, triggerRef],
-  );
+  const setRef = useTriggerRef(children, overlay.anchorRef);
 
   if (isDisabled) return children;
 
@@ -147,7 +134,7 @@ export function Tooltip({
           {...overlay.overlayProps}
           id={id}
           role="tooltip"
-          className={clsx(overlayStyles.overlay, styles.tooltip, styles[placement])}
+          className={clsx(overlayClass(placement), styles.tooltip)}
           // Hoverable: moving onto it keeps it
           onPointerEnter={stop}
           onPointerLeave={hideSoon}
