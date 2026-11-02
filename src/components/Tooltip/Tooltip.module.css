@@ -1,0 +1,37 @@
+/*
+ * Tooltip: the overlay (_shared/Overlay.module.css) supplies the top layer, the flip and the motion.
+ * What is here is the side it sits on and its surface: an inverted chip of text, so it can't be taken
+ * for a part of the page. Everything is in em, so it follows the font size of where it is rendered.
+ */
+
+.tooltip {
+  --overlay-offset: 0.5em;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: 20em;
+  padding: 0.375em 0.625em;
+  border: 0;
+  border-radius: var(--radius-less);
+  corner-shape: squircle;
+  background: var(--color-tooltip-background);
+  color: var(--color-tooltip-text);
+  box-shadow: var(--elevation-normal);
+  font: inherit;
+  font-size: 0.875em;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.top {
+  position-area: block-start;
+}
+.bottom {
+  position-area: block-end;
+}
+
+@media (forced-colors: active) {
+  /* box-shadow is dropped there; the system colors already set it apart, but give it an edge */
+  .tooltip {
+    border: 1px solid CanvasText;
+  }
+}

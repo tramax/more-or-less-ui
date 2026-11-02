@@ -1,0 +1,83 @@
+/*
+ * An overlay: a Popover API element in the top layer, placed with CSS anchor positioning, that grows
+ * out of its anchor when it opens (see useOverlay.ts, which shows it and names the anchor). Select's
+ * popup and Tooltip use it; a consumer adds its own `position-area`, width and surface (background,
+ * padding, shadow), and nothing about where it sits or how it moves.
+ *
+ * The popover's own defaults centre it in the viewport (inset: 0; margin: auto); `inset: auto` and
+ * `position-area` put it by the anchor instead. Everything is in em, so `size` on an ancestor
+ * reaches it: it stays a DOM child of its consumer's root even though it is shown in the top layer.
+ */
+
+/* --- Positioning ---------------------------------------------------------------------------------
+ * The only CSS that knows an overlay is a Popover API element placed with anchor positioning. To
+ * position it another way, replace these, each consumer's `position-area`, and useOverlay.ts.
+ * `position-anchor` is set inline by useOverlay. `--overlay-offset` is the gap to the anchor.
+ */
+.overlay {
+  position-try-fallbacks: flip-block;
+  inset: auto;
+  margin: var(--overlay-offset, 0.375em) 0;
+}
+/* --- End of positioning ------------------------------------------------------------------------ */
+
+/*
+ * Opening and closing. The overlay grows out of its anchor: it starts a little small and a little
+ * toward it (--overlay-shift; the other way when it flips above, data-side is set by useOverlay), and
+ * enters with the springy --ease-enter, so it overshoots its size by a few percent and settles, as a
+ * Button does on hover. Its shadow lifts from the small to the full elevation as it lands. Leaving
+ * is quicker and doesn't overshoot (--ease-leave). It is kept mounted for that (data-state="closed",
+ * see useOverlay). Opacity has its own, plain animation: it must not follow the overshoot.
+ */
+.overlay {
+  transform-origin: 50% 0;
+  --overlay-shift: -0.5em;
+}
+.overlay[data-side='top'] {
+  transform-origin: 50% 100%;
+  --overlay-shift: 0.5em;
+}
+.overlay[data-state='open'] {
+  animation:
+    overlay-in 450ms var(--ease-enter) both,
+    overlay-fade-in 150ms ease both;
+}
+.overlay[data-state='closed'] {
+  animation:
+    overlay-out 150ms var(--ease-leave) both,
+    overlay-fade-out 150ms ease both;
+  pointer-events: none;
+}
+
+@keyframes overlay-in {
+  from {
+    transform: translateY(var(--overlay-shift)) scale(0.94);
+    box-shadow: var(--elevation-less);
+  }
+}
+@keyframes overlay-out {
+  to {
+    transform: translateY(calc(var(--overlay-shift) / 2)) scale(0.97);
+    box-shadow: var(--elevation-less);
+  }
+}
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes overlay-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* A fade only: no growing, no shift */
+  .overlay[data-state='open'] {
+    animation: overlay-fade-in 100ms ease both;
+  }
+  .overlay[data-state='closed'] {
+    animation: overlay-fade-out 100ms ease both;
+  }
+}

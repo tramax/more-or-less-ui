@@ -15,10 +15,9 @@
   --field-background-error-hover: var(--color-select-background-error-hover);
 }
 
-/* The anchor the popup is positioned against, and the containing block of the chevron */
+/* The containing block of the chevron; also the popup's anchor (named by useOverlay) */
 .field {
   position: relative;
-  anchor-name: var(--select-anchor);
 }
 
 /* The control is the frame's `.control` (padding, fill, focus border); this leaves room for the
@@ -197,24 +196,14 @@
   }
 }
 
-/* --- Positioning ---------------------------------------------------------------------------------
- * The only CSS that knows the popup is a Popover API element placed with anchor positioning (see
- * useSelectPopup.ts). To position it another way, replace these and that hook.
- * The popover's own defaults centre it in the viewport (inset: 0; margin: auto); this puts it under
- * the field, as wide as the field, and flips it above when there is no room below.
+/*
+ * The popup is an overlay (_shared/Overlay.module.css: top layer, flips above when there is no room
+ * below, grows out of the field). Here: under the field, as wide as it.
  */
 .popup {
-  position-anchor: var(--select-anchor);
   position-area: block-end span-inline-end;
-  position-try-fallbacks: flip-block;
-  inset: auto;
-  margin: 0.375em 0;
   width: anchor-size(width);
   max-height: 20em;
-}
-/* --- End of positioning ------------------------------------------------------------------------ */
-
-.popup {
   box-sizing: border-box;
   overflow-y: auto;
   padding: 0.375em;
@@ -226,58 +215,6 @@
   box-shadow: var(--elevation-more);
   font: inherit;
   line-height: 1.25;
-}
-
-/*
- * Opening and closing. The popup grows out of the field: it starts a little small and a little
- * toward it (--popup-shift; the other way when it flips above, data-side is set by useSelectPopup),
- * and enters with the springy --ease-enter, so it overshoots its size by a few percent and settles,
- * as a Button does on hover. Its shadow lifts from the small to the full elevation as it lands.
- * Leaving is quicker and doesn't overshoot (--ease-leave). It is kept mounted for that
- * (data-state="closed", see useSelectPopup). Opacity has its own, plain animation: it must not
- * follow the overshoot.
- */
-.popup {
-  transform-origin: 50% 0;
-  --popup-shift: -0.5em;
-}
-.popup[data-side='top'] {
-  transform-origin: 50% 100%;
-  --popup-shift: 0.5em;
-}
-.popup[data-state='open'] {
-  animation:
-    popup-in 450ms var(--ease-enter) both,
-    popup-fade-in 150ms ease both;
-}
-.popup[data-state='closed'] {
-  animation:
-    popup-out 150ms var(--ease-leave) both,
-    popup-fade-out 150ms ease both;
-  pointer-events: none;
-}
-
-@keyframes popup-in {
-  from {
-    transform: translateY(var(--popup-shift)) scale(0.94);
-    box-shadow: var(--elevation-less);
-  }
-}
-@keyframes popup-out {
-  to {
-    transform: translateY(calc(var(--popup-shift) / 2)) scale(0.97);
-    box-shadow: var(--elevation-less);
-  }
-}
-@keyframes popup-fade-in {
-  from {
-    opacity: 0;
-  }
-}
-@keyframes popup-fade-out {
-  to {
-    opacity: 0;
-  }
 }
 
 @media (forced-colors: active) {
@@ -411,12 +348,5 @@
   /* No growing; the fill is the cue */
   .option[data-active] {
     transform: none;
-  }
-  /* A fade only: no growing, no shift */
-  .popup[data-state='open'] {
-    animation: popup-fade-in 100ms ease both;
-  }
-  .popup[data-state='closed'] {
-    animation: popup-fade-out 100ms ease both;
   }
 }

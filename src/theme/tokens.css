@@ -156,6 +156,10 @@
   --color-select-popup: Canvas;
   --color-select-check: var(--color-on-primary);
 
+  /* Inverted against the page, so a tooltip can't be taken for part of it */
+  --color-tooltip-background: CanvasText;
+  --color-tooltip-text: Canvas;
+
   /* Chip is filled, and a fill says "pressable", as a field's does. A removable chip (a value in a
      field) takes the stronger field tint, so it stands out from the Select field it sits in; a
      selectable one takes the field fill itself, off, and the brand color, on, as Checkbox and Toggle do. */

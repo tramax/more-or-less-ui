@@ -46,6 +46,7 @@ export {
   Text,
   TextField,
   Textarea,
+  Tooltip,
 } from '@/components';
 export type {
   AvatarProps,
@@ -71,4 +72,5 @@ export type {
   TextColor,
   TextFieldProps,
   TextareaProps,
+  TooltipProps,
 } from '@/components';

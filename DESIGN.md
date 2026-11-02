@@ -932,15 +932,16 @@ one per value for a multiple. Only values that are options count.
 `z-index` is needed, placed with CSS anchor positioning: under the field, as wide as it, flipped above
 when there is no room. It is rendered while open and for 200 ms after (see Motion), so it can animate
 out. It stays a DOM child of the root, so `size` reaches it. Light dismiss is ours (blur, Escape), so focus never leaves the control, and a mousedown
-in the popup is cancelled. Everything that knows it is a popover is in `Select/useSelectPopup.ts` and
-the marked "Positioning" section of `Select.module.css`; changing how it is placed replaces those two
-and nothing else. There is no fallback for a browser without the Popover API and anchor positioning.
+in the popup is cancelled. The popup is an [overlay](#overlay): everything that knows it is a popover
+is `_shared/useOverlay.ts` and `_shared/Overlay.module.css` (shared with Tooltip); `Select.module.css`
+only says where it sits (`position-area`, width) and what it looks like. There is no fallback for a
+browser without the Popover API and anchor positioning.
 
 **Motion.** The same organic principle as Button (springy on the way in, no overshoot on the way
 out; `--ease-enter` / `--ease-leave` in `theme/tokens.css`):
 
 - **The popup** grows out of the field: it starts at 0.94 scale and 0.5em toward the field (the other
-  way when it flips above, from the bottom edge; `useSelectPopup` sets `data-side`), overshoots its
+  way when it flips above, from the bottom edge; `useOverlay` sets `data-side`), overshoots its
   size by about 3% and settles in 450 ms while its shadow lifts from `--elevation-less` to `-more`.
   Opacity has its own plain 150 ms fade, so it doesn't follow the overshoot. Closing is a quicker
   150 ms (to 0.97 scale, no overshoot) and the popup is `aria-hidden` while it leaves.
@@ -1003,8 +1004,10 @@ list, localisation of "No results", "Loading…" and "Remove <label>".
   A visually hidden native input or `ElementInternals` would.
 - "No results" is a `role="status"` that appears with the popup, which screen readers may not
   announce; check in a screen reader pass. The same goes for announcing a chip's removal.
-- Check support for the Popover API and anchor positioning before release; the library already
-  relies on `corner-shape` and `contrast-color()`.
+- Support for the Popover API (Chrome 114, Firefox 125, Safari 17) and anchor positioning (Chrome 125,
+  Safari 26, Firefox 147) was checked on 2026-11-02: every engine ships both, so there is no fallback.
+  The library also relies on `corner-shape` and `contrast-color()`, which are newer; check them
+  before release.
 - The borderless fill and WCAG 1.4.11, as TextField.
 
 ### Banner
@@ -1464,6 +1467,67 @@ named (`<Button aria-label="Inbox, 3 unread">`). It is not a live region: announ
 the count changes, a `Tooltip`, wrapping Avatar's name and circle separately, a
 `offset` for fine placement.
 
+### Overlay
+
+`_shared/useOverlay.ts` and `_shared/Overlay.module.css`: what Select's popup and Tooltip share, and
+what Popover, Menu and the rest will. Extracted from Select's former `useSelectPopup` when Tooltip became
+the second consumer.
+
+```tsx
+const overlay = useOverlay({ isEscapeClosing }); // isEscapeClosing: close on Escape anywhere; default false
+// isOpen, isPresent, open, close, toggle, overlayRef, anchorRef, anchorStyle, overlayProps
+<button ref={overlay.anchorRef} style={overlay.anchorStyle} />;
+{
+  overlay.isPresent && (
+    <div {...overlay.overlayProps} className={clsx(overlayStyles.overlay, styles.mine)} />
+  );
+}
+```
+
+The hook owns the open state and showing (`showPopover()` on a `popover="manual"` element in the top
+layer), the 200 ms it is kept mounted to animate out (`data-state="closed"`, `aria-hidden`), the anchor
+name (generated; `anchor-name` on the anchor, `position-anchor` on the overlay, both inline), and
+`data-side`, read after placement to tell whether it flipped above. `Overlay.module.css` owns the rest:
+`inset: auto`, the gap to the anchor (`--overlay-offset`, default 0.375em), `flip-block`, and the
+motion described under Select's Motion. A consumer adds only its own `position-area`, size and surface.
+This pair is the one place that knows an overlay is a popover; replace it to change how overlays are
+shown or placed (floating-ui). The overlay stays a DOM child of its consumer, so font size reaches it.
+
+**Not yet** (Popover brings them): outside-click dismissal, focus return, a focus trap, nested overlays.
+Light dismiss is never the native one (`popover="auto"`): the consumer decides what closes it.
+
+### Tooltip
+
+```tsx
+type TooltipProps = {
+  children: ReactElement; // the trigger: one element that takes ref, style and pointer / focus handlers
+  content: ReactNode;
+  placement?: 'top' | 'bottom'; // default 'top'; flips when there is no room
+  delay?: number; // ms the pointer rests before it shows; default 400. Keyboard focus is immediate
+  isDisabled?: boolean; // renders the trigger alone
+};
+```
+
+Closest sibling is Select's popup, through [Overlay](#overlay): the same top-layer placement and
+grow-out motion. It differs in what opens it (a resting pointer or keyboard focus, not a control's own
+keys), in having no width tie to the anchor, and in its surface. It wraps nothing: it clones the trigger
+to add the anchor name, handlers and `aria-describedby`, and composes with the trigger's own `ref`,
+`style` and handlers. (A wrapper element would change the trigger's layout, and `display: contents`
+can't be an anchor.)
+
+**Behavior.** Shows after `delay` of resting (a touch pointer never shows it: there is no hover), at
+once on keyboard focus (`:focus-visible` only, so a click's focus doesn't show it). Hides on pointer
+leave (after 100 ms, so the pointer can cross the gap and rest on the tooltip, WCAG 1.4.13), on blur, on
+Escape and when the trigger is pressed. It is `role="tooltip"` and the trigger gets `aria-describedby`
+only while it is shown: it describes, it doesn't name, so an icon button still needs an `aria-label`.
+
+**Look.** Inverted against the page (`--color-tooltip-background: CanvasText`,
+`--color-tooltip-text: Canvas`), 0.875em, `--elevation-normal`, at most 20em wide. Motion is the overlay's.
+
+**Not yet:** a touch way to show it (press and hold), a shared delay so moving between triggers shows
+the next at once, a `size` prop, an arrow, Avatar's use of it for `isTextShown={false}`, a disabled
+trigger (the browser sends it no pointer events).
+
 ---
 
 ## Loading
@@ -1672,7 +1736,8 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip)
+│   │   ├── Tooltip/
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; useOverlay + Overlay.module.css: Select's popup + Tooltip)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -1864,7 +1929,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 - No `Icon` component, and no icon set. The consumer brings the icon library; every `icon` prop takes a `ReactNode` and `_shared/OptionIcon` is its one slot (decorative, `aria-hidden`). A second glyph slot beside it would only repeat it, and a library's own `size` and `color` props already cover sizing. If standalone icons outside an `icon` prop are ever needed, export `OptionIcon` under a better name rather than adding a new component
 - [ ] `VisuallyHidden`, `Portal` — utilities the overlays need
 - [x] `Spinner` — size (unset: 1em, as big as the surrounding text), named by `aria-label` or hidden; moved out of `_shared/` (Button, Select use it)
-- [ ] Overlay primitive in `_shared/` — positioning, outside-click and Escape dismissal, focus return. Extract it from `Select/useSelectPopup.ts` in the same change as the first overlay below (a second consumer appears; CLAUDE.md says extract then). Check the Popover API and anchor positioning support first, as Select's section notes
+- [x] Overlay primitive in `_shared/` (`useOverlay` + `Overlay.module.css`; see [Overlay](#overlay)) — extracted from Select's former `useSelectPopup` in the same change as Tooltip, its second consumer. Outside-click dismissal and focus return are not in it: nothing needed them yet, so they arrive with Popover
 
 **Display and feedback** (no overlay, no state machine):
 
@@ -1876,8 +1941,8 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 
 **Overlays** (build on the primitive above):
 
-- [ ] `Tooltip` — **next**: Avatar's `isTextShown={false}` shows the name and description in one
-- [ ] `Popover`
+- [x] `Tooltip` — content, placement, delay, isDisabled; wraps nothing. Still to do: Avatar's `isTextShown={false}` shows the name and description in one
+- [ ] `Popover` — **next**; adds outside-click dismissal and focus return to `useOverlay`
 - [ ] `Menu` (dropdown) — Sibling: Select's list and options (`OptionText`, active-option token)
 - [ ] `Dialog` (modal) and `Drawer` — focus trap; the native `<dialog>` may cover most of it
 - [ ] `Toast` — Sibling: Banner (it is a Banner that floats and times out; Banner's section says so)

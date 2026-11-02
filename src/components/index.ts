@@ -36,3 +36,5 @@ export { Textarea } from './Textarea';
 export type { TextareaProps } from './Textarea';
 export { Toggle } from './Toggle';
 export type { ToggleProps } from './Toggle';
+export { Tooltip } from './Tooltip';
+export type { TooltipProps } from './Tooltip';

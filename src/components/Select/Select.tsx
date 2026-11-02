@@ -3,7 +3,6 @@ import {
   useId,
   useRef,
   useState,
-  type CSSProperties,
   type FocusEvent,
   type ForwardedRef,
   type HTMLAttributes,
@@ -20,9 +19,10 @@ import { Spinner } from '../Spinner';
 import type { NameProps, OptionBase } from '../_shared/types';
 import { CheckIcon } from '../_shared/CheckIcon';
 import { CrossIcon } from '../_shared/CrossIcon';
+import { useOverlay } from '../_shared/useOverlay';
+import overlayStyles from '../_shared/Overlay.module.css';
 import { Chip } from '../Chip';
 import { useListboxNavigation } from './useListboxNavigation';
-import { useSelectPopup } from './useSelectPopup';
 import styles from './Select.module.css';
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
@@ -188,8 +188,6 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
   const controlId = id ?? autoId;
   const listboxId = `${controlId}-listbox`;
   const optionId = (option: SelectOption) => `${controlId}-option-${options.indexOf(option)}`;
-  // `useId()` returns ":r1:", which isn't valid in a CSS dashed-ident
-  const anchorName = `--select-${controlId.replace(/[^\w-]/g, '')}`;
 
   // One list for both modes: a single Select holds at most one. Only values that are options count.
   const [uncontrolled, setUncontrolled] = useState(() => toValues(defaultValue));
@@ -263,7 +261,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
     else if (!isSearchable) clear();
   };
 
-  const popup = useSelectPopup();
+  const popup = useOverlay();
   const { isOpen } = popup;
   const nav = useListboxNavigation({
     options,
@@ -275,7 +273,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
     close: popup.close,
     choose,
     onBackspace,
-    popupRef: popup.popupRef,
+    popupRef: popup.overlayRef,
     onSearch,
     isLoading,
   });
@@ -451,7 +449,8 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
             data-clearable={canClear || undefined}
             data-loading={isLoading || undefined}
             data-has-icon={showInputIcon || undefined}
-            style={{ '--select-anchor': anchorName } as CSSProperties}
+            ref={popup.anchorRef}
+            style={popup.anchorStyle}
           >
             {control}
             {/* Over the input, which can't hold it. Gone while the user types (and the room for it
@@ -486,13 +485,8 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
               ))}
             {popup.isPresent && (
               <div
-                ref={popup.popupRef}
-                // `manual`: we close it ourselves, so focus never leaves the control
-                {...{ popover: 'manual' }}
-                className={styles.popup}
-                data-state={isOpen ? 'open' : 'closed'}
-                // Leaving: still on screen for its exit animation, but no longer there for anyone else
-                aria-hidden={!isOpen || undefined}
+                {...popup.overlayProps}
+                className={clsx(overlayStyles.overlay, styles.popup)}
                 // Keeps focus on the control: a click in the popup isn't a blur
                 onMouseDown={(event) => event.preventDefault()}
               >
