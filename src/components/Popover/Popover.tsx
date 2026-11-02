@@ -6,11 +6,10 @@ import {
   type MouseEvent,
   type ReactElement,
   type ReactNode,
-  type Ref,
 } from 'react';
 import { clsx } from '@/utils/clsx';
 import { useOverlay } from '../_shared/useOverlay';
-import { useTriggerRef } from '../_shared/useTriggerRef';
+import { useTriggerRef, type TriggerProps } from '../_shared/useTriggerRef';
 import { overlayClass, type OverlayAlign, type OverlayPlacement } from '../_shared/Overlay';
 import styles from './Popover.module.css';
 
@@ -19,12 +18,6 @@ export const POPOVER_DEFAULTS = {
   placement: 'bottom',
   align: 'center',
 } as const;
-
-type TriggerProps = {
-  ref?: Ref<HTMLElement>;
-  style?: object;
-  onClick?: (event: MouseEvent<HTMLElement>) => void;
-};
 
 type PopoverName = { 'aria-label': string } | { 'aria-labelledby': string };
 

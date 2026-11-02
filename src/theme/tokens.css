@@ -94,7 +94,7 @@
   --color-field-background-error: color-mix(in oklab, var(--color-danger) 15%, transparent);
   --color-field-background-error-hover: color-mix(in oklab, var(--color-danger) 25%, transparent);
 
-  /* What every overlay (Select's popup, Tooltip, Popover) is drawn on: the page color at 60%, so the page shows
+  /* What every overlay (Select's popup, Tooltip, Popover, Menu) is drawn on: the page color at 60%, so the page shows
      through. Overlay.module.css blurs what is behind it, which is what keeps the
      text readable. Each overlay's own token aliases this one. */
   --color-overlay-background: color-mix(in oklab, Canvas 60%, transparent);
@@ -164,6 +164,10 @@
   --color-tooltip-text: CanvasText;
 
   --color-popover-background: var(--color-overlay-background);
+
+  --color-menu-background: var(--color-overlay-background);
+  /* The item the keyboard (or the pointer) is on */
+  --color-menu-item-active: var(--color-field-background-hover);
 
   /* Chip is filled, and a fill says "pressable", as a field's does. A removable chip (a value in a
      field) takes the stronger field tint, so it stands out from the Select field it sits in; a

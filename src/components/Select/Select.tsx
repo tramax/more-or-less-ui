@@ -21,6 +21,7 @@ import { CheckIcon } from '../_shared/CheckIcon';
 import { CrossIcon } from '../_shared/CrossIcon';
 import { useOverlay } from '../_shared/useOverlay';
 import overlayStyles from '../_shared/Overlay.module.css';
+import listStyles from '../_shared/OptionList.module.css';
 import { Chip } from '../Chip';
 import { useListboxNavigation } from './useListboxNavigation';
 import styles from './Select.module.css';
@@ -486,7 +487,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
             {popup.isPresent && (
               <div
                 {...popup.overlayProps}
-                className={clsx(overlayStyles.overlay, styles.popup)}
+                className={clsx(overlayStyles.overlay, listStyles.popup, styles.popup)}
                 // Keeps focus on the control: a click in the popup isn't a blur
                 onMouseDown={(event) => event.preventDefault()}
               >
@@ -498,7 +499,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                   <ul
                     id={listboxId}
                     role="listbox"
-                    className={styles.listbox}
+                    className={clsx(listStyles.list, styles.listbox)}
                     aria-multiselectable={isMultiple || undefined}
                     aria-busy={isLoading || undefined}
                     aria-label={rawProps['aria-label'] ?? frameProps.label}
@@ -514,7 +515,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                           key={option.value}
                           id={optionId(option)}
                           role="option"
-                          className={styles.option}
+                          className={listStyles.option}
                           aria-selected={isSelected}
                           aria-disabled={option.isDisabled || undefined}
                           aria-describedby={descriptionId}
@@ -530,7 +531,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                               <CheckIcon className={styles.checkboxTick} />
                             </span>
                           )}
-                          <span className={styles.optionText}>
+                          <span className={listStyles.optionText}>
                             <OptionText
                               label={option.label}
                               description={option.description}

@@ -1,7 +1,7 @@
 /*
  * An overlay: a Popover API element in the top layer, placed with CSS anchor positioning, that grows
  * out of its anchor when it opens (see useOverlay.ts, which shows it and names the anchor). Select's
- * popup, Tooltip and Popover use it; a consumer adds its own `position-area`, width and surface (background,
+ * popup, Tooltip, Popover and Menu use it; a consumer adds its own `position-area`, width and surface (background,
  * padding, shadow), and nothing about where it sits or how it moves.
  *
  * The popover's own defaults centre it in the viewport (inset: 0; margin: auto); `inset: auto` and
@@ -26,7 +26,7 @@
 
 /*
  * Which side of the anchor, and which edge of it the overlay lines up with: `placement` and `align`
- * of Tooltip and Popover (see Overlay.ts, which picks the class). Centered on the anchor, or its
+ * of Tooltip, Popover and Menu (see Overlay.ts, which picks the class). Centered on the anchor, or its
  * inline-start edge on the anchor's (`span-inline-end`: the area runs from the anchor's start toward
  * the end), or the end edges together. Logical, so they follow the writing direction. Select's popup
  * sets its own `position-area` and uses none of these.

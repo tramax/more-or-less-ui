@@ -934,7 +934,7 @@ when there is no room. It is rendered while open and for 200 ms after (see Motio
 out. It stays a DOM child of the root, so `size` reaches it. Light dismiss is ours (blur, Escape), so focus never leaves the control, and a mousedown
 in the popup is cancelled. The popup is an [overlay](#overlay): everything that knows it is a popover
 is `_shared/useOverlay.ts` and `_shared/Overlay.module.css` (shared with Tooltip); `Select.module.css`
-only says where it sits (`position-area`, width) and what it looks like. There is no fallback for a
+only says where it sits (`position-area`, width) and which colors the list reads. There is no fallback for a
 browser without the Popover API and anchor positioning.
 
 **Motion.** The same organic principle as Button (springy on the way in, no overshoot on the way
@@ -975,8 +975,11 @@ field, is `isDisabled`: dimmed, with no ×.
 Shared with TextField and Textarea through `_shared/TextFieldFrame`: root, `size`, label, error, the
 id / `aria-invalid` / `aria-describedby` wiring and the look of the control. The frame's focus border
 also matches `:has(:focus-visible)`, so the multiple box shows it when its input is focused. The
-option text is `_shared/OptionText`, and `SelectOption` is `OptionBase`. The list navigation
-(`useListboxNavigation`) stays in `Select/` until a second component needs it. The chip was
+option text is `_shared/OptionText`, and `SelectOption` is `OptionBase`. The popup's surface and rows
+are `_shared/OptionList.module.css` (see [Menu](#menu)), and the pure helpers of the keyboard model
+(`stepEnabled`, `findByPrefix`, the type-ahead) are `_shared/optionNavigation`. The rest of the
+navigation (`useListboxNavigation`: the active option, the query, `aria-activedescendant`) stays in
+`Select/`, since only a combobox keeps focus on the control. The chip was
 `SelectChip`, private to Select, and is now the public `Chip`, which Select renders.
 
 **Option icons.** `SelectOption.icon` (a `ReactNode`: a flag, an avatar, a logo) is shown before the
@@ -1469,8 +1472,8 @@ the count changes, a `Tooltip`, wrapping Avatar's name and circle separately, a
 
 ### Overlay
 
-`_shared/useOverlay.ts` and `_shared/Overlay.module.css`: what Select's popup, Tooltip and Popover share,
-and what Menu and the rest will. Extracted from Select's former `useSelectPopup` when Tooltip became
+`_shared/useOverlay.ts` and `_shared/Overlay.module.css`: what Select's popup, Tooltip, Popover and Menu
+share, and what the rest will. Extracted from Select's former `useSelectPopup` when Tooltip became
 the second consumer.
 
 ```tsx
@@ -1507,7 +1510,7 @@ shown or placed (floating-ui). The overlay stays a DOM child of its consumer, so
 **Placement.** `_shared/Overlay.ts` exports `overlayClass(placement, align = 'center')`, which returns
 the `overlay` class and one of `top`, `topStart`, `topEnd`, `bottom`, `bottomStart`, `bottomEnd` from
 `Overlay.module.css`, and the types `OverlayPlacement` (`'top' | 'bottom'`) and `OverlayAlign`
-(`'start' | 'center' | 'end'`). Tooltip and Popover pass their props to it, so the six `position-area`
+(`'start' | 'center' | 'end'`). Tooltip, Popover and Menu pass their props to it, so the six `position-area`
 values are written once. They are logical: `start` puts the overlay's start edge on the anchor's
 (`block-end span-inline-end`), `end` puts the end edges together (`span-inline-start`), `center` centers
 it on the anchor. The overlay flips to the other side when it doesn't fit (`data-side` follows), and to
@@ -1615,6 +1618,68 @@ trigger's start or end edge. Motion is the overlay's.
 **Not yet:** an arrow, `size`, a `Portal` (it is a DOM child of the trigger's parent, so `overflow` does
 not clip it in the top layer, but a `transform` ancestor changes how it is placed), a focus trap (use
 Dialog), nested popovers, opening on hover, a way to move focus to a chosen element inside.
+
+### Menu
+
+```tsx
+type MenuItem = OptionBase & { icon?: ReactNode }; // value, label, description?, icon?, isDisabled?
+
+type MenuProps = {
+  trigger: ReactElement; // one element that takes ref, style, id, onClick and onKeyDown; it names the menu
+  items: MenuItem[];
+  onSelect: (value: string) => void; // called with the chosen item's value; the menu then closes
+  placement?: 'top' | 'bottom'; // default 'bottom'; flips when there is no room
+  align?: 'start' | 'center' | 'end'; // which edge of the trigger; default 'start'; logical (RTL-aware)
+  isOpen?: boolean; // controlled; pair with onOpenChange
+  defaultIsOpen?: boolean; // starts open, when uncontrolled
+  onOpenChange?: (isOpen: boolean) => void;
+};
+```
+
+A list of **actions**: choose one and the menu closes. Choosing a _value_ is Select; a panel of anything
+is Popover. Items are data (`items`, as Select's `options`), not children, so the keyboard model and
+the roles can't be broken by custom content; a row is always `OptionText` (label, description, icon).
+
+Closest siblings are Select's popup and options, and Popover. **From Popover**, through
+[Overlay](#overlay): `useOverlay` with Escape, outside-press and focus return all on, the cloned
+trigger (no wrapper; `_shared/useTriggerRef`, and its `TriggerProps` type, now shared with Popover),
+`overlayClass(placement, align)`, motion and the frosted surface. **From Select**: the rows and
+surface (`_shared/OptionList.module.css`, extracted from Select's CSS in this change: the popup's
+padding, scrolling and shadow, the column of rows, and a row with its active fill and motion; the
+consumer sets `--list-background` and `--list-active` from its own tokens), `OptionText`, and the
+keyboard helpers (`_shared/optionNavigation`: `stepEnabled`, `findByPrefix`, and `useTypeahead`, which
+was Select's inline type-ahead). **What differs:** focus. Select's stays on the combobox and the active
+row is `aria-activedescendant`; a menu's moves onto its items (APG menu button), so the rows are real
+`<button role="menuitem" tabIndex={-1}>`s, and the active row _is_ the focused one. There is no state
+for it, and the shared row style lights `:focus` as well as Select's `data-active`. Choosing calls
+`onSelect` rather than setting a value, and the trigger opens it with the arrow keys.
+
+**Behavior.** Pressing the trigger toggles it. Opened by the keyboard (Enter or Space; a click with no
+`detail`), focus lands on the first item; opened by a pointer it lands on the panel (`tabIndex={-1}`),
+with nothing lit under a pointer that isn't on a row. On the trigger, ↓ opens it on the first item and ↑
+on the last (↓ or ↑ on an open menu moves focus in). Inside: ↑ ↓ step over disabled items and stop at
+the ends (as Select's, no wrap), Home and End go to the first and last enabled item, typing jumps to a
+label that starts with it (a Space is text while typing, and chooses the item otherwise), the pointer
+moving over a row focuses it, Enter, Space or a click chooses, Tab closes it. Escape, a press or focus
+outside, and the trigger again close it too; closing with focus inside returns focus to the trigger, and
+a press elsewhere does not (focus goes where it was pressed). A menu that starts open, or that a caller
+opens, does not take focus.
+
+**Accessibility.** The panel is `role="menu"`, named by the trigger (`aria-labelledby`: the trigger's
+own `id`, or one the menu gives it), so an icon-only trigger needs an `aria-label`. The trigger gets
+`aria-haspopup="menu"`, `aria-expanded` and, while open, `aria-controls`. Rows are `menuitem`s;
+`description` is linked with `aria-describedby`; a disabled item is a `disabled` button, so it is
+skipped and can't be chosen. The icon is decorative.
+
+**Look.** The overlay's frosted page-colored background (`--color-menu-background` aliases
+`--color-overlay-background`), `--elevation-more`, at least 10em and at most 24em wide, scrolling past
+20em. The active row is `--color-menu-item-active` (an alias of the field hover fill, as
+`--color-select-option-active`) and grows by 1.5%; under `forced-colors` it gets a `Highlight` outline.
+Motion is the overlay's.
+
+**Not yet:** separators and groups (a `Divider` between sections, a heading), checkable items
+(`menuitemcheckbox` / `menuitemradio`), submenus, an item that is a link, a destructive style, wrapping
+at the ends, a shortcut hint, `size`, opening on right-click (a context menu), a `Portal`.
 
 ---
 
@@ -1824,8 +1889,10 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
+│   │   ├── Menu/
+│   │   ├── Popover/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; useOverlay + Overlay.module.css: Select's popup + Tooltip)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu; OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu; useTriggerRef: Tooltip + Popover + Menu)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -2031,7 +2098,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 
 - [x] `Tooltip` — content, placement, delay, isDisabled; wraps nothing. Still to do: Avatar's `isTextShown={false}` shows the name and description in one
 - [x] `Popover` — trigger prop and content as children (the reverse of Tooltip), placement, align, isOpen / defaultIsOpen / onOpenChange, a required name; non-modal. Added outside-click dismissal, focus return and controlled state to `useOverlay` as opt-in options, and `_shared/useTriggerRef`
-- [ ] `Menu` (dropdown) — Sibling: Select's list and options (`OptionText`, active-option token)
+- [x] `Menu` (dropdown) — trigger prop and `items`, `onSelect`, placement, align, isOpen / defaultIsOpen / onOpenChange; roving focus on `menuitem` buttons (APG). Extracted Select's popup surface and rows into `_shared/OptionList.module.css`, its keyboard helpers and type-ahead into `_shared/optionNavigation`, and `TriggerProps` into `_shared/useTriggerRef`. Still to do: separators / groups, checkable items, submenus
 - [ ] `Dialog` (modal) and `Drawer` — focus trap; the native `<dialog>` may cover most of it
 - [ ] `Toast` — Sibling: Banner (it is a Banner that floats and times out; Banner's section says so)
 

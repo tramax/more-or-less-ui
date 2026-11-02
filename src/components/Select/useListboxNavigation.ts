@@ -1,36 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import type { OptionBase } from '../_shared/types';
-
-const TYPEAHEAD_RESET_MS = 500;
-
-// Case- and diacritic-insensitive, so "cafe" finds "Café"
-const normalize = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+import { normalize, stepEnabled, useTypeahead } from '../_shared/optionNavigation';
 
 /** The options whose label contains `query`. An empty query keeps them all. */
 export function filterOptions<O extends OptionBase>(options: O[], query: string): O[] {
   const needle = normalize(query.trim());
   return needle ? options.filter((option) => normalize(option.label).includes(needle)) : options;
-}
-
-/**
- * The next enabled option from `from` in `step` direction (1 or -1), not wrapping. `from` is
- * excluded; pass -1 / `options.length` to start from an end.
- */
-export function stepEnabled<O extends OptionBase>(options: O[], from: number, step: 1 | -1) {
-  for (let i = from + step; i >= 0 && i < options.length; i += step) {
-    if (!options[i]?.isDisabled) return options[i];
-  }
-  return undefined;
-}
-
-/** The first enabled option, from just after `from`, wrapping, whose label starts with `text`. */
-export function findByPrefix<O extends OptionBase>(options: O[], text: string, from: number) {
-  const prefix = normalize(text);
-  for (let n = 1; n <= options.length; n += 1) {
-    const option = options[(from + n + options.length) % options.length];
-    if (option && !option.isDisabled && normalize(option.label).startsWith(prefix)) return option;
-  }
-  return undefined;
 }
 
 interface Params<O extends OptionBase> {
@@ -82,7 +57,7 @@ export function useListboxNavigation<O extends OptionBase>({
 }: Params<O>) {
   const [query, setQuery] = useState<string | null>(null);
   const [activeValue, setActiveValue] = useState<string | null>(null);
-  const typeahead = useRef({ text: '', timer: 0 });
+  const typeahead = useTypeahead();
   // A hovered option is already in view, and scrolling it would move the list under the pointer
   const activatedByPointer = useRef(false);
 
@@ -104,8 +79,6 @@ export function useListboxNavigation<O extends OptionBase>({
     if (!isOpen || activatedByPointer.current) return;
     popupRef.current?.querySelector('[data-active]')?.scrollIntoView?.({ block: 'nearest' });
   }, [isOpen, active?.value, popupRef]);
-
-  useEffect(() => () => window.clearTimeout(typeahead.current.timer), []);
 
   const show = () => {
     setActiveValue(null);
@@ -165,7 +138,7 @@ export function useListboxNavigation<O extends OptionBase>({
       event.preventDefault();
       if (!isOpen) open();
       activate(key === 'Home' ? enabled[0] : enabled[enabled.length - 1]);
-    } else if (key === 'Enter' || (key === ' ' && !isSearchable && !typeahead.current.text)) {
+    } else if (key === 'Enter' || (key === ' ' && !isSearchable && !typeahead.isTyping())) {
       if (!isOpen) {
         // A closed searchable input keeps Enter for the form it may sit in
         if (!isSearchable) {
@@ -190,16 +163,8 @@ export function useListboxNavigation<O extends OptionBase>({
     } else if (key.length === 1 && !event.altKey && !isSearchable) {
       // Type-ahead: jump to the label that starts with what was typed
       event.preventDefault();
-      const state = typeahead.current;
-      window.clearTimeout(state.timer);
-      state.text += key;
-      state.timer = window.setTimeout(() => {
-        state.text = '';
-      }, TYPEAHEAD_RESET_MS);
       if (!isOpen) open();
-      // A first letter moves on from the current option; more letters refine from it
-      const from = state.text.length === 1 ? activeIndex : Math.max(activeIndex - 1, -1);
-      activate(findByPrefix(visible, state.text, from));
+      activate(typeahead.match(visible, activeIndex, key));
     }
   };
 

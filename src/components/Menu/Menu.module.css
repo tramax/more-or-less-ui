@@ -1,0 +1,29 @@
+/*
+ * Menu: the overlay (_shared/Overlay.module.css) supplies the top layer, the placement, the motion and
+ * the frosted blur, and the option list (_shared/OptionList.module.css) the surface, the column of
+ * rows and the active fill. What is here is the colors those read, the panel's width, and the rows
+ * being real buttons.
+ */
+
+.menu {
+  --list-background: var(--color-menu-background);
+  --list-active: var(--color-menu-item-active);
+  width: max-content;
+  min-width: 10em;
+  max-width: min(24em, calc(100vw - 2em));
+}
+
+/* Focus lands on the panel when a press opens it; the rows show where focus is, the panel doesn't */
+.menu:focus {
+  outline: none;
+}
+
+/* A row is a button: its fill is the list's active fill, which `:focus` turns on, so no ring */
+.item {
+  width: 100%;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  outline: none;
+}

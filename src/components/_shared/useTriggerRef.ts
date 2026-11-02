@@ -1,4 +1,23 @@
-import { useCallback, version, type ReactElement, type Ref } from 'react';
+import {
+  useCallback,
+  version,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactElement,
+  type Ref,
+} from 'react';
+
+/**
+ * What an overlay opened by a press (Popover, Menu) reads from its trigger element's props and sets on
+ * the clone. A Tooltip's trigger is read for pointer and focus instead, so it has its own.
+ */
+export type TriggerProps = {
+  ref?: Ref<HTMLElement>;
+  id?: string;
+  style?: object;
+  onClick?: (event: MouseEvent<HTMLElement>) => void;
+  onKeyDown?: (event: KeyboardEvent<HTMLElement>) => void;
+};
 
 /**
  * The ref of a trigger element that an overlay component clones (Tooltip, Popover), composed with the

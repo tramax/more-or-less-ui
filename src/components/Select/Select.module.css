@@ -198,24 +198,18 @@
 
 /*
  * The popup is an overlay (_shared/Overlay.module.css: top layer, flips above when there is no room
- * below, grows out of the field). Here: under the field, as wide as it.
+ * below, grows out of the field) with the option list's surface and rows (_shared/OptionList.module.css).
+ * Here: under the field, as wide as it, and the colors those read.
  */
 .popup {
   position-area: block-end span-inline-end;
   width: anchor-size(width);
-  max-height: 20em;
-  overflow-y: auto;
-  padding: 0.375em;
-  background: var(--color-select-popup);
-  color: CanvasText;
-  box-shadow: var(--elevation-more);
-  line-height: 1.25;
+  --list-background: var(--color-select-popup);
+  --list-active: var(--color-select-option-active);
 }
 
+/* The list's gap and rows are OptionList's; this resets the <ul> */
 .listbox {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125em;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -225,69 +219,6 @@
   margin: 0;
   padding: 0.625em 0.75em;
   color: var(--color-text-less);
-}
-
-.option {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75em;
-  padding: 0.625em 0.75em;
-  border-radius: var(--radius-less);
-  corner-shape: squircle;
-  cursor: pointer;
-  user-select: none;
-}
-
-/* The text takes the room the tick or box leaves, and a word wider than that breaks rather than
-   running under it (a narrow field makes a narrow popup) */
-.optionText {
-  flex: 1;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-/*
- * The active option is the one the keyboard (or the pointer) is on, not the selected one.
- *
- * Fill: it comes in quickly and fades out a little slower. Quick in (60 ms): the row answers the
- * pointer as it arrives, where a 150 ms fade-in trails it and feels sluggish. But not a hard cut:
- * sweeping the pointer down the list would then flash every row at full strength, which dazzles.
- * Slower out (140 ms): the row it just left fades behind it, a short trail that reads as movement,
- * kept short so that a sweep doesn't leave several rows lit at once.
- *
- * Shape: the row grows a little, with the springy --ease-enter, so it overshoots its size by a hair and
- * settles; leaving it shrinks back without overshoot (--ease-leave). That is Button's hover motion at
- * a fraction of the size: no lift and no shadow (a row in a list isn't a card of its own, as a
- * Checkbox option is), and the scale is small enough (1.015, a Button's is 1.0667) to stay inside the
- * popup's padding and not crowd the rows around it. The scale, unlike a gliding highlight, is on the
- * row itself, so nothing is still moving after the pointer stops, beyond the settle.
- *
- * Pure CSS: the transition that runs is the destination state's, so the first lists below are
- * [data-active]'s (in) and the base rule's (out).
- */
-.option {
-  background-color: transparent;
-  transform: scale(1);
-  transition:
-    background-color 140ms var(--ease-leave),
-    transform 200ms var(--ease-leave);
-}
-.option[data-active] {
-  background-color: var(--color-select-option-active);
-  transform: scale(1.015);
-  transition:
-    background-color 60ms var(--ease-leave),
-    transform 300ms var(--ease-enter);
-}
-@media (forced-colors: active) {
-  .option[data-active] {
-    outline: 2px solid Highlight;
-  }
-}
-
-.option[aria-disabled='true'] {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* The selected option in a single Select: a tick after the text, so it isn't color alone */
@@ -313,7 +244,7 @@
   color: var(--color-select-check);
   transition: background-color 150ms ease;
 }
-.option[aria-selected='true'] .checkbox {
+[aria-selected='true'] > .checkbox {
   background: var(--color-primary);
 }
 .checkboxTick {
@@ -321,7 +252,7 @@
   height: 100%;
   opacity: 0;
 }
-.option[aria-selected='true'] .checkboxTick {
+[aria-selected='true'] > .checkbox > .checkboxTick {
   opacity: 1;
 }
 
@@ -329,12 +260,7 @@
   .chevron,
   .field[data-open] .chevron,
   .clearIcon,
-  .checkbox,
-  .option {
+  .checkbox {
     transition: none;
-  }
-  /* No growing; the fill is the cue */
-  .option[data-active] {
-    transform: none;
   }
 }

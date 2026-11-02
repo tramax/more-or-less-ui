@@ -1,0 +1,104 @@
+/*
+ * A list of options in an overlay: Select's popup and Menu's panel. The overlay supplies the top
+ * layer, the motion and the frosted blur (Overlay.module.css); this is what is inside it: the
+ * surface (padding, scrolling, shadow), the column of rows, and a row with its active fill. The
+ * consumer adds its size and position, and sets the two colors, from its own --color-<component>-*
+ * tokens, on the same element as `popup`:
+ *   --list-background, --list-active
+ *
+ * Everything is in em, so the font size of where the overlay is rendered reaches it.
+ */
+
+/* The overlay's surface: on its frosted background token, scrolling past 20em */
+.popup {
+  max-height: 20em;
+  overflow-y: auto;
+  padding: 0.375em;
+  background: var(--list-background);
+  color: CanvasText;
+  box-shadow: var(--elevation-more);
+  line-height: 1.25;
+}
+
+/* The rows, one under the other: the popup itself (Menu) or a list inside it (Select) */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125em;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75em;
+  padding: 0.625em 0.75em;
+  border-radius: var(--radius-less);
+  corner-shape: squircle;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* The text takes the room the tick or box leaves, and a word wider than that breaks rather than
+   running under it (a narrow field makes a narrow popup) */
+.optionText {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * The active option is the one the keyboard (or the pointer) is on, not the selected one: marked
+ * `data-active` where focus stays on the control (Select), and by `:focus` where it moves to the row
+ * (Menu).
+ *
+ * Fill: it comes in quickly and fades out a little slower. Quick in (60 ms): the row answers the
+ * pointer as it arrives, where a 150 ms fade-in trails it and feels sluggish. But not a hard cut:
+ * sweeping the pointer down the list would then flash every row at full strength, which dazzles.
+ * Slower out (140 ms): the row it just left fades behind it, a short trail that reads as movement,
+ * kept short so that a sweep doesn't leave several rows lit at once.
+ *
+ * Shape: the row grows a little, with the springy --ease-enter, so it overshoots its size by a hair and
+ * settles; leaving it shrinks back without overshoot (--ease-leave). That is Button's hover motion at
+ * a fraction of the size: no lift and no shadow (a row in a list isn't a card of its own, as a
+ * Checkbox option is), and the scale is small enough (1.015, a Button's is 1.0667) to stay inside the
+ * popup's padding and not crowd the rows around it. The scale, unlike a gliding highlight, is on the
+ * row itself, so nothing is still moving after the pointer stops, beyond the settle.
+ *
+ * Pure CSS: the transition that runs is the destination state's, so the first lists below are
+ * the active row's (in) and the base rule's (out).
+ */
+.option {
+  background-color: transparent;
+  transform: scale(1);
+  transition:
+    background-color 140ms var(--ease-leave),
+    transform 200ms var(--ease-leave);
+}
+.option:is([data-active], :focus) {
+  background-color: var(--list-active);
+  transform: scale(1.015);
+  transition:
+    background-color 60ms var(--ease-leave),
+    transform 300ms var(--ease-enter);
+}
+@media (forced-colors: active) {
+  .option:is([data-active], :focus) {
+    outline: 2px solid Highlight;
+  }
+}
+
+/* `aria-disabled` on a row that isn't a control (Select's), `disabled` on one that is (Menu's) */
+.option:is([aria-disabled='true'], :disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .option {
+    transition: none;
+  }
+  /* No growing; the fill is the cue */
+  .option:is([data-active], :focus) {
+    transform: none;
+  }
+}
