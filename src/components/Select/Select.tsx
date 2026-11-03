@@ -487,7 +487,12 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
             {popup.isPresent && (
               <div
                 {...popup.overlayProps}
-                className={clsx(overlayStyles.overlay, listStyles.popup, styles.popup)}
+                className={clsx(
+                  overlayStyles.overlay,
+                  overlayStyles.anchored,
+                  listStyles.popup,
+                  styles.popup,
+                )}
                 // Keeps focus on the control: a click in the popup isn't a blur
                 onMouseDown={(event) => event.preventDefault()}
               >

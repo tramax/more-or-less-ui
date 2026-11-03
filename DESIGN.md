@@ -1472,12 +1472,13 @@ the count changes, a `Tooltip`, wrapping Avatar's name and circle separately, a
 
 ### Overlay
 
-`_shared/useOverlay.ts` and `_shared/Overlay.module.css`: what Select's popup, Tooltip, Popover and Menu
-share, and what the rest will. Extracted from Select's former `useSelectPopup` when Tooltip became
+`_shared/useOverlay.ts` and `_shared/Overlay.module.css`: what Select's popup, Tooltip, Popover, Menu and
+Dialog share, and what the rest will. Extracted from Select's former `useSelectPopup` when Tooltip became
 the second consumer.
 
 ```tsx
 const overlay = useOverlay({
+  isModal, // a modal <dialog> (Dialog), not an anchored popover; default false
   isEscapeClosing, // close on Escape anywhere; default false
   isOutsideClosing, // close on a press or focus outside the overlay and its anchor; default false
   isFocusReturned, // on close, focus inside it goes back to the anchor; default false
@@ -1489,26 +1490,27 @@ const overlay = useOverlay({
 <button ref={overlay.anchorRef} style={overlay.anchorStyle} />;
 {
   overlay.isPresent && (
-    <div {...overlay.overlayProps} className={clsx(overlayStyles.overlay, styles.mine)} />
+    <div {...overlay.overlayProps} className={clsx(overlayClass('bottom'), styles.mine)} />
   );
 }
 ```
 
 The hook owns the open state and showing (`showPopover()` on a `popover="manual"` element in the top
-layer), the 200 ms it is kept mounted to animate out (`data-state="closed"`, `aria-hidden`), the anchor
+layer; with `isModal`, `showModal()` on a `<dialog>`), the 200 ms it is kept mounted to animate out (`data-state="closed"`, `aria-hidden`), the anchor
 name (generated; `anchor-name` on the anchor, `position-anchor` on the overlay, both inline), and
 `data-side`, read after placement to tell whether it flipped above. `Overlay.module.css` owns the rest:
 `inset: auto`, the gap to the anchor (`--overlay-offset`, default 0.375em), the fallbacks when it
-overflows (`flip-block`, then `flip-inline`, then both), the six placement classes below, and the
+overflows (`flip-block`, then `flip-inline`, then both; these are the `anchored` class, which a modal
+doesn't take), the six placement classes below, and the
 motion described under Select's Motion. Every overlay is frosted glass: the consumer's background token aliases `--color-overlay-background` (the page color at 60%), and `Overlay.module.css` blurs what is behind it (`backdrop-filter`, a fixed finish, not a token). It also owns the finish that was
-repeated in each consumer: `box-sizing`, no border, `--radius-less` squircle corners, `font: inherit`,
+repeated in each consumer: `box-sizing`, no border, `--radius-normal` squircle corners (`--overlay-radius` overrides it), `font: inherit`,
 and the 1px `CanvasText` border under `forced-colors`. A consumer adds only its size, padding,
 background token and shadow (and its own `position-area`, if it places itself as Select's popup does).
 This pair is the one place that knows an overlay is a popover; replace it to change how overlays are
 shown or placed (floating-ui). The overlay stays a DOM child of its consumer, so font size reaches it.
 
 **Placement.** `_shared/Overlay.ts` exports `overlayClass(placement, align = 'center')`, which returns
-the `overlay` class and one of `top`, `topStart`, `topEnd`, `bottom`, `bottomStart`, `bottomEnd` from
+the `overlay` and `anchored` classes and one of `top`, `topStart`, `topEnd`, `bottom`, `bottomStart`, `bottomEnd` from
 `Overlay.module.css`, and the types `OverlayPlacement` (`'top' | 'bottom'`) and `OverlayAlign`
 (`'start' | 'center' | 'end'`). Tooltip, Popover and Menu pass their props to it, so the six `position-area`
 values are written once. They are logical: `start` puts the overlay's start edge on the anchor's
@@ -1521,20 +1523,33 @@ browser yet.
 one (`popover="auto"`): the consumer decides what closes it, so Select and Tooltip, which turn nothing on
 here, are closed only by their own handlers.
 
-- `isEscapeClosing`: a `keydown` listener on the document while open (Tooltip, Popover).
+- `isEscapeClosing`: a `keydown` listener on the document while open (Tooltip, Popover, Menu, Dialog).
+  Only the overlay opened last closes (a stack of the listening ones), and none does when a control
+  already used the key (`defaultPrevented`, as Select's does to close its popup), so Escape in a Menu
+  inside a Dialog closes the Menu, and the next Escape closes the Dialog.
 - `isOutsideClosing`: while open, a capture-phase `pointerdown` and a `focusin` on the document close it
   when the target is in neither the overlay nor the anchor. The anchor is excluded because its own press
   toggles; closing on it too would close and reopen. Capture, so a handler inside that stops the event
   can't hide it. Select doesn't need it: its focus stays on the control, so a blur already says it.
   A Popover's content takes focus, so a blur can't tell "outside" from "inside".
 - `isFocusReturned`: when it goes from open to closed, if focus is inside the overlay (still mounted,
-  leaving) or has fallen to `document.body`, focus goes to the anchor. Not after a press outside
+  leaving) or has fallen to `document.body`, focus goes to the anchor, or, for a modal with none, to what
+  had focus when it opened (if that is still in the page). A modal does this once it is gone, not when it
+  starts to leave: the page is inert until then, and an inert element can't take focus. Not after a press outside
   (`pointerdown` marks it): focus goes where that press went. Focus elsewhere is left alone.
 - `isOpen` / `defaultIsOpen` / `onOpenChange`: controlled or not. Controlled, `open()` and `close()` only
   call `onOpenChange`; the state is the prop, so a caller that doesn't follow keeps the overlay as it
   was. Leaving (the exit animation) starts in the render where `isOpen` turns false, whoever changed it.
 
-**Not yet:** a focus trap (Dialog's), nested overlays (a press in a child overlay counts as outside its
+- `isModal`: the overlay is a `<dialog>` shown with `showModal()`. The rest of the page is inert (which is
+  the focus trap: Tab cycles inside, and to the browser's own UI), the browser draws `::backdrop`, and
+  there is no anchor to place it against (`overlayProps` has no `popover` and no `position-anchor`). The
+  browser's own Escape (`cancel`) is prevented and `isEscapeClosing` closes it instead, so it keeps its
+  exit animation and a controlled caller can refuse. It stays modal while it leaves, which is why focus
+  return waits. `Overlay.module.css`'s `modal` class (`modalClass` in `Overlay.ts`) grows it from its
+  middle, and the `overlay` classes fade the backdrop with it; the consumer sets the backdrop's color.
+
+**Not yet:** nested overlays beyond Escape (a press in a child overlay counts as outside its
 parent), `popover="auto"`.
 
 ### Tooltip
@@ -1680,6 +1695,79 @@ Motion is the overlay's.
 **Not yet:** separators and groups (a `Divider` between sections, a heading), checkable items
 (`menuitemcheckbox` / `menuitemradio`), submenus, an item that is a link, a destructive style, wrapping
 at the ends, a shortcut hint, `size`, opening on right-click (a context menu), a `Portal`.
+
+### Dialog
+
+```tsx
+type DialogProps = (
+  | { title: string } // the visible heading; it names the dialog
+  | { title?: undefined; 'aria-label': string }
+  | { title?: undefined; 'aria-labelledby': string }
+) & {
+  trigger?: ReactElement; // one element that takes ref and onClick; leave it out to open from state
+  children: ReactNode;
+  actions?: ReactNode; // the row of buttons under the content, end-aligned
+  role?: 'dialog' | 'alertdialog'; // default 'dialog'
+  'aria-describedby'?: string; // for an alertdialog: the element that says what is asked
+  isBackdropClosing?: boolean; // a press on the backdrop closes it; default true, false for an alertdialog
+  isOpen?: boolean; // controlled; pair with onOpenChange
+  defaultIsOpen?: boolean; // starts open, when uncontrolled
+  onOpenChange?: (isOpen: boolean) => void;
+};
+```
+
+A modal dialog: a window the person deals with before going back to the page.
+
+**The name is `Dialog`, not `Modal`.** What libraries call it, from Open UI's component research for
+some and from knowledge for the rest (not a full survey): Radix, shadcn/ui, MUI, Chakra (v3), Primer,
+Base UI, Headless UI and Material Components Web say Dialog; Ant Design, Bootstrap, Carbon, Mantine,
+Polaris and Lightning Design System say Modal. The platform is on the Dialog side: `<dialog>`,
+`role="dialog"`, the APG pattern "Dialog (Modal)". There "modal" is a _mode_ of a dialog, not a second
+kind of thing (`showModal()` against `show()`, `:modal`, `aria-modal`). That settles it here, because
+Popover already is a non-modal `role="dialog"`: calling this one Modal would give the same ARIA role two
+words. `Dialog` is the modal one and Popover the non-modal one. A side panel is the same dialog in
+another place (Drawer, below), not another word.
+
+Closest sibling is Popover, through [Overlay](#overlay). **Shared:** `useOverlay` (open state,
+controlled or not, the exit animation, Escape, focus return), the cloned trigger (no wrapper;
+`_shared/useTriggerRef`, whose `trigger` may now be absent), the frosted surface and motion of
+`Overlay.module.css`, `--color-overlay-background` (`--color-dialog-background` aliases it), and Text for
+the title. **What differs:** it is modal (`isModal`: a native `<dialog>` and `showModal()`, so the browser
+makes the page inert and draws the backdrop, where a popover sits in the top layer over a live page), it
+is centered in the viewport (no anchor, no `placement` or `align`), the trigger is optional (a
+confirmation is opened from state, often after the Menu item that asked for it has gone), a press on the
+backdrop closes it, and the page behind it doesn't scroll. `isModal` is the only new behavior in
+`useOverlay`; the rest is its existing options turned on (Escape, focus return) or left off (outside
+press: the backdrop is the dialog element itself, so Dialog reads that press itself).
+
+**Behavior.** Pressing the trigger opens it (it can't toggle: the trigger is inert while it is open).
+Focus goes where the browser puts it: the element with `autoFocus`, else the first focusable one inside,
+else the dialog. A dialog that asks to delete something should put `autoFocus` on Cancel. The page is
+inert, so Tab stays inside (and may reach the browser's own UI) and nothing behind it can be pressed
+or read. Escape closes it, and so does a press on the backdrop that also started there (a text
+selection dragged from the content onto the backdrop doesn't); not for an `alertdialog`. A Select, Menu
+or Popover inside it opens above it and takes the first Escape. When it is gone, focus goes back to the
+trigger, or, with none, to what had it before it opened. While it is open the page doesn't scroll
+(`overflow: hidden` on `html` with `scrollbar-gutter: stable`, so nothing shifts; the backdrop doesn't
+cover the gutter).
+
+**Accessibility.** `role="dialog"` (or `alertdialog`) with `aria-modal`, named by the visible `title` (an
+`<h2>`, linked with `aria-labelledby`) or by `aria-label` / `aria-labelledby`, one of which the type
+requires. The trigger gets `aria-haspopup="dialog"`, `aria-expanded`, and `aria-controls` while open. An
+`alertdialog` should be described: `aria-describedby` goes on it as is.
+
+**Look.** The overlay's frosted page-colored background (`--color-dialog-background`), 32em wide (at
+most the viewport less 1em on each side), `--elevation-more`, 1.5em of padding in a column with a 1em
+gap (title, children, actions). Past `min(40em, 100dvh - 2em)` the content scrolls, not the dialog. The
+page is veiled by `--color-dialog-backdrop`: the text color at 10% in the light theme, a gentle dim, and
+black at 50% in the dark theme (`themes.css`), where the text color would be white and lighten it. On a
+dark page the dialog's edge is then subtle, and its shadow does the separating. The page behind it is also blurred (24px, `backdrop-filter` on the `::backdrop`; a fixed finish, not a token). Its corners are `--radius-more`, rounder than the other overlays (it sets `--overlay-radius`). It grows from its middle with the overlay's motion, and the backdrop and its blur fade with it.
+
+**Not yet:** `size`, a close button (×), `Drawer` (the same dialog docked to an edge: a placement, the
+`modal` class and a slide in place of the grow), a `Portal` (it is a DOM child of the trigger's parent;
+the top layer ignores a `transform` ancestor, but `display: none` or `inert` on one still reaches it), a
+dialog opened from inside another (the press on the backdrop of the one below, and the page's own
+inertness), and returning focus to a trigger that has been removed (it falls to the body).
 
 ---
 
@@ -1889,6 +1977,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Select/
+│   │   ├── Dialog/
 │   │   ├── Menu/
 │   │   ├── Popover/
 │   │   ├── Tooltip/
@@ -2099,7 +2188,8 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 - [x] `Tooltip` — content, placement, delay, isDisabled; wraps nothing. Still to do: Avatar's `isTextShown={false}` shows the name and description in one
 - [x] `Popover` — trigger prop and content as children (the reverse of Tooltip), placement, align, isOpen / defaultIsOpen / onOpenChange, a required name; non-modal. Added outside-click dismissal, focus return and controlled state to `useOverlay` as opt-in options, and `_shared/useTriggerRef`
 - [x] `Menu` (dropdown) — trigger prop and `items`, `onSelect`, placement, align, isOpen / defaultIsOpen / onOpenChange; roving focus on `menuitem` buttons (APG). Extracted Select's popup surface and rows into `_shared/OptionList.module.css`, its keyboard helpers and type-ahead into `_shared/optionNavigation`, and `TriggerProps` into `_shared/useTriggerRef`. Still to do: separators / groups, checkable items, submenus
-- [ ] `Dialog` (modal) and `Drawer` — focus trap; the native `<dialog>` may cover most of it
+- [x] `Dialog` — a native `<dialog>` with `showModal()` (the page inert, so Tab stays inside; the backdrop), through `useOverlay`'s new `isModal`; optional trigger, `title`, `actions`, `role` (`alertdialog`), `isBackdropClosing`, isOpen / defaultIsOpen / onOpenChange. Named Dialog, not Modal (see [Dialog](#dialog)). Escape now closes only the topmost overlay, and `anchored` is split out of `Overlay.module.css`'s `overlay` class
+- [ ] `Drawer` — Sibling: Dialog (the same dialog docked to an edge: a placement and a slide)
 - [ ] `Toast` — Sibling: Banner (it is a Banner that floats and times out; Banner's section says so)
 
 **Navigation and disclosure:**

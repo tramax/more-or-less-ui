@@ -1,9 +1,27 @@
-import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+  type SyntheticEvent,
+} from 'react';
 
 // A little longer than the longest exit animation in Overlay.module.css (150ms)
 const EXIT_MS = 200;
 
+// The overlays listening for Escape, the one opened last at the end: only that one closes, so Escape in
+// a Menu or Popover inside a Dialog closes the Menu and the Dialog stays
+const escapeListeners: object[] = [];
+
 export interface UseOverlayOptions {
+  /**
+   * A modal dialog, not a popover: shown with `showModal()` on a `<dialog>`, so the rest of the page is
+   * inert and the browser draws a `::backdrop`. It has no anchor to be placed against, and focus goes
+   * back to what had it when it opened if there is no anchor (Dialog).
+   */
+  isModal?: boolean;
   /** Close on Escape, wherever focus is. Off for a control that handles its own keys (Select). */
   isEscapeClosing?: boolean;
   /**
@@ -39,7 +57,8 @@ export interface UseOverlayOptions {
  * on the overlay (with `Overlay.module.css`'s `overlay` class). The options are opt-in, and each is
  * the whole of its behavior: an overlay that sets none is closed only by its consumer.
  */
-export function useOverlay({
+export function useOverlay<Element extends HTMLElement = HTMLDivElement>({
+  isModal = false,
   isEscapeClosing = false,
   isOutsideClosing = false,
   isFocusReturned = false,
@@ -60,8 +79,10 @@ export function useOverlay({
   // What `open` and `close` check: they may run from a timer or a listener set up in an earlier render
   const isOpenRef = useRef(isOpen);
   const onOpenChangeRef = useRef(onOpenChange);
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<Element>(null);
   const anchor = useRef<HTMLElement | null>(null);
+  // Where focus was when a modal opened: showModal() moves it, and a Dialog needs no trigger
+  const opener = useRef<HTMLElement | null>(null);
   // `useId()` returns ":r1:", which isn't valid in a CSS dashed-ident
   const anchorName = `--overlay-${useId().replace(/[^\w-]/g, '')}`;
 
@@ -73,9 +94,13 @@ export function useOverlay({
   useEffect(() => {
     if (!isOpen) return;
     const overlay = overlayRef.current;
+    if (isModal && document.activeElement instanceof HTMLElement) {
+      opener.current = document.activeElement;
+    }
     try {
-      // Absent in jsdom and in browsers without the Popover API
-      overlay?.showPopover?.();
+      // Absent in jsdom and in browsers without the Popover API or <dialog>
+      if (isModal) (overlay as HTMLDialogElement | null)?.showModal?.();
+      else overlay?.showPopover?.();
     } catch {
       // Already showing (reopened while it was leaving)
     }
@@ -86,7 +111,7 @@ export function useOverlay({
       const above = overlay.getBoundingClientRect().top < anchorEl.getBoundingClientRect().top;
       overlay.dataset.side = above ? 'top' : 'bottom';
     }
-  }, [isOpen]);
+  }, [isOpen, isModal]);
 
   useEffect(() => {
     if (!isLeaving) return;
@@ -110,25 +135,38 @@ export function useOverlay({
   // Set by a press outside, which closes it and must not take focus back from where that press goes.
   // Reset on a timer: a controlled caller may refuse the close, and then no effect will clear it.
   const isPressClosing = useRef(false);
-  const wasOpenRef = useRef(isOpen);
+  // A modal keeps the page inert while it leaves, and an inert anchor can't take focus: it is
+  // returned once the dialog is gone, not when it starts to leave
+  const isPresent = isOpen || isLeaving;
+  const isShown = isModal ? isPresent : isOpen;
+  const wasShownRef = useRef(isShown);
   useEffect(() => {
-    const was = wasOpenRef.current;
-    wasOpenRef.current = isOpen;
-    if (!was || isOpen || !isFocusReturned || isPressClosing.current) return;
+    const was = wasShownRef.current;
+    wasShownRef.current = isShown;
+    if (!was || isShown || !isFocusReturned || isPressClosing.current) return;
     const active = document.activeElement;
     // The overlay is still mounted, leaving, so focus that was in it is still there
     if (!active || active === document.body || overlayRef.current?.contains(active)) {
-      anchor.current?.focus();
+      const back = anchor.current ?? (opener.current?.isConnected ? opener.current : null);
+      back?.focus();
     }
-  }, [isOpen, isFocusReturned]);
+  }, [isShown, isFocusReturned]);
 
   useEffect(() => {
     if (!isOpen || !isEscapeClosing) return;
+    const listener = {};
+    escapeListeners.push(listener);
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') close();
+      // Not when a control already used the key (Select closing its popup), nor when an overlay
+      // opened after this one is open
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      if (escapeListeners[escapeListeners.length - 1] === listener) close();
     };
     document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      escapeListeners.splice(escapeListeners.indexOf(listener), 1);
+    };
     // `close` reads refs, so the one from this render is as good as any
   }, [isOpen, isEscapeClosing]);
 
@@ -159,9 +197,16 @@ export function useOverlay({
     };
   }, [isOpen, isOutsideClosing]);
 
+  const shared = {
+    ref: overlayRef,
+    'data-state': isOpen ? 'open' : 'closed',
+    // Leaving: still on screen for its exit animation, but no longer there for anyone else
+    'aria-hidden': !isOpen || undefined,
+  } as const;
+
   return {
     isOpen,
-    isPresent: isOpen || isLeaving,
+    isPresent,
     open,
     close,
     toggle: () => (isOpen ? close() : open()),
@@ -172,15 +217,21 @@ export function useOverlay({
     }, []),
     /** On the anchor element: names it for the overlay to be placed against. */
     anchorStyle: { anchorName } as CSSProperties,
-    /** On the overlay element, with the `overlay` class of Overlay.module.css. */
-    overlayProps: {
-      ref: overlayRef,
-      // `manual`: the consumer closes it, so focus never leaves the trigger
-      popover: 'manual',
-      style: { positionAnchor: anchorName } as CSSProperties,
-      'data-state': isOpen ? 'open' : 'closed',
-      // Leaving: still on screen for its exit animation, but no longer there for anyone else
-      'aria-hidden': !isOpen || undefined,
-    } as const,
+    /**
+     * On the overlay element, with the `overlay` class of Overlay.module.css (and `anchored`, if it is
+     * placed against the anchor).
+     */
+    overlayProps: isModal
+      ? ({
+          ...shared,
+          // Escape would otherwise close the <dialog> behind our back, with no exit animation
+          onCancel: (event: SyntheticEvent) => event.preventDefault(),
+        } as const)
+      : ({
+          ...shared,
+          // `manual`: the consumer closes it, so focus never leaves the trigger
+          popover: 'manual',
+          style: { positionAnchor: anchorName } as CSSProperties,
+        } as const),
   };
 }

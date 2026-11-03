@@ -1,8 +1,9 @@
 /*
- * An overlay: a Popover API element in the top layer, placed with CSS anchor positioning, that grows
- * out of its anchor when it opens (see useOverlay.ts, which shows it and names the anchor). Select's
- * popup, Tooltip, Popover and Menu use it; a consumer adds its own `position-area`, width and surface (background,
- * padding, shadow), and nothing about where it sits or how it moves.
+ * An overlay: an element in the top layer (a Popover API element, or a modal <dialog>) with one finish
+ * and one motion (see useOverlay.ts, which shows it). Select's popup, Tooltip, Popover and Menu are
+ * `anchored`: placed with CSS anchor positioning, growing out of their anchor when they open. Dialog is
+ * `modal`: centred in the viewport, growing from its middle. A consumer adds its own `position-area`,
+ * width and surface (background, padding, shadow), and nothing about where it sits or how it moves.
  *
  * The popover's own defaults centre it in the viewport (inset: 0; margin: auto); `inset: auto` and
  * `position-area` put it by the anchor instead. Everything is in em, so `size` on an ancestor
@@ -10,11 +11,11 @@
  */
 
 /* --- Positioning ---------------------------------------------------------------------------------
- * The only CSS that knows an overlay is a Popover API element placed with anchor positioning. To
- * position it another way, replace these, each consumer's `position-area`, and useOverlay.ts.
+ * The only CSS that knows an anchored overlay is a Popover API element placed with anchor positioning.
+ * To position it another way, replace these, each consumer's `position-area`, and useOverlay.ts.
  * `position-anchor` is set inline by useOverlay. `--overlay-offset` is the gap to the anchor.
  */
-.overlay {
+.anchored {
   /* Above when there is no room below, then the other edge of the anchor when it overflows the side */
   position-try-fallbacks:
     flip-block,
@@ -55,12 +56,12 @@
  * The look every overlay shares: what is behind it is blurred, under the consumer's translucent
  * background (--color-overlay-background), so it reads as frosted glass, with the corners and the
  * reset of the popover's own border and font. A fixed finish, not a token. The consumer adds its
- * background token, padding and shadow.
+ * background token, padding and shadow, and may set `--overlay-radius` for rounder corners (Dialog).
  */
 .overlay {
   box-sizing: border-box;
   border: 0;
-  border-radius: var(--radius-normal);
+  border-radius: var(--overlay-radius, var(--radius-normal));
   corner-shape: squircle;
   font: inherit;
   backdrop-filter: blur(16px) saturate(1.6);
@@ -71,6 +72,15 @@
   .overlay {
     border: 1px solid CanvasText;
   }
+}
+
+/*
+ * A modal overlay (Dialog) has no anchor: the <dialog>'s own defaults centre it in the viewport, so it
+ * takes none of the above, grows from its middle, and its backdrop fades with it.
+ */
+.modal {
+  transform-origin: 50% 50%;
+  --overlay-shift: 0em;
 }
 
 /*
@@ -99,6 +109,14 @@
     overlay-out 150ms var(--ease-leave) both,
     overlay-fade-out 150ms ease both;
   pointer-events: none;
+}
+
+/* The ::backdrop of a modal; a popover's is transparent, so this does nothing there */
+.overlay[data-state='open']::backdrop {
+  animation: overlay-fade-in 150ms ease both;
+}
+.overlay[data-state='closed']::backdrop {
+  animation: overlay-fade-out 150ms ease both;
 }
 
 @keyframes overlay-in {

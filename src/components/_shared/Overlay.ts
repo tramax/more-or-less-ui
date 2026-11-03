@@ -13,9 +13,13 @@ const PLACEMENT_CLASS = {
 } as const;
 
 /**
- * The classes an overlay element takes from Overlay.module.css: `overlay` (top layer, motion, finish)
- * and the one that places it. Tooltip and Popover pass their `placement` and `align`; the consumer adds
- * its own class for size and surface after it.
+ * The classes an anchored overlay element takes from Overlay.module.css: `overlay` (motion, finish),
+ * `anchored` (placed against its anchor) and the one that says on which side and edge. Tooltip, Popover
+ * and Menu pass their `placement` and `align`; the consumer adds its own class for size and surface
+ * after it.
  */
 export const overlayClass = (placement: OverlayPlacement, align: OverlayAlign = 'center') =>
-  clsx(styles.overlay, PLACEMENT_CLASS[placement][align]);
+  clsx(styles.overlay, styles.anchored, PLACEMENT_CLASS[placement][align]);
+
+/** The classes of a modal overlay (Dialog): the same motion and finish, centred in the viewport. */
+export const modalClass = clsx(styles.overlay, styles.modal);

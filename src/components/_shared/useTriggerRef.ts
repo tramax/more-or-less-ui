@@ -8,7 +8,7 @@ import {
 } from 'react';
 
 /**
- * What an overlay opened by a press (Popover, Menu) reads from its trigger element's props and sets on
+ * What an overlay opened by a press (Popover, Menu, Dialog) reads from its trigger element's props and sets on
  * the clone. A Tooltip's trigger is read for pointer and focus instead, so it has its own.
  */
 export type TriggerProps = {
@@ -22,17 +22,17 @@ export type TriggerProps = {
 /**
  * The ref of a trigger element that an overlay component clones (Tooltip, Popover), composed with the
  * overlay's `anchorRef`. The result goes on the clone as its `ref`, so the trigger's own ref still
- * gets the node.
+ * gets the node. Dialog's trigger is optional; with none, the ref is of no use.
  */
 export function useTriggerRef(
-  trigger: ReactElement,
+  trigger: ReactElement | undefined,
   anchorRef: (node: HTMLElement | null) => void,
 ): (node: HTMLElement | null) => void {
   // React 18 keeps `ref` on the element, 19 in its props (and warns when 18's way is read there)
   const triggerRef: Ref<HTMLElement> | undefined =
     Number.parseInt(version, 10) >= 19
-      ? (trigger.props as { ref?: Ref<HTMLElement> }).ref
-      : (trigger as ReactElement & { ref?: Ref<HTMLElement> }).ref;
+      ? (trigger?.props as { ref?: Ref<HTMLElement> } | undefined)?.ref
+      : (trigger as (ReactElement & { ref?: Ref<HTMLElement> }) | undefined)?.ref;
 
   return useCallback(
     (node: HTMLElement | null) => {

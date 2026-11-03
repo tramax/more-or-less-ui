@@ -94,7 +94,7 @@
   --color-field-background-error: color-mix(in oklab, var(--color-danger) 15%, transparent);
   --color-field-background-error-hover: color-mix(in oklab, var(--color-danger) 25%, transparent);
 
-  /* What every overlay (Select's popup, Tooltip, Popover, Menu) is drawn on: the page color at 60%, so the page shows
+  /* What every overlay (Select's popup, Tooltip, Popover, Menu, Dialog) is drawn on: the page color at 60%, so the page shows
      through. Overlay.module.css blurs what is behind it, which is what keeps the
      text readable. Each overlay's own token aliases this one. */
   --color-overlay-background: color-mix(in oklab, Canvas 60%, transparent);
@@ -164,6 +164,11 @@
   --color-tooltip-text: CanvasText;
 
   --color-popover-background: var(--color-overlay-background);
+
+  --color-dialog-background: color-mix(in oklab, Canvas 75%, transparent);
+  /* What the page behind a dialog is veiled with: the text color at 10%, a gentle dim on a light page.
+     The dark theme sets its own (themes.css): the text color there is white, which would lighten it. */
+  --color-dialog-backdrop: color-mix(in oklab, CanvasText 10%, transparent);
 
   --color-menu-background: var(--color-overlay-background);
   /* The item the keyboard (or the pointer) is on */

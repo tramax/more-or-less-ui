@@ -76,6 +76,30 @@ describe('useOverlay', () => {
     expect(overlayEl()?.dataset.state).toBe('closed');
   });
 
+  it('closes only the overlay opened last on Escape', () => {
+    render(
+      <>
+        <Probe isEscapeClosing />
+        <Probe isEscapeClosing />
+      </>,
+    );
+    const [first, second] = screen.getAllByText('anchor');
+    fireEvent.click(first!);
+    fireEvent.click(second!);
+    const states = () => screen.getAllByTestId('overlay').map((el) => el.dataset.state);
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(states()).toEqual(['open', 'closed']);
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(states()).toEqual(['closed', 'closed']);
+  });
+
+  it('is a dialog, not a popover, when it is modal: no popover attribute, no anchor placement', () => {
+    render(<Probe isModal />);
+    fireEvent.click(screen.getByText('anchor'));
+    expect(overlayEl()?.hasAttribute('popover')).toBe(false);
+    expect(overlayEl()?.getAttribute('style') ?? '').not.toMatch(/position-anchor/);
+  });
+
   describe('isOutsideClosing', () => {
     const renderOpen = (options: UseOverlayOptions = { isOutsideClosing: true }) => {
       render(

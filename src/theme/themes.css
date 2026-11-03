@@ -31,6 +31,10 @@
   /* Lighter, so the error text keeps its contrast on a dark surface */
   --color-danger: #ff8a80;
 
+  /* A dark scrim here too, not the light theme's text-color veil (which would be white): the page
+     behind a dialog goes dark in both themes */
+  --color-dialog-backdrop: oklch(0 0 0 / 50%);
+
   /* The shadow tint is the brand colour darkened 75%, still lighter than a dark page: use black */
   --shadow-color: black;
   /* Same geometry and layer count as the light scale, heavier alphas to read on dark surfaces.

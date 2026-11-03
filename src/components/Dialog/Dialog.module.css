@@ -1,0 +1,55 @@
+/*
+ * Dialog: the overlay (_shared/Overlay.module.css) supplies the top layer, the motion, the corners and
+ * the frosted blur; the <dialog> element supplies the centring, the inert page and the backdrop. What
+ * is here is its surface and the room for content. Everything is in em, so it follows the font size of
+ * where it is rendered.
+ */
+
+.dialog {
+  /* Rounder than the other overlays: it is the largest, and a big surface wants bigger corners */
+  --overlay-radius: var(--radius-more);
+  width: 32em;
+  max-width: calc(100vw - 2em);
+  padding: 0;
+  /* The content scrolls, not the dialog, so a press on the dialog element itself is a press on the backdrop */
+  overflow: hidden;
+  background: var(--color-dialog-background);
+  color: CanvasText;
+  box-shadow: var(--elevation-more);
+  line-height: 1.4;
+}
+
+/* It takes focus when nothing inside can; the ring would sit on the whole dialog */
+.dialog:focus {
+  outline: none;
+}
+
+.dialog::backdrop {
+  background: var(--color-dialog-backdrop);
+  /* A fixed finish, not a token. It fades with the backdrop (the overlay's opacity animation). */
+  backdrop-filter: blur(24px);
+}
+
+/* The page behind a modal doesn't scroll. The gutter stays, so the page doesn't shift when the scrollbar goes. */
+:global(html):has(.dialog:modal) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  max-height: min(40em, calc(100dvh - 2em));
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 1.5em;
+  box-sizing: border-box;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5em;
+}
