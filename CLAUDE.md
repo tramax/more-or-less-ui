@@ -51,6 +51,8 @@ same recipe is defined under two names.
   Popover, Menu, and Dialog through `isModal`); `_shared/useTriggerRef` is the trigger clone's ref and `TriggerProps`. `_shared/useScrollLock` stops the page scrolling under a modal (Dialog).
 - `_shared/CheckIcon` and `_shared/CrossIcon` are the ✓ and ×, drawn with attributes; a consumer's
   class sets only size, color and motion.
+- `_shared/CloseButton` is the round × button (disc on hover, shrink on press) of Banner's dismiss and
+  Dialog's close; the consumer passes `label`, `onClick` and spacing through `className`.
 - `_shared/Gap` is the `gap` scale (classes + `resolveGap`) for Stack and Grid, which both render a Box
   for padding and margin. A new layout component takes `gap` from it rather than its own classes.
 - `_shared/OptionText` is the label + description beside an option's control; `_shared/types.ts` has

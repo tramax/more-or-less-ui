@@ -63,78 +63,10 @@
   overflow-wrap: anywhere;
 }
 
-/* The hit area is 1.75em (28px at the default size, above the 24px WCAG 2.5.8 minimum) around a 1em ×.
-   The negative margin keeps the banner as tall as its text: the button is centered on the first line,
-   which is 1.25em tall. */
+/* The button is _shared/CloseButton, 1.75em square. The negative margin keeps the banner as tall as its
+   text: the button is centered on the first line, which is 1.25em tall. */
 .dismiss {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 1.75em;
-  height: 1.75em;
   margin: -0.25em -0.25em -0.25em 0;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: inherit;
-  /* A button doesn't inherit the font size, and the em sizes here follow the banner's `size` */
-  font: inherit;
-  cursor: pointer;
-  transition:
-    background-color 150ms ease,
-    transform 300ms var(--ease-pop);
-}
-/* A disc of the text color behind the ×: faint on hover, stronger when pressed. currentColor so it
-   shows on every background, including the `more` background. Pressed is outside the hover query, so a
-   tap on touch shows it, and after the hover rule, which it outranks by order. */
-@media (hover: hover) {
-  .dismiss:hover {
-    background: color-mix(in oklab, currentColor 10%, transparent);
-  }
-}
-/* Pressed: the whole button shrinks, so the disc and the × go down together, quickly and without
-   overshoot. Releasing returns on the springy base transition. */
-.dismiss:active {
-  background: color-mix(in oklab, currentColor 20%, transparent);
-  transform: scale(0.8);
-  transition:
-    background-color 150ms ease,
-    transform 120ms var(--ease-leave);
-}
-/* currentColor, not CanvasText: on the `more` background the text is the on-primary color */
-.dismiss:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 0;
-}
-
-.dismissIcon {
-  width: 1em;
-  height: 1em;
-  transition: transform 300ms var(--ease-pop);
-}
-@media (hover: hover) {
-  .dismiss:hover .dismissIcon {
-    transform: scale(var(--scale-icon-hover));
-  }
-}
-/* Pressed: the hover growth gives way to the button's own shrink above, so the × ends up at the
-   button's scale (0.8), the same as the disc, instead of 1.3 × 0.8. After the hover rule, which it
-   outranks by order. */
-.dismiss:active .dismissIcon {
-  transform: none;
-  transition: transform 120ms var(--ease-leave);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dismiss,
-  .dismissIcon {
-    transition: none;
-  }
-  /* The deeper disc is the pressed cue; nothing scales */
-  .dismiss:active {
-    transform: none;
-  }
 }
 
 .sizeLess {

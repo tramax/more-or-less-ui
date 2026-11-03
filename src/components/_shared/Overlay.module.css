@@ -10,6 +10,25 @@
  * reaches it: it stays a DOM child of its consumer's root even though it is shown in the top layer.
  */
 
+/*
+ * The hooks below are for the element that sets them, not for what is inside it. A custom property
+ * inherits, and an overlay is a DOM child of its consumer, so without this a Select's popup in a Dialog
+ * would take the Dialog's `--overlay-radius`, and one in a Popover its `--overlay-offset`. Registered
+ * with no initial value, an unset hook is still "not there" and the `var()` fallbacks below apply.
+ */
+@property --overlay-radius {
+  syntax: '*';
+  inherits: false;
+}
+@property --overlay-offset {
+  syntax: '*';
+  inherits: false;
+}
+@property --overlay-shift {
+  syntax: '*';
+  inherits: false;
+}
+
 /* --- Positioning ---------------------------------------------------------------------------------
  * The only CSS that knows an anchored overlay is a Popover API element placed with anchor positioning.
  * To position it another way, replace these, each consumer's `position-area`, and useOverlay.ts.

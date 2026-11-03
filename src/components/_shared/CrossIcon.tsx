@@ -1,5 +1,5 @@
-// The × of Chip's remove button, Select's clear button and Banner's dismiss button. Drawn with
-// attributes, not CSS, so each consumer's class only sets size and motion.
+// The × of Chip's remove button, Select's clear button and CloseButton (Banner's dismiss, Dialog's
+// close). Drawn with attributes, not CSS, so each consumer's class only sets size and motion.
 export const CrossIcon = ({ className }: { className: string | undefined }) => (
   <svg
     className={className}

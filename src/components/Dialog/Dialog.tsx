@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { clsx } from '@/utils/clsx';
 import { Text } from '../Text';
+import { CloseButton } from '../_shared/CloseButton';
 import { useOverlay } from '../_shared/useOverlay';
 import { useScrollLock } from '../_shared/useScrollLock';
 import { useTriggerRef, type TriggerProps } from '../_shared/useTriggerRef';
@@ -17,6 +18,7 @@ import styles from './Dialog.module.css';
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
 export const DIALOG_DEFAULTS = {
   isBackdropClosing: true,
+  isCloseButtonShown: true,
 } as const;
 
 /** The visible `title` names the dialog; without one, `aria-label` or `aria-labelledby` must. */
@@ -42,6 +44,11 @@ export type DialogProps = DialogName & {
    * that needs an answer. Escape and your own buttons still close it. Default true.
    */
   isBackdropClosing?: boolean;
+  /**
+   * Whether the × at the top right is shown. Turn it off when the actions are the only way out (a
+   * question that needs an answer). Escape and the backdrop still close it. Default true.
+   */
+  isCloseButtonShown?: boolean;
   /** Controlled: whether it is open. Pair it with `onOpenChange`. */
   isOpen?: boolean;
   /** Whether it starts open, when uncontrolled. */
@@ -66,6 +73,7 @@ export function Dialog({
   title,
   actions,
   isBackdropClosing = DIALOG_DEFAULTS.isBackdropClosing,
+  isCloseButtonShown = DIALOG_DEFAULTS.isCloseButtonShown,
   isOpen,
   defaultIsOpen,
   onOpenChange,
@@ -133,10 +141,17 @@ export function Dialog({
           }}
         >
           <div className={styles.content}>
-            {title !== undefined && (
-              <Text as="h2" id={titleId} size="more" fontWeight="more">
-                {title}
-              </Text>
+            {(title !== undefined || isCloseButtonShown) && (
+              <div className={styles.header}>
+                {title !== undefined && (
+                  <Text as="h2" id={titleId} size="more" fontWeight="more" className={styles.title}>
+                    {title}
+                  </Text>
+                )}
+                {isCloseButtonShown && (
+                  <CloseButton className={styles.close} label="Close" onClick={overlay.close} />
+                )}
+              </div>
             )}
             {children}
             {actions && <div className={styles.actions}>{actions}</div>}

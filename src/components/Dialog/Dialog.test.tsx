@@ -97,6 +97,52 @@ describe('Dialog', () => {
     });
   });
 
+  describe('close button', () => {
+    const closeButton = () => screen.getByRole('button', { name: 'Close', hidden: true });
+
+    it('is shown by default, with or without a title, and closes it', () => {
+      renderDialog();
+      fireEvent.click(trigger());
+      fireEvent.click(closeButton());
+      expect(dialog()?.dataset.state).toBe('closed');
+      cleanup();
+      render(
+        <Dialog aria-label="Cookies" defaultIsOpen>
+          x
+        </Dialog>,
+      );
+      expect(closeButton()).not.toBeNull();
+    });
+
+    it('asks a controlled caller, which can refuse', () => {
+      const onOpenChange = vi.fn();
+      renderDialog({ isOpen: true, onOpenChange });
+      fireEvent.click(closeButton());
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+      expect(dialog()?.dataset.state).toBe('open');
+    });
+
+    it('comes after the title and before the content', () => {
+      renderDialog({ defaultIsOpen: true });
+      const buttons = screen
+        .getAllByRole('button', { hidden: true })
+        .map((b) => b.getAttribute('aria-label') ?? b.textContent);
+      expect(buttons.slice(1, 3)).toEqual(['Close', 'Save']);
+    });
+
+    it('can be left out, and then there is no header without a title', () => {
+      renderDialog({ defaultIsOpen: true, isCloseButtonShown: false });
+      expect(screen.queryByRole('button', { name: 'Close', hidden: true })).toBeNull();
+      cleanup();
+      render(
+        <Dialog aria-label="Cookies" isCloseButtonShown={false} defaultIsOpen>
+          x
+        </Dialog>,
+      );
+      expect(screen.queryByRole('button', { hidden: true })).toBeNull();
+    });
+  });
+
   describe('backdrop', () => {
     it('closes on a press that starts and ends on the backdrop, which is the dialog itself', () => {
       renderDialog();

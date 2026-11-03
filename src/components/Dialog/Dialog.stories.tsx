@@ -93,8 +93,8 @@ export const WithActions: Story = {
 };
 
 /**
- * A confirmation. It is described (`aria-describedby`), and a press on the backdrop doesn’t answer it
- * (`isBackdropClosing={false}`). Focus starts on Cancel (`autoFocus`), the safe answer, not the first
+ * A confirmation. It is described (`aria-describedby`), and neither a press on the backdrop
+ * (`isBackdropClosing={false}`) nor the × (`isCloseButtonShown={false}`) answers it. Focus starts on Cancel (`autoFocus`), the safe answer, not the first
  * button in the row.
  */
 export const Alert: Story = {
@@ -103,6 +103,7 @@ export const Alert: Story = {
   title="Delete file?"
   aria-describedby="delete-why"
   isBackdropClosing={false}
+  isCloseButtonShown={false}
   trigger={<Button>Delete</Button>}
   actions={…}
 >
@@ -116,6 +117,7 @@ export const Alert: Story = {
         title="Delete file?"
         aria-describedby="delete-why"
         isBackdropClosing={false}
+        isCloseButtonShown={false}
         trigger={<Button>Delete</Button>}
         isOpen={isOpen}
         onOpenChange={setIsOpen}

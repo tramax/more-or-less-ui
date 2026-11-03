@@ -921,7 +921,7 @@ button. It sits beside the chevron (`aria-label="Clear"`, out of the tab order l
 shift when a value is picked. It clears what can be cleared: a disabled option stays, as for
 Backspace. Keyboard: Backspace with nothing typed clears a non-searchable single Select (a multiple
 one already removes the last chip); a searchable single one clears when its text is emptied. The ×
-is `_shared/CrossIcon`, shared with the chip and Banner's dismiss button.
+is `_shared/CrossIcon`, shared with the chip, Banner's dismiss button and Dialog's close button (both `_shared/CloseButton`).
 
 **Value.** Like Radio (`null` is the explicit empty value) for a single one, like Checkbox (`string[]`,
 options order) for a multiple one. The user can't clear a single Select unless `isClearable`, which
@@ -1053,11 +1053,12 @@ background the darkening has little room to show. Chosen from a set of static co
 (ripple, sheen, dots, grid, stripes, ...); the ripple was tried first and dropped for being busier
 than the rest of the library.
 
-**Dismiss.** `onDismiss` renders a real `<button aria-label="Dismiss">` with `_shared/CrossIcon`, in
+**Dismiss.** `onDismiss` renders `_shared/CloseButton` named "Dismiss" (a real `<button>` with `_shared/CrossIcon`), in
 the tab order (unlike a Select chip's: a banner is not inside a field). On hover the × grows, as
 Select's, over a faint disc of the text color (10%); when pressed the whole button shrinks (0.8,
 quick, no overshoot), so the disc and the × go down together, and the disc deepens (20%). With `prefers-reduced-motion` only the disc remains. The hit area is 1.75em around a 1em ×. The Banner doesn't hide itself: the caller stops
-rendering it and decides whether it comes back, so the state stays one place.
+rendering it and decides whether it comes back, so the state stays one place. The button's look is
+`_shared/CloseButton`'s, shared with Dialog's close button; Banner supplies only its margin.
 
 **Role.** `role="status"` (a polite live region), so a banner rendered after the page has loaded is
 announced without moving focus, as the W3C alert pattern advises. One already on the page at load is
@@ -1506,6 +1507,9 @@ motion described under Select's Motion. Every overlay is frosted glass: the cons
 repeated in each consumer: `box-sizing`, no border, `--radius-normal` squircle corners (`--overlay-radius` overrides it), `font: inherit`,
 and the 1px `CanvasText` border under `forced-colors`. A consumer adds only its size, padding,
 background token and shadow (and its own `position-area`, if it places itself as Select's popup does).
+The `--overlay-radius`, `--overlay-offset` and `--overlay-shift` hooks are registered with `@property` as
+not inherited: an overlay is a DOM child of its consumer, so otherwise a Select's popup inside a Dialog
+would take the Dialog's rounder corners, and one inside a Popover its gap.
 This pair is the one place that knows an overlay is a popover; replace it to change how overlays are
 shown or placed (floating-ui). The overlay stays a DOM child of its consumer, so font size reaches it.
 
@@ -1709,6 +1713,7 @@ type DialogProps = (
   actions?: ReactNode; // the row of buttons under the content, end-aligned
   'aria-describedby'?: string; // for a confirmation: the element that says what is asked
   isBackdropClosing?: boolean; // a press on the backdrop closes it; default true
+  isCloseButtonShown?: boolean; // the × at the top right; default true
   isOpen?: boolean; // controlled; pair with onOpenChange
   defaultIsOpen?: boolean; // starts open, when uncontrolled
   onOpenChange?: (isOpen: boolean) => void;
@@ -1740,12 +1745,13 @@ backdrop closes it, and the page behind it doesn't scroll. `isModal` is the only
 press: the backdrop is the dialog element itself, so Dialog reads that press itself).
 
 **Behavior.** Pressing the trigger opens it (it can't toggle: the trigger is inert while it is open).
-Focus goes where the browser puts it: the element with `autoFocus`, else the first focusable one inside,
-else the dialog. A dialog that asks to delete something should put `autoFocus` on Cancel. The page is
+Focus goes where the browser puts it: the element with `autoFocus`, else the first focusable one inside
+(the × when it is shown, since it comes first), else the dialog. A dialog with a form should put
+`autoFocus` on the field, and one that asks to delete something on Cancel. The page is
 inert, so Tab stays inside (and may reach the browser's own UI) and nothing behind it can be pressed
 or read. Escape closes it, and so does a press on the backdrop that also started there (a text
 selection dragged from the content onto the backdrop doesn't) unless `isBackdropClosing` is false, for a
-form with unsaved input or a question that needs an answer; Escape and the buttons still close it. A Select, Menu
+form with unsaved input or a question that needs an answer; Escape, the × and the buttons still close it. A Select, Menu
 or Popover inside it opens above it and takes the first Escape. When it is gone, focus goes back to the
 trigger, or, with none, to what had it before it opened. While it is open the page doesn't scroll: `_shared/useScrollLock` sets `overflow: hidden` on `html`
 and gives the scrollbar's width back as `padding-right`, so nothing shifts and no empty track is left
@@ -1760,6 +1766,18 @@ only changes what a screen reader announces, a dialog with `aria-describedby` ge
 once changed `isBackdropClosing`'s default, which made two props that could disagree. If a case needs it,
 add it as a pure role with no behavior tied to it.
 
+**Close button.** A × at the top right, on by default: a dialog should have a visible way out, and
+`isBackdropClosing={false}` with no Cancel would leave none. It is `_shared/CloseButton` (named "Close"),
+the same round button as Banner's dismiss: a faint disc on hover, shrinks when pressed. Larger than
+Banner's, through `CloseButton`'s `--close-size` and `--close-icon-size` hooks: a 2.25em hit area around a
+1.25em ×. It shares a row with the title (the title wraps before it, not under it); with no title it is
+alone on the row, at the end. It sits in the content, so it scrolls away with a long dialog. Its hit area
+reaches 0.75em up and right into the padding, so the × is the same distance (1.875em) from the top and the
+right edges, a corner mark, not level with the title. It calls `overlay.close()`, the same
+path as Escape, so a controlled caller can refuse and the exit animation runs. `isCloseButtonShown={false}`
+removes it, for a question that needs an answer through the `actions` (Escape still closes it, and
+`isBackdropClosing={false}` takes the backdrop away too).
+
 **Look.** The overlay's frosted page-colored background (`--color-dialog-background`), 32em wide (at
 most the viewport less 1em on each side), `--elevation-more`, 1.5em of padding in a column with a 1em
 gap (title, children, actions). Past `min(40em, 100dvh - 2em)` the content scrolls, not the dialog. The
@@ -1767,7 +1785,8 @@ page is veiled by `--color-dialog-backdrop`: the text color at 10% in the light 
 black at 50% in the dark theme (`themes.css`), where the text color would be white and lighten it. On a
 dark page the dialog's edge is then subtle, and its shadow does the separating. The page behind it is also blurred (24px, `backdrop-filter` on the `::backdrop`; a fixed finish, not a token). Its corners are `--radius-more`, rounder than the other overlays (it sets `--overlay-radius`). It grows from its middle with the overlay's motion, and the backdrop and its blur fade with it.
 
-**Not yet:** `size`, a close button (×), `Drawer` (the same dialog docked to an edge: a placement, the
+**Not yet:** `size`, localisation of "Close", a close button that stays in view while the content scrolls,
+`Drawer` (the same dialog docked to an edge: a placement, the
 `modal` class and a slide in place of the grow), a `Portal` (it is a DOM child of the trigger's parent;
 the top layer ignores a `transform` ancestor, but `display: none` or `inert` on one still reaches it), a
 dialog opened from inside another (the press on the backdrop of the one below, and the page's own
@@ -1985,7 +2004,7 @@ more-or-less-ui/
 │   │   ├── Menu/
 │   │   ├── Popover/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu; OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu; useTriggerRef: Tooltip + Popover + Menu)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Dialog; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu; OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu; useTriggerRef: Tooltip + Popover + Menu)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx

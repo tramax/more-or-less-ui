@@ -2,7 +2,7 @@ import { forwardRef, type HTMLAttributes } from 'react';
 import { clsx } from '@/utils/clsx';
 import { resolveScaleProps } from '@/utils/scale';
 import type { ScaleProp } from '@/types/scale';
-import { CrossIcon } from '../_shared/CrossIcon';
+import { CloseButton } from '../_shared/CloseButton';
 import styles from './Banner.module.css';
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
@@ -66,11 +66,7 @@ export const Banner = forwardRef<HTMLDivElement, BannerProps>(function Banner(
         {title && <p className={styles.title}>{title}</p>}
         {!isEmpty(children) && <div className={styles.message}>{children}</div>}
       </div>
-      {onDismiss && (
-        <button type="button" className={styles.dismiss} aria-label="Dismiss" onClick={onDismiss}>
-          <CrossIcon className={styles.dismissIcon} />
-        </button>
-      )}
+      {onDismiss && <CloseButton className={styles.dismiss} label="Dismiss" onClick={onDismiss} />}
     </div>
   );
 });

@@ -41,6 +41,28 @@
   box-sizing: border-box;
 }
 
+/* The title and the × share a row, so a long title wraps before it, not under it. Without a title the
+   × is alone on the row, at its end. */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75em;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Bigger than Banner's: this one is the way out of a window, and is pressed with a pointer. Its hit
+   area reaches into the padding, up and to the right by the same 0.75em, so the × sits the same
+   distance (1.875em) from the top and the right edges, not level with the title. */
+.close {
+  --close-size: 2.25em;
+  --close-icon-size: 1.25em;
+  margin: -0.75em -0.75em 0 auto;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
