@@ -9,6 +9,7 @@ import {
 import { clsx } from '@/utils/clsx';
 import { Text } from '../Text';
 import { useOverlay } from '../_shared/useOverlay';
+import { useScrollLock } from '../_shared/useScrollLock';
 import { useTriggerRef, type TriggerProps } from '../_shared/useTriggerRef';
 import { modalClass } from '../_shared/Overlay';
 import styles from './Dialog.module.css';
@@ -78,6 +79,8 @@ export function Dialog({
     defaultIsOpen,
     onOpenChange,
   });
+  // For as long as it is on screen, exit animation included: the page is inert until then
+  useScrollLock(overlay.isPresent);
   const id = useId();
   const titleId = `${id}-title`;
   const triggerProps = trigger?.props as TriggerProps | undefined;

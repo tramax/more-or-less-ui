@@ -1747,9 +1747,10 @@ or read. Escape closes it, and so does a press on the backdrop that also started
 selection dragged from the content onto the backdrop doesn't) unless `isBackdropClosing` is false, for a
 form with unsaved input or a question that needs an answer; Escape and the buttons still close it. A Select, Menu
 or Popover inside it opens above it and takes the first Escape. When it is gone, focus goes back to the
-trigger, or, with none, to what had it before it opened. While it is open the page doesn't scroll
-(`overflow: hidden` on `html` with `scrollbar-gutter: stable`, so nothing shifts; the backdrop doesn't
-cover the gutter).
+trigger, or, with none, to what had it before it opened. While it is open the page doesn't scroll: `_shared/useScrollLock` sets `overflow: hidden` on `html`
+and gives the scrollbar's width back as `padding-right`, so nothing shifts and no empty track is left
+(`scrollbar-gutter: stable` keeps the space by drawing one, which can't be scrolled and which the
+backdrop doesn't cover). It counts its users, so the page unlocks when the last dialog is gone.
 
 **Accessibility.** `role="dialog"` with `aria-modal`, named by the visible `title` (an
 `<h2>`, linked with `aria-labelledby`) or by `aria-label` / `aria-labelledby`, one of which the type
