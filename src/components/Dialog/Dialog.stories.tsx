@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { omitDefaults, showCode } from '../../../.storybook/snippet';
+import { showCode } from '../../../.storybook/snippet';
 import { Button } from '../Button';
 import { Menu } from '../Menu';
 import { Select } from '../Select';
@@ -25,11 +25,7 @@ const meta: Meta<typeof Dialog> = {
     trigger: <Button>Rename</Button>,
     children: <Text as="p">The new name is shown to everyone who can open the file.</Text>,
   },
-  parameters: {
-    docs: { source: { transform: omitDefaults({ role: DIALOG_DEFAULTS.role }) } },
-  },
   argTypes: {
-    role: { control: 'inline-radio', options: ['dialog', 'alertdialog'] },
     trigger: { control: false },
     children: { control: false },
     actions: { control: false },
@@ -97,15 +93,16 @@ export const WithActions: Story = {
 };
 
 /**
- * A confirmation. An `alertdialog` is described, and a press on the backdrop doesn’t answer it.
- * Focus starts on Cancel (`autoFocus`), the safe answer, not the first button in the row.
+ * A confirmation. It is described (`aria-describedby`), and a press on the backdrop doesn’t answer it
+ * (`isBackdropClosing={false}`). Focus starts on Cancel (`autoFocus`), the safe answer, not the first
+ * button in the row.
  */
 export const Alert: Story = {
   parameters: {
     ...showCode(`<Dialog
   title="Delete file?"
-  role="alertdialog"
   aria-describedby="delete-why"
+  isBackdropClosing={false}
   trigger={<Button>Delete</Button>}
   actions={…}
 >
@@ -117,8 +114,8 @@ export const Alert: Story = {
     return (
       <Dialog
         title="Delete file?"
-        role="alertdialog"
         aria-describedby="delete-why"
+        isBackdropClosing={false}
         trigger={<Button>Delete</Button>}
         isOpen={isOpen}
         onOpenChange={setIsOpen}
@@ -136,6 +133,19 @@ export const Alert: Story = {
         </Text>
       </Dialog>
     );
+  },
+};
+
+/**
+ * `isBackdropClosing={false}` keeps a press outside from closing it, for a form with unsaved input.
+ * Escape and the buttons still do; the page behind stays inert either way.
+ */
+export const BackdropStaysPut: Story = {
+  args: {
+    title: 'New message',
+    trigger: <Button>Compose</Button>,
+    isBackdropClosing: false,
+    children: <TextField label="Message" />,
   },
 };
 

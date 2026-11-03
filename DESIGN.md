@@ -1707,9 +1707,8 @@ type DialogProps = (
   trigger?: ReactElement; // one element that takes ref and onClick; leave it out to open from state
   children: ReactNode;
   actions?: ReactNode; // the row of buttons under the content, end-aligned
-  role?: 'dialog' | 'alertdialog'; // default 'dialog'
-  'aria-describedby'?: string; // for an alertdialog: the element that says what is asked
-  isBackdropClosing?: boolean; // a press on the backdrop closes it; default true, false for an alertdialog
+  'aria-describedby'?: string; // for a confirmation: the element that says what is asked
+  isBackdropClosing?: boolean; // a press on the backdrop closes it; default true
   isOpen?: boolean; // controlled; pair with onOpenChange
   defaultIsOpen?: boolean; // starts open, when uncontrolled
   onOpenChange?: (isOpen: boolean) => void;
@@ -1745,16 +1744,20 @@ Focus goes where the browser puts it: the element with `autoFocus`, else the fir
 else the dialog. A dialog that asks to delete something should put `autoFocus` on Cancel. The page is
 inert, so Tab stays inside (and may reach the browser's own UI) and nothing behind it can be pressed
 or read. Escape closes it, and so does a press on the backdrop that also started there (a text
-selection dragged from the content onto the backdrop doesn't); not for an `alertdialog`. A Select, Menu
+selection dragged from the content onto the backdrop doesn't) unless `isBackdropClosing` is false, for a
+form with unsaved input or a question that needs an answer; Escape and the buttons still close it. A Select, Menu
 or Popover inside it opens above it and takes the first Escape. When it is gone, focus goes back to the
 trigger, or, with none, to what had it before it opened. While it is open the page doesn't scroll
 (`overflow: hidden` on `html` with `scrollbar-gutter: stable`, so nothing shifts; the backdrop doesn't
 cover the gutter).
 
-**Accessibility.** `role="dialog"` (or `alertdialog`) with `aria-modal`, named by the visible `title` (an
+**Accessibility.** `role="dialog"` with `aria-modal`, named by the visible `title` (an
 `<h2>`, linked with `aria-labelledby`) or by `aria-label` / `aria-labelledby`, one of which the type
-requires. The trigger gets `aria-haspopup="dialog"`, `aria-expanded`, and `aria-controls` while open. An
-`alertdialog` should be described: `aria-describedby` goes on it as is.
+requires. The trigger gets `aria-haspopup="dialog"`, `aria-expanded`, and `aria-controls` while open. A
+confirmation should be described: `aria-describedby` goes on it as is. There is no `alertdialog` option: it
+only changes what a screen reader announces, a dialog with `aria-describedby` gets most of that, and it
+once changed `isBackdropClosing`'s default, which made two props that could disagree. If a case needs it,
+add it as a pure role with no behavior tied to it.
 
 **Look.** The overlay's frosted page-colored background (`--color-dialog-background`), 32em wide (at
 most the viewport less 1em on each side), `--elevation-more`, 1.5em of padding in a column with a 1em
@@ -2188,7 +2191,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 - [x] `Tooltip` — content, placement, delay, isDisabled; wraps nothing. Still to do: Avatar's `isTextShown={false}` shows the name and description in one
 - [x] `Popover` — trigger prop and content as children (the reverse of Tooltip), placement, align, isOpen / defaultIsOpen / onOpenChange, a required name; non-modal. Added outside-click dismissal, focus return and controlled state to `useOverlay` as opt-in options, and `_shared/useTriggerRef`
 - [x] `Menu` (dropdown) — trigger prop and `items`, `onSelect`, placement, align, isOpen / defaultIsOpen / onOpenChange; roving focus on `menuitem` buttons (APG). Extracted Select's popup surface and rows into `_shared/OptionList.module.css`, its keyboard helpers and type-ahead into `_shared/optionNavigation`, and `TriggerProps` into `_shared/useTriggerRef`. Still to do: separators / groups, checkable items, submenus
-- [x] `Dialog` — a native `<dialog>` with `showModal()` (the page inert, so Tab stays inside; the backdrop), through `useOverlay`'s new `isModal`; optional trigger, `title`, `actions`, `role` (`alertdialog`), `isBackdropClosing`, isOpen / defaultIsOpen / onOpenChange. Named Dialog, not Modal (see [Dialog](#dialog)). Escape now closes only the topmost overlay, and `anchored` is split out of `Overlay.module.css`'s `overlay` class
+- [x] `Dialog` — a native `<dialog>` with `showModal()` (the page inert, so Tab stays inside; the backdrop), through `useOverlay`'s new `isModal`; optional trigger, `title`, `actions`, `isBackdropClosing`, isOpen / defaultIsOpen / onOpenChange. Named Dialog, not Modal (see [Dialog](#dialog)). Escape now closes only the topmost overlay, and `anchored` is split out of `Overlay.module.css`'s `overlay` class
 - [ ] `Drawer` — Sibling: Dialog (the same dialog docked to an edge: a placement and a slide)
 - [ ] `Toast` — Sibling: Banner (it is a Banner that floats and times out; Banner's section says so)
 

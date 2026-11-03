@@ -122,26 +122,13 @@ describe('Dialog', () => {
       expect(dialog()?.dataset.state).toBe('open');
     });
 
-    it('can be told not to close, and does not for an alertdialog', () => {
-      const { unmount } = renderDialog({ isBackdropClosing: false });
+    it('can be told not to close, and Escape still closes it', () => {
+      renderDialog({ isBackdropClosing: false });
       fireEvent.click(trigger());
       fireEvent.pointerDown(dialog()!);
       fireEvent.click(dialog()!);
       expect(dialog()?.dataset.state).toBe('open');
-      unmount();
-
-      renderDialog({ role: 'alertdialog' });
-      fireEvent.click(trigger());
-      fireEvent.pointerDown(dialog()!);
-      fireEvent.click(dialog()!);
-      expect(dialog()?.dataset.state).toBe('open');
-    });
-
-    it('closes an alertdialog on the backdrop when asked to', () => {
-      renderDialog({ role: 'alertdialog', isBackdropClosing: true });
-      fireEvent.click(trigger());
-      fireEvent.pointerDown(dialog()!);
-      fireEvent.click(dialog()!);
+      fireEvent.keyDown(document.body, { key: 'Escape' });
       expect(dialog()?.dataset.state).toBe('closed');
     });
   });
@@ -330,13 +317,12 @@ describe('Dialog', () => {
       expect(screen.queryByRole('heading', { level: 2, hidden: true })).toBeNull();
     });
 
-    it('is an alertdialog when asked, and is described', () => {
+    it('can be described by another element', () => {
       render(
-        <Dialog title="Delete" role="alertdialog" aria-describedby="why" defaultIsOpen>
+        <Dialog title="Delete" aria-describedby="why" defaultIsOpen>
           <p id="why">This cannot be undone.</p>
         </Dialog>,
       );
-      expect(dialog()?.getAttribute('role')).toBe('alertdialog');
       expect(dialog()?.getAttribute('aria-describedby')).toBe('why');
     });
 

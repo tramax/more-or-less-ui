@@ -15,7 +15,7 @@ import styles from './Dialog.module.css';
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
 export const DIALOG_DEFAULTS = {
-  role: 'dialog',
+  isBackdropClosing: true,
 } as const;
 
 /** The visible `title` names the dialog; without one, `aria-label` or `aria-labelledby` must. */
@@ -34,14 +34,12 @@ export type DialogProps = DialogName & {
   children: ReactNode;
   /** The row of buttons under the content, end-aligned. */
   actions?: ReactNode;
-  /**
-   * `alertdialog` is a dialog that interrupts to ask for an answer (delete this?). It should be
-   * described (`aria-describedby`), and a press on the backdrop doesn't close it. Default `dialog`.
-   */
-  role?: 'dialog' | 'alertdialog';
-  /** The id of the element that says what is being asked; for an `alertdialog`. */
+  /** The id of the element that says what is being asked, for a confirmation: read out after the name. */
   'aria-describedby'?: string;
-  /** Whether a press on the backdrop closes it. Default true, and false for an `alertdialog`. */
+  /**
+   * Whether a press on the backdrop closes it. Turn it off for a form with unsaved input or a question
+   * that needs an answer. Escape and your own buttons still close it. Default true.
+   */
   isBackdropClosing?: boolean;
   /** Controlled: whether it is open. Pair it with `onOpenChange`. */
   isOpen?: boolean;
@@ -53,9 +51,9 @@ export type DialogProps = DialogName & {
 
 /**
  * A modal dialog: a window over the page that the person must deal with before going back to it. The
- * page behind it is inert and dimmed, Tab stays inside it, and it closes on Escape and (unless it is an
- * `alertdialog`) on a press on the backdrop. For something the person acts on without leaving the page,
- * use a Popover.
+ * page behind it is inert and dimmed, Tab stays inside it, and it closes on Escape and on a press on the
+ * backdrop (`isBackdropClosing`). For something the person acts on without leaving the page, use a
+ * Popover.
  *
  * It is a native `<dialog>` shown with `showModal()`, through `useOverlay` as Popover is, so the
  * browser does the trap and the inert page. Focus goes to the first focusable element inside (or the
@@ -66,8 +64,7 @@ export function Dialog({
   children,
   title,
   actions,
-  role = DIALOG_DEFAULTS.role,
-  isBackdropClosing = role === 'dialog',
+  isBackdropClosing = DIALOG_DEFAULTS.isBackdropClosing,
   isOpen,
   defaultIsOpen,
   onOpenChange,
@@ -113,7 +110,7 @@ export function Dialog({
           aria-labelledby={title === undefined ? undefined : titleId}
           {...name}
           id={id}
-          role={role}
+          role="dialog"
           aria-modal="true"
           // Where focus lands when nothing inside can take it
           tabIndex={-1}
