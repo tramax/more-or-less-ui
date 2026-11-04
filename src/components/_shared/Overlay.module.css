@@ -141,10 +141,13 @@
 /*
  * A modal docked to an edge (Drawer) slides in from that edge, off-screen to in place, instead of
  * growing. It starts its own size plus 2em out: its gap to the edge (a floating panel is not flush with it)
- * and its shadow's reach, so none of it shows at the start. --ease-leave and not --ease-enter: the springy one overshoots, which would pull the panel
- * past the edge it is docked to and leave a gap. The panel itself doesn't fade (it is moving in from
- * outside the viewport); the backdrop does, by the rules above. `start` and `end` are logical, so in a
- * right-to-left page they swap sides. This comes after the rules above, which it overrides.
+ * and its shadow's reach, so none of it shows at the start. It lands with a spring, like the grow, but a
+ * gentler one than --ease-enter: that overshoots by almost half of the way travelled, which here is
+ * ~26em, far past the edge. This one overshoots by ~3.5% (under 1em), so the panel moves into the gap
+ * beside the edge and settles back without leaving the viewport. Leaving doesn't overshoot. The panel
+ * itself doesn't fade (it is moving in from outside the viewport); the backdrop does, by the rules above.
+ * `start` and `end` are logical, so in a right-to-left page they swap sides. This comes after the rules
+ * above, which it overrides.
  */
 .slideStart {
   --overlay-slide-from: translateX(calc(-100% - 2em));
@@ -167,7 +170,7 @@
 /* Under reduced motion it keeps the fade above, which this would otherwise out-rank */
 @media (prefers-reduced-motion: no-preference) {
   .overlay[data-state='open']:is(.slideStart, .slideEnd, .slideTop, .slideBottom) {
-    animation: overlay-slide-in 350ms var(--ease-leave) both;
+    animation: overlay-slide-in 450ms cubic-bezier(0.34, 1.35, 0.64, 1) both;
   }
   .overlay[data-state='closed']:is(.slideStart, .slideEnd, .slideTop, .slideBottom) {
     animation: overlay-slide-out 150ms var(--ease-leave) both;

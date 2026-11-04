@@ -1554,9 +1554,10 @@ here, are closed only by their own handlers.
   middle, and the `overlay` classes fade the backdrop with it; the consumer sets the backdrop's color.
   A modal docked to an edge (Drawer) takes `dockedClass(edge)` instead: the same classes plus
   `slideStart` / `slideEnd` / `slideTop` / `slideBottom`, which set `--overlay-slide-from` (the off-screen
-  `translate`; `start` and `end` swap under `:dir(rtl)`). It slides in over 350ms with `--ease-leave`, not
-  `--ease-enter`: the springy one overshoots, which would pull the panel past its edge and leave a gap. It
-  leaves in 150ms, and the panel itself doesn't fade (the backdrop does). It starts its own size plus
+  `translate`; `start` and `end` swap under `:dir(rtl)`). It slides in over 450ms with a spring of its own,
+  `cubic-bezier(0.34, 1.35, 0.64, 1)`, not `--ease-enter`: that overshoots by almost half of the ~26em
+  it travels, far past its edge. This overshoots by ~3.5% (under the 1em gap), so the panel moves into the
+  gap beside the edge and settles back. It leaves in 150ms with `--ease-leave`, and the panel itself doesn't fade (the backdrop does). It starts its own size plus
   2em out, so a floating panel's gap and its shadow are off-screen too. The slide is inside
   `prefers-reduced-motion: no-preference`, so reduced motion keeps the overlay's plain fade.
 
