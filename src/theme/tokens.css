@@ -99,6 +99,13 @@
      text readable. Each overlay's own token aliases this one. */
   --color-overlay-background: color-mix(in oklab, Canvas 60%, transparent);
 
+  /* What a modal (Dialog, Drawer) is drawn on: more opaque than the overlay above, since it holds
+     more to read. Each modal's own token aliases it. */
+  --color-modal-background: color-mix(in oklab, Canvas 75%, transparent);
+  /* What the page behind a modal is veiled with: the text color at 10%, a gentle dim on a light page.
+     The dark theme sets its own (themes.css): the text color there is white, which would lighten it. */
+  --color-modal-backdrop: color-mix(in oklab, CanvasText 10%, transparent);
+
   /* Text, a check mark or a dot drawn on the brand color. That color doesn't change between themes,
      so this is black or white, whichever contrasts more with --color-primary, not CanvasText. This is
      the fallback: black when the primary's OKLCH lightness is above 0.6, white below. A supporting
@@ -165,10 +172,11 @@
 
   --color-popover-background: var(--color-overlay-background);
 
-  --color-dialog-background: color-mix(in oklab, Canvas 75%, transparent);
-  /* What the page behind a dialog is veiled with: the text color at 10%, a gentle dim on a light page.
-     The dark theme sets its own (themes.css): the text color there is white, which would lighten it. */
-  --color-dialog-backdrop: color-mix(in oklab, CanvasText 10%, transparent);
+  --color-dialog-background: var(--color-modal-background);
+  --color-dialog-backdrop: var(--color-modal-backdrop);
+
+  --color-drawer-background: var(--color-modal-background);
+  --color-drawer-backdrop: var(--color-modal-backdrop);
 
   --color-menu-background: var(--color-overlay-background);
   /* The item the keyboard (or the pointer) is on */

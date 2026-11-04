@@ -14,6 +14,8 @@ export { Checkbox } from './Checkbox';
 export type { CheckboxProps, CheckboxOption } from './Checkbox';
 export { Divider } from './Divider';
 export type { DividerProps } from './Divider';
+export { Drawer } from './Drawer';
+export type { DrawerProps, DrawerPlacement } from './Drawer';
 export { Grid } from './Grid';
 export type { GridProps } from './Grid';
 export { Indicator } from './Indicator';

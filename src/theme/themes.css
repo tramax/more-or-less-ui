@@ -32,8 +32,8 @@
   --color-danger: #ff8a80;
 
   /* A dark scrim here too, not the light theme's text-color veil (which would be white): the page
-     behind a dialog goes dark in both themes */
-  --color-dialog-backdrop: oklch(0 0 0 / 50%);
+     behind a modal (Dialog, Drawer) goes dark in both themes */
+  --color-modal-backdrop: oklch(0 0 0 / 50%);
 
   /* The shadow tint is the brand colour darkened 75%, still lighter than a dark page: use black */
   --shadow-color: black;

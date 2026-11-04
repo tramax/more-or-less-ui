@@ -921,7 +921,7 @@ button. It sits beside the chevron (`aria-label="Clear"`, out of the tab order l
 shift when a value is picked. It clears what can be cleared: a disabled option stays, as for
 Backspace. Keyboard: Backspace with nothing typed clears a non-searchable single Select (a multiple
 one already removes the last chip); a searchable single one clears when its text is emptied. The ×
-is `_shared/CrossIcon`, shared with the chip, Banner's dismiss button and Dialog's close button (both `_shared/CloseButton`).
+is `_shared/CrossIcon`, shared with the chip, Banner's dismiss button and the close button of Dialog and Drawer (all `_shared/CloseButton`).
 
 **Value.** Like Radio (`null` is the explicit empty value) for a single one, like Checkbox (`string[]`,
 options order) for a multiple one. The user can't clear a single Select unless `isClearable`, which
@@ -1058,7 +1058,7 @@ the tab order (unlike a Select chip's: a banner is not inside a field). On hover
 Select's, over a faint disc of the text color (10%); when pressed the whole button shrinks (0.8,
 quick, no overshoot), so the disc and the × go down together, and the disc deepens (20%). With `prefers-reduced-motion` only the disc remains. The hit area is 1.75em around a 1em ×. The Banner doesn't hide itself: the caller stops
 rendering it and decides whether it comes back, so the state stays one place. The button's look is
-`_shared/CloseButton`'s, shared with Dialog's close button; Banner supplies only its margin.
+`_shared/CloseButton`'s, shared with the close button of Dialog and Drawer; Banner supplies only its margin.
 
 **Role.** `role="status"` (a polite live region), so a banner rendered after the page has loaded is
 announced without moving focus, as the W3C alert pattern advises. One already on the page at load is
@@ -1552,6 +1552,13 @@ here, are closed only by their own handlers.
   exit animation and a controlled caller can refuse. It stays modal while it leaves, which is why focus
   return waits. `Overlay.module.css`'s `modal` class (`modalClass` in `Overlay.ts`) grows it from its
   middle, and the `overlay` classes fade the backdrop with it; the consumer sets the backdrop's color.
+  A modal docked to an edge (Drawer) takes `dockedClass(edge)` instead: the same classes plus
+  `slideStart` / `slideEnd` / `slideTop` / `slideBottom`, which set `--overlay-slide-from` (the off-screen
+  `translate`; `start` and `end` swap under `:dir(rtl)`). It slides in over 350ms with `--ease-leave`, not
+  `--ease-enter`: the springy one overshoots, which would pull the panel past its edge and leave a gap. It
+  leaves in 150ms, and the panel itself doesn't fade (the backdrop does). It starts its own size plus
+  2em out, so a floating panel's gap and its shadow are off-screen too. The slide is inside
+  `prefers-reduced-motion: no-preference`, so reduced motion keeps the overlay's plain fade.
 
 **Not yet:** nested overlays beyond Escape (a press in a child overlay counts as outside its
 parent), `popover="auto"`.
@@ -1735,8 +1742,9 @@ another place (Drawer, below), not another word.
 Closest sibling is Popover, through [Overlay](#overlay). **Shared:** `useOverlay` (open state,
 controlled or not, the exit animation, Escape, focus return), the cloned trigger (no wrapper;
 `_shared/useTriggerRef`, whose `trigger` may now be absent), the frosted surface and motion of
-`Overlay.module.css`, `--color-overlay-background` (`--color-dialog-background` aliases it), and Text for
-the title. **What differs:** it is modal (`isModal`: a native `<dialog>` and `showModal()`, so the browser
+`Overlay.module.css`, and Text for the title. A modal's inside is shared with Drawer, its second consumer,
+and lives in `_shared/ModalFrame` (below), so what follows is true of both except where Drawer says
+otherwise. **What differs:** it is modal (`isModal`: a native `<dialog>` and `showModal()`, so the browser
 makes the page inert and draws the backdrop, where a popover sits in the top layer over a live page), it
 is centered in the viewport (no anchor, no `placement` or `align`), the trigger is optional (a
 confirmation is opened from state, often after the Menu item that asked for it has gone), a press on the
@@ -1778,19 +1786,85 @@ path as Escape, so a controlled caller can refuse and the exit animation runs. `
 removes it, for a question that needs an answer through the `actions` (Escape still closes it, and
 `isBackdropClosing={false}` takes the backdrop away too).
 
-**Look.** The overlay's frosted page-colored background (`--color-dialog-background`), 32em wide (at
+**Look.** The page-colored background (`--color-dialog-background`, which aliases the modal recipe
+`--color-modal-background`: the page color at 75%, more opaque than an ordinary overlay's 60% since it
+holds more to read), 32em wide (at
 most the viewport less 1em on each side), `--elevation-more`, 1.5em of padding in a column with a 1em
 gap (title, children, actions). Past `min(40em, 100dvh - 2em)` the content scrolls, not the dialog. The
-page is veiled by `--color-dialog-backdrop`: the text color at 10% in the light theme, a gentle dim, and
-black at 50% in the dark theme (`themes.css`), where the text color would be white and lighten it. On a
+page is veiled by `--color-dialog-backdrop`, an alias of `--color-modal-backdrop`: the text color at 10%
+in the light theme, a gentle dim, and
+black at 50% in the dark theme (`themes.css` sets `--color-modal-backdrop`), where the text color would be white and lighten it. On a
 dark page the dialog's edge is then subtle, and its shadow does the separating. The page behind it is also blurred (24px, `backdrop-filter` on the `::backdrop`; a fixed finish, not a token). Its corners are `--radius-more`, rounder than the other overlays (it sets `--overlay-radius`). It grows from its middle with the overlay's motion, and the backdrop and its blur fade with it.
 
+**Shared with Drawer: `_shared/ModalFrame`.** Dialog is `ModalFrame` plus its size, its radius and its
+two tokens. The frame owns `useOverlay` (`isModal`, Escape, focus return), `useScrollLock`, the cloned
+trigger, the backdrop press, the name union (`ModalProps`, which `DialogProps` is), the header (title and
+×), the children and the `actions`, and `ModalFrame.module.css`: the `<dialog>` element's finish
+(`padding: 0`, `overflow: hidden`, the shadow, no focus ring, the 24px blur on the backdrop, and
+`isBackdropShown={false}` to drop the veil and the blur) and the content box. The consumer passes `className` (the overlay classes from `Overlay.ts`, its size and
+placement, and the `--modal-background` and `--modal-backdrop` hooks set from its own tokens) and
+`contentClassName` (a `max-height`, and for Drawer a `min-height`, which the frame leaves to it). The
+`actions` row has `margin-block-start: auto`: it is at the end of the content, and at the bottom of a
+modal taller than its content, which is Drawer's case and changes nothing in a Dialog, whose height is its
+content's.
+
 **Not yet:** `size`, localisation of "Close", a close button that stays in view while the content scrolls,
-`Drawer` (the same dialog docked to an edge: a placement, the
-`modal` class and a slide in place of the grow), a `Portal` (it is a DOM child of the trigger's parent;
+a `Portal` (it is a DOM child of the trigger's parent;
 the top layer ignores a `transform` ancestor, but `display: none` or `inert` on one still reaches it), a
 dialog opened from inside another (the press on the backdrop of the one below, and the page's own
 inertness), and returning focus to a trigger that has been removed (it falls to the body).
+
+### Drawer
+
+```tsx
+type DrawerProps = DialogProps & {
+  // title / aria-label / aria-labelledby, trigger, children, actions, aria-describedby,
+  // isBackdropClosing, isCloseButtonShown, isOpen, defaultIsOpen, onOpenChange: as Dialog's
+  placement?: 'start' | 'end' | 'top' | 'bottom'; // the edge it slides in from; default 'end'
+  isBackdropShown?: boolean; // the veil and blur on the page behind; default true
+};
+```
+
+A modal panel that floats beside an edge of the page: for a form, a filter list or a detail view that
+deserves more room than a dialog, with the page still in sight beside it.
+
+Closest sibling is Dialog, and the two are one component with two places on the screen. **Shared**
+(`_shared/ModalFrame`, extracted from Dialog in the change that added Drawer, since Drawer is the second
+consumer): every prop but `placement` and `isBackdropShown`, all the behavior (modal `<dialog>`, inert page, Escape, the backdrop
+press, focus return, scroll lock, the trigger's ARIA), the header, the `actions`, the finish of the
+element, the name rules, and `--color-modal-background` / `--color-modal-backdrop`
+(`--color-drawer-background` and `--color-drawer-backdrop` alias them, as Dialog's do; Drawer's tokens are
+there to be customised on their own). **What differs:** where it sits and how it moves, and its size.
+
+**Placement.** `start` and `end` are logical, so in a right-to-left page they swap sides, and the slide
+follows (`:dir(rtl)` in `Overlay.module.css`). `top` and `bottom` span the page. The `<dialog>`'s own
+defaults (centred, `margin: auto`, a maximum size, `height: fit-content`) are undone and each placement
+sets the insets of its edge. It uses `dockedClass(placement)` from `Overlay.ts` (see [Overlay](#overlay)),
+which gives it the slide in place of Dialog's grow.
+
+**Look.** It floats: `--drawer-gap` (1em, set in its CSS module, not a token) from the edge it is on and
+from the two beside it, and every corner is `--radius-more`, as Dialog's are. A drawer flush with the edge
+was the first version; a floating one reads as a surface over the page, not part of its frame. At the
+sides it is 24em wide (at most the viewport less 3em, so a narrow screen keeps a strip of backdrop to
+press) and the height of the page less the gap on each end; `top` and `bottom` are the width of the page
+less the gaps and as high as their content, to `min(32em, 100dvh - 4em)`. The content is
+laid out as Dialog's is: 1.5em of padding, a column with a 1em gap. It is at least as high as the drawer, so
+the `actions` sit at the bottom however short the content is, and past the maximum height the content
+scrolls, not the drawer. The slide starts the drawer's own size plus 2em out, so neither the gap nor the
+shadow shows before it moves.
+
+**Backdrop.** `isBackdropShown` (default true) is the veil (`--color-drawer-backdrop`) and the 24px blur on
+the page behind. Set it to false to keep the page in view with the drawer over it: the `<dialog>`'s
+`::backdrop` has no background and no filter (`.backdropHidden` in `ModalFrame.module.css`). The drawer is
+still modal: the page is inert (it can't be pressed or tabbed to) and doesn't scroll, and a press where the
+backdrop would be still closes it unless `isBackdropClosing` is false, so a drawer that should stay open
+while the person looks at the page sets both. A page that stays usable beside it is a non-modal panel,
+which this is not. The prop is `ModalFrame`'s and not in `ModalProps`: Dialog doesn't expose it, since a
+dialog with no veil has little to set it apart from the page, but it could with no change to the frame.
+
+**Not yet:** `size` and a width (24em is fixed; `className` isn't a prop), a non-modal drawer (the page
+beside it live), a header and an actions row that stay in view while the content scrolls (Dialog has the
+same limit), and resizing.
 
 ---
 
@@ -2001,10 +2075,11 @@ more-or-less-ui/
 │   │   ├── Textarea/
 │   │   ├── Select/
 │   │   ├── Dialog/
+│   │   ├── Drawer/
 │   │   ├── Menu/
 │   │   ├── Popover/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Dialog; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu; OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu; useTriggerRef: Tooltip + Popover + Menu)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu; OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu; useTriggerRef: Tooltip + Popover + Menu)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -2212,7 +2287,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 - [x] `Popover` — trigger prop and content as children (the reverse of Tooltip), placement, align, isOpen / defaultIsOpen / onOpenChange, a required name; non-modal. Added outside-click dismissal, focus return and controlled state to `useOverlay` as opt-in options, and `_shared/useTriggerRef`
 - [x] `Menu` (dropdown) — trigger prop and `items`, `onSelect`, placement, align, isOpen / defaultIsOpen / onOpenChange; roving focus on `menuitem` buttons (APG). Extracted Select's popup surface and rows into `_shared/OptionList.module.css`, its keyboard helpers and type-ahead into `_shared/optionNavigation`, and `TriggerProps` into `_shared/useTriggerRef`. Still to do: separators / groups, checkable items, submenus
 - [x] `Dialog` — a native `<dialog>` with `showModal()` (the page inert, so Tab stays inside; the backdrop), through `useOverlay`'s new `isModal`; optional trigger, `title`, `actions`, `isBackdropClosing`, isOpen / defaultIsOpen / onOpenChange. Named Dialog, not Modal (see [Dialog](#dialog)). Escape now closes only the topmost overlay, and `anchored` is split out of `Overlay.module.css`'s `overlay` class
-- [ ] `Drawer` — Sibling: Dialog (the same dialog docked to an edge: a placement and a slide)
+- [x] `Drawer` — Sibling: Dialog; the same modal floating beside an edge (`placement`: start, end, top, bottom; every corner rounded, a 1em gap) with a slide in place of the grow, and `isBackdropShown` to keep the page unveiled. Extracted Dialog's behavior and structure into `_shared/ModalFrame`, added `dockedClass` and the slide to the overlay, and renamed Dialog's two color recipes to the neutral `--color-modal-background` / `--color-modal-backdrop`, which `--color-dialog-*` and `--color-drawer-*` alias. Still to do: a width / `size`, a sticky header and actions
 - [ ] `Toast` — Sibling: Banner (it is a Banner that floats and times out; Banner's section says so)
 
 **Navigation and disclosure:**

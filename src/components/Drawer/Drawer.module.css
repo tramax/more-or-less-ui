@@ -1,0 +1,63 @@
+/*
+ * Drawer: the overlay (_shared/Overlay.module.css) supplies the top layer, the slide, and the frosted
+ * blur; the <dialog> element supplies the inert page; _shared/ModalFrame supplies the surface's finish
+ * and what is inside. What is here is where it floats, its size and its tokens.
+ *
+ * It floats: --drawer-gap away from the edge it is on and from the two edges beside it, with every corner
+ * rounded. The <dialog>'s own defaults centre it, with a margin and a maximum size; each placement sets
+ * the insets of its edge instead. `start` and `end` are logical, so in a right-to-left page they swap sides.
+ */
+
+.drawer {
+  --drawer-gap: 1em;
+  --modal-background: var(--color-drawer-background);
+  --modal-backdrop: var(--color-drawer-backdrop);
+  /* As Dialog's: the same big surface, the same corners */
+  --overlay-radius: var(--radius-more);
+  margin: 0;
+  max-width: none;
+  max-height: none;
+}
+
+/* The page stays in reach beside it on a narrow screen, so there is still a backdrop to press. The
+   <dialog>'s `height: fit-content` is undone: with both block insets set, it fills the page's height
+   less the gap. */
+.start,
+.end {
+  inset-block: var(--drawer-gap);
+  height: auto;
+  width: 24em;
+  max-width: calc(100vw - 3em);
+}
+
+.start {
+  inset-inline: var(--drawer-gap) auto;
+}
+
+.end {
+  inset-inline: auto var(--drawer-gap);
+}
+
+/* Across the page, as high as its content, up to this much */
+.top,
+.bottom {
+  --drawer-max-height: min(32em, calc(100dvh - 4em));
+  inset-inline: var(--drawer-gap);
+  width: auto;
+  max-height: var(--drawer-max-height);
+}
+
+.top {
+  inset-block: var(--drawer-gap) auto;
+}
+
+.bottom {
+  inset-block: auto var(--drawer-gap);
+}
+
+/* It fills a side panel top to bottom, so the actions are at its bottom; in a top or bottom one it is as
+   high as its content, up to the maximum above */
+.content {
+  min-height: 100%;
+  max-height: var(--drawer-max-height, 100%);
+}

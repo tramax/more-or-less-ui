@@ -23,3 +23,20 @@ export const overlayClass = (placement: OverlayPlacement, align: OverlayAlign = 
 
 /** The classes of a modal overlay (Dialog): the same motion and finish, centred in the viewport. */
 export const modalClass = clsx(styles.overlay, styles.modal);
+
+/** Which edge of the viewport a docked modal sits against. `start` and `end` follow the writing direction. */
+export type OverlayEdge = 'start' | 'end' | 'top' | 'bottom';
+
+const EDGE_CLASS = {
+  start: styles.slideStart,
+  end: styles.slideEnd,
+  top: styles.slideTop,
+  bottom: styles.slideBottom,
+} as const;
+
+/**
+ * The classes of a modal overlay docked to an edge (Drawer): the same finish, but it slides in from
+ * that edge instead of growing from its middle.
+ */
+export const dockedClass = (edge: OverlayEdge) =>
+  clsx(styles.overlay, styles.modal, EDGE_CLASS[edge]);

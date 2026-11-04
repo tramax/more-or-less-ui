@@ -48,7 +48,11 @@ same recipe is defined under two names.
   popup, Menu's panel); the component sets `--list-background` and `--list-active` from its own tokens.
   `_shared/optionNavigation` is `stepEnabled`, `findByPrefix` and `useTypeahead` for the keyboard.
 - `_shared/useOverlay` + `Overlay.module.css` + `Overlay.ts` are every overlay (Select's popup, Tooltip,
-  Popover, Menu, and Dialog through `isModal`); `_shared/useTriggerRef` is the trigger clone's ref and `TriggerProps`. `_shared/useScrollLock` stops the page scrolling under a modal (Dialog).
+  Popover, Menu, and Dialog and Drawer through `isModal`); `_shared/useTriggerRef` is the trigger clone's ref and `TriggerProps`. `_shared/useScrollLock` stops the page scrolling under a modal (Dialog).
+- `_shared/ModalFrame` is every modal (Dialog, Drawer): the `<dialog>`, trigger, backdrop press, scroll
+  lock, header, actions, and `ModalProps`. A modal passes it `className` (the overlay classes from
+  `Overlay.ts`, its size and placement, and `--modal-background` / `--modal-backdrop` from its own
+  tokens) and `contentClassName`, and writes only where it sits and how big it is.
 - `_shared/CheckIcon` and `_shared/CrossIcon` are the ✓ and ×, drawn with attributes; a consumer's
   class sets only size, color and motion.
 - `_shared/CloseButton` is the round × button (disc on hover, shrink on press) of Banner's dismiss and

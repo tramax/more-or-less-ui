@@ -1,0 +1,76 @@
+/*
+ * The inside of a modal, which Dialog and Drawer share: the <dialog> element's finish, and the content
+ * box with its header, children and actions. Where the modal sits and how it moves is the consumer's
+ * (and _shared/Overlay.module.css's). The consumer sets two hooks on the element from its own tokens:
+ * --modal-background and --modal-backdrop. Everything is in em, so it follows the font size of where
+ * it is rendered.
+ */
+
+.frame {
+  padding: 0;
+  /* The content scrolls, not the modal, so a press on the <dialog> element itself is a press on the backdrop */
+  overflow: hidden;
+  background: var(--modal-background);
+  color: CanvasText;
+  box-shadow: var(--elevation-more);
+  line-height: 1.4;
+}
+
+/* It takes focus when nothing inside can; the ring would sit on the whole modal */
+.frame:focus {
+  outline: none;
+}
+
+.frame::backdrop {
+  background: var(--modal-backdrop);
+  /* A fixed finish, not a token. It fades with the backdrop (the overlay's opacity animation). */
+  backdrop-filter: blur(24px);
+}
+
+/* No veil and no blur: the page shows as it is. It is still there to be pressed, and still inert. */
+.frame.backdropHidden::backdrop {
+  background: none;
+  backdrop-filter: none;
+}
+
+/* The consumer adds the height it allows (`max-height`, and `min-height` to fill a docked modal) */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 1.5em;
+  box-sizing: border-box;
+}
+
+/* The title and the × share a row, so a long title wraps before it, not under it. Without a title the
+   × is alone on the row, at its end. */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75em;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Bigger than Banner's: this one is the way out of a window, and is pressed with a pointer. Its hit
+   area reaches into the padding, up and to the right by the same 0.75em, so the × sits the same
+   distance (1.875em) from the top and the right edges, not level with the title. */
+.close {
+  --close-size: 2.25em;
+  --close-icon-size: 1.25em;
+  margin: -0.75em -0.75em 0 auto;
+}
+
+/* At the end of the content, and at the bottom of a modal taller than its content (a Drawer) */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5em;
+  margin-block-start: auto;
+}

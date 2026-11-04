@@ -1,71 +1,18 @@
 /*
  * Dialog: the overlay (_shared/Overlay.module.css) supplies the top layer, the motion, the corners and
- * the frosted blur; the <dialog> element supplies the centring, the inert page and the backdrop. What
- * is here is its surface and the room for content. Everything is in em, so it follows the font size of
- * where it is rendered.
+ * the frosted blur; the <dialog> element supplies the centring and the inert page; _shared/ModalFrame
+ * supplies the surface's finish and what is inside. What is here is its size and its tokens.
  */
 
 .dialog {
+  --modal-background: var(--color-dialog-background);
+  --modal-backdrop: var(--color-dialog-backdrop);
   /* Rounder than the other overlays: it is the largest, and a big surface wants bigger corners */
   --overlay-radius: var(--radius-more);
   width: 32em;
   max-width: calc(100vw - 2em);
-  padding: 0;
-  /* The content scrolls, not the dialog, so a press on the dialog element itself is a press on the backdrop */
-  overflow: hidden;
-  background: var(--color-dialog-background);
-  color: CanvasText;
-  box-shadow: var(--elevation-more);
-  line-height: 1.4;
-}
-
-/* It takes focus when nothing inside can; the ring would sit on the whole dialog */
-.dialog:focus {
-  outline: none;
-}
-
-.dialog::backdrop {
-  background: var(--color-dialog-backdrop);
-  /* A fixed finish, not a token. It fades with the backdrop (the overlay's opacity animation). */
-  backdrop-filter: blur(24px);
 }
 
 .content {
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
   max-height: min(40em, calc(100dvh - 2em));
-  overflow: auto;
-  overscroll-behavior: contain;
-  padding: 1.5em;
-  box-sizing: border-box;
-}
-
-/* The title and the × share a row, so a long title wraps before it, not under it. Without a title the
-   × is alone on the row, at its end. */
-.header {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75em;
-}
-
-.title {
-  flex: 1;
-  min-width: 0;
-}
-
-/* Bigger than Banner's: this one is the way out of a window, and is pressed with a pointer. Its hit
-   area reaches into the padding, up and to the right by the same 0.75em, so the × sits the same
-   distance (1.875em) from the top and the right edges, not level with the title. */
-.close {
-  --close-size: 2.25em;
-  --close-icon-size: 1.25em;
-  margin: -0.75em -0.75em 0 auto;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.5em;
 }
