@@ -21,7 +21,7 @@ const SCALE_SPEC = {
   defaults: INDICATOR_DEFAULTS,
 } as const;
 
-export type IndicatorPlacement = 'top-end' | 'top-start' | 'bottom-end' | 'bottom-start';
+export type IndicatorCorner = 'top-end' | 'top-start' | 'bottom-end' | 'bottom-start';
 
 export type IndicatorProps = Omit<HTMLAttributes<HTMLSpanElement>, 'color' | 'children'> & {
   /** What the mark is pinned to: an Avatar, a Button, an icon. */
@@ -38,7 +38,7 @@ export type IndicatorProps = Omit<HTMLAttributes<HTMLSpanElement>, 'color' | 'ch
   /** Hide the mark (a dot has no 0 to hide itself at). The wrapped content stays mounted. */
   isHidden?: boolean;
   /** Which corner of the wrapped content. Logical: "end" is the right in left-to-right text. Default `top-end`. */
-  placement?: IndicatorPlacement;
+  corner?: IndicatorCorner;
   /**
    * The shape of what is wrapped. A `circle` (an Avatar) has its corner inside the bounding box, so the
    * mark sits closer in, on the rim, instead of floating off in the air. Default `rectangle`.
@@ -72,7 +72,7 @@ export const Indicator = forwardRef<HTMLSpanElement, IndicatorProps>(function In
     max,
     isZeroShown = false,
     isHidden = false,
-    placement = 'top-end',
+    corner = 'top-end',
     overlap = 'rectangle',
     label,
     className,
@@ -115,7 +115,7 @@ export const Indicator = forwardRef<HTMLSpanElement, IndicatorProps>(function In
           role={label && !isLeaving ? 'img' : undefined}
           aria-label={isLeaving ? undefined : label}
           aria-hidden={label && !isLeaving ? undefined : true}
-          className={clsx(styles.anchor, styles[placementClass(placement)])}
+          className={clsx(styles.anchor, styles[cornerClass(corner)])}
         >
           <span
             className={clsx(
@@ -139,5 +139,5 @@ export const Indicator = forwardRef<HTMLSpanElement, IndicatorProps>(function In
 });
 
 // 'top-end' → styles.topEnd
-const placementClass = (placement: IndicatorPlacement) =>
-  placement.replace(/-(\w)/, (_, c: string) => c.toUpperCase());
+const cornerClass = (corner: IndicatorCorner) =>
+  corner.replace(/-(\w)/, (_, c: string) => c.toUpperCase());

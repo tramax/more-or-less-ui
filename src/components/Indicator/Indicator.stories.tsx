@@ -17,7 +17,7 @@ const scaleControl = (prop: keyof typeof INDICATOR_DEFAULTS) =>
 const textControl = { control: 'text' } as const;
 
 const VARIANTS = ['less', 'normal', 'more'] as const;
-const PLACEMENTS = ['top-start', 'top-end', 'bottom-start', 'bottom-end'] as const;
+const CORNERS = ['top-start', 'top-end', 'bottom-start', 'bottom-end'] as const;
 
 const Row = ({ children }: { children: React.ReactNode }) => (
   <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', padding: '1rem' }}>
@@ -34,7 +34,7 @@ const meta: Meta<typeof Indicator> = {
   parameters: { docs: { source: { transform: omitDefaults(INDICATOR_DEFAULTS) } } },
   argTypes: {
     size: scaleControl('size'),
-    placement: { control: 'select', options: PLACEMENTS },
+    corner: { control: 'select', options: CORNERS },
     overlap: { control: 'inline-radio', options: ['rectangle', 'circle'] },
     count: { control: 'number' },
     children: { control: false },
@@ -95,16 +95,16 @@ export const Size: Story = {
 };
 
 /** The four corners. "start" and "end" are logical, so they mirror in a right-to-left page. */
-export const Placement: Story = {
+export const Corner: Story = {
   parameters: showCode(
-    PLACEMENTS.map(
-      (p) => `<Indicator placement="${p}" label="New"><Button>Inbox</Button></Indicator>`,
+    CORNERS.map(
+      (p) => `<Indicator corner="${p}" label="New"><Button>Inbox</Button></Indicator>`,
     ).join('\n'),
   ),
   render: () => (
     <Row>
-      {PLACEMENTS.map((p) => (
-        <Indicator key={p} placement={p} label="New">
+      {CORNERS.map((p) => (
+        <Indicator key={p} corner={p} label="New">
           <Button>Inbox</Button>
         </Indicator>
       ))}

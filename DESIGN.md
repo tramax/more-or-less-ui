@@ -1392,7 +1392,7 @@ type IndicatorProps = Omit<HTMLAttributes<HTMLSpanElement>, 'color' | 'children'
   max?: number; // default 99; above it the mark reads "99+"; zero or negative falls back to it
   isZeroShown?: boolean;
   isHidden?: boolean; // takes the mark away; the children stay mounted
-  placement?: 'top-end' | 'top-start' | 'bottom-end' | 'bottom-start'; // default 'top-end'; logical
+  corner?: 'top-end' | 'top-start' | 'bottom-end' | 'bottom-start'; // default 'top-end'; logical
   overlap?: 'rectangle' | 'circle'; // the shape of what is wrapped; default 'rectangle'
   size?: ScaleProp; // font-size of the mark; the dot, the count's height and its padding follow
   label?: string; // what assistive tech hears; without it the mark is decorative
@@ -1441,7 +1441,12 @@ nothing grows on the way out. Both are off under `prefers-reduced-motion` throug
 takes no pointer events, so a click lands on what it wraps. `size` sets the font-size of the **mark**
 (`_shared/Size.module.css`), not the root, so a bigger indicator does not enlarge the wrapped text.
 
-**Placement is two nested boxes, not a transform.** A zero-size anchor (`position: absolute`) sits on the
+**Why `corner`, not `placement`.** `placement` means an edge (`top` / `bottom`) everywhere else, paired with
+`align` (Tooltip, Popover, Select, Menu, Toast, through [Overlay](#overlay)). Here the value is one of four
+corners, which is one thing and not an edge plus an alignment: splitting it would add an `align` with a
+`center` the mark never has. So it has its own name, and `placement` is left to mean the edge.
+
+**The corner is two nested boxes, not a transform.** A zero-size anchor (`position: absolute`) sits on the
 corner by logical insets (`inset-block-start`, `inset-inline-end`, ...), and the mark is centered on it by
 the anchor's flexbox, overflowing equally every way. So the corner mirrors in a right-to-left page (a
 `translate(50%, -50%)` would not), and a wider count needs no offset to know its own width.
@@ -2428,7 +2433,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 
 **Display and feedback** (no overlay, no state machine):
 
-- [x] `Indicator` — the **dot or count** pinned to a corner of what it wraps (an unread "3", an online dot). count / max / isZeroShown / isHidden, placement (logical corners), overlap (`rectangle` / `circle`), size, label (decorative until named). Brand color, never red; the fill aliases `--color-primary-strong` (the plain primary is 2.1:1 on white). Avatar's status dot is `<Indicator overlap="circle">`
+- [x] `Indicator` — the **dot or count** pinned to a corner of what it wraps (an unread "3", an online dot). count / max / isZeroShown / isHidden, corner (logical corners), overlap (`rectangle` / `circle`), size, label (decorative until named). Brand color, never red; the fill aliases `--color-primary-strong` (the plain primary is 2.1:1 on white). Avatar's status dot is `<Indicator overlap="circle">`
 - [x] `Divider` — orientation (`horizontal` / `vertical`); a one-pixel `<hr>` in `--color-divider`, no margin (the layout's gap spaces it, as Card's); no scale props
 - [x] `Progress` — shape (`bar` / `circle`), size, value / max (no value: indeterminate), named by `aria-label` or `aria-labelledby`; the indeterminate circle is Spinner
 - [x] ~~`Skeleton`~~ — not a component: loading is `aria-busy` on a region, and Text, Avatar and `OptionText` become blocks (`_shared/Placeholder`; see Loading). A wrapper means a second layout to keep in step and heights to match by hand. Still open: Button, Chip, fields, a block for an image or chart

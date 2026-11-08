@@ -52,12 +52,12 @@ describe('Indicator', () => {
         max: 9,
         isZeroShown: true,
         isHidden: false,
-        placement: 'bottom-start',
+        corner: 'bottom-start',
         overlap: 'circle',
         size: 'more',
         label: '3 unread',
       });
-      for (const attr of ['count', 'max', 'placement', 'overlap', 'size', 'label'])
+      for (const attr of ['count', 'max', 'corner', 'overlap', 'size', 'label'])
         expect(el.hasAttribute(attr)).toBe(false);
     });
   });
@@ -189,7 +189,7 @@ describe('Indicator', () => {
     });
   });
 
-  describe('placement and overlap', () => {
+  describe('corner and overlap', () => {
     it('defaults to the top end of a rectangle', () => {
       const el = renderIndicator();
       expect(has(anchorOf(el), styles.topEnd)).toBe(true);
@@ -201,8 +201,8 @@ describe('Indicator', () => {
       ['top-start', 'topStart'],
       ['bottom-end', 'bottomEnd'],
       ['bottom-start', 'bottomStart'],
-    ] as const)('puts %s on the %s class', (placement, className) => {
-      const el = renderIndicator({ placement });
+    ] as const)('puts %s on the %s class', (corner, className) => {
+      const el = renderIndicator({ corner });
       expect(has(anchorOf(el), styles[className])).toBe(true);
     });
 
