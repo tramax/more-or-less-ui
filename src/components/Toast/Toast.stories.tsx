@@ -1,8 +1,9 @@
-import { useRef, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { showCode } from '../../../.storybook/snippet';
 import { Button } from '../Button';
 import { Dialog } from '../Dialog';
+import type { OverlayAlign, OverlayPlacement } from '../_shared/Overlay';
 import { Stack } from '../Stack';
 import { Text } from '../Text';
 import { TOAST_DEFAULTS, ToastProvider, useToast } from './ToastProvider';
@@ -88,6 +89,59 @@ function FireMany() {
     </Button>
   );
 }
+
+const POSITIONS: { placement: OverlayPlacement; align: OverlayAlign }[] = [
+  { placement: 'top', align: 'start' },
+  { placement: 'top', align: 'center' },
+  { placement: 'top', align: 'end' },
+  { placement: 'bottom', align: 'start' },
+  { placement: 'bottom', align: 'center' },
+  { placement: 'bottom', align: 'end' },
+];
+
+function PlacementButtons({ onPick }: { onPick: (position: (typeof POSITIONS)[number]) => void }) {
+  const toast = useToast();
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, auto)', gap: '0.5rem' }}>
+      {POSITIONS.map((position) => (
+        <Button
+          key={`${position.placement}-${position.align}`}
+          onClick={() => {
+            onPick(position);
+            toast.add({ description: `${position.placement} ${position.align}`, duration: 3000 });
+          }}
+        >
+          {position.placement} {position.align}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
+function PlacementDemo() {
+  const [position, setPosition] = useState(POSITIONS[5]!);
+  return (
+    <ToastProvider placement={position.placement} align={position.align}>
+      <Row>
+        <PlacementButtons onPick={setPosition} />
+      </Row>
+    </ToastProvider>
+  );
+}
+
+/**
+ * `placement` is the edge (`top` or `bottom`) and `align` is where along it (`start`, `center`, `end`), so
+ * six places. `start` and `end` are logical: they swap in a right-to-left page. It is the provider's, so
+ * every toast of the page goes to the same place; here the buttons change the provider's props.
+ */
+export const Placement: Story = {
+  parameters: {
+    ...showCode(`<ToastProvider placement="top" align="center">
+  <App />
+</ToastProvider>`),
+  },
+  render: () => <PlacementDemo />,
+};
 
 /**
  * A toast with an `action` stays until it is dismissed: a message the person may need to act on must
