@@ -21,6 +21,13 @@ const PLACEMENT_CLASS = {
 export const overlayClass = (placement: OverlayPlacement, align: OverlayAlign = 'center') =>
   clsx(styles.overlay, styles.anchored, PLACEMENT_CLASS[placement][align]);
 
+/**
+ * The classes of an overlay that is neither anchored nor modal: the same finish and motion, and the
+ * consumer puts it where it goes (Toast's viewport). It grows from the edge that `data-side` names, as an
+ * anchored one does: `top` for one that sits above its edge, `bottom` for one below.
+ */
+export const floatingClass = clsx(styles.overlay);
+
 /** The classes of a modal overlay (Dialog): the same motion and finish, centred in the viewport. */
 export const modalClass = clsx(styles.overlay, styles.modal);
 

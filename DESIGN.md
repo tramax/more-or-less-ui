@@ -921,7 +921,7 @@ button. It sits beside the chevron (`aria-label="Clear"`, out of the tab order l
 shift when a value is picked. It clears what can be cleared: a disabled option stays, as for
 Backspace. Keyboard: Backspace with nothing typed clears a non-searchable single Select (a multiple
 one already removes the last chip); a searchable single one clears when its text is emptied. The ×
-is `_shared/CrossIcon`, shared with the chip, Banner's dismiss button and the close button of Dialog and Drawer (all `_shared/CloseButton`).
+is `_shared/CrossIcon`, shared with the chip, Banner's and Toast's dismiss buttons and the close button of Dialog and Drawer (all `_shared/CloseButton`).
 
 **Value.** Like Radio (`null` is the explicit empty value) for a single one, like Checkbox (`string[]`,
 options order) for a multiple one. The user can't clear a single Select unless `isClearable`, which
@@ -1028,7 +1028,7 @@ type BannerProps = Omit<HTMLAttributes<HTMLDivElement>, 'color' | 'title'> & {
 An announcement in the flow of the page, not a status message. Researched against Carbon's inline
 notification, GOV.UK's notification banner and the W3C alert pattern: it sits where it concerns, stays
 until dismissed or resolved, and doesn't float, stack or time out (a toast is a different component,
-not built). Called Banner, not Alert, because it announces rather than warns.
+see [Toast](#toast)). Called Banner, not Alert, because it announces rather than warns.
 
 **`background` is intensity, not a kind of message.** It is named for what it sets, as in Button, so an
 escape-hatch value reads naturally (`background="linear-gradient(...)"`) instead of a "severity" that
@@ -1058,7 +1058,7 @@ the tab order (unlike a Select chip's: a banner is not inside a field). On hover
 Select's, over a faint disc of the text color (10%); when pressed the whole button shrinks (0.8,
 quick, no overshoot), so the disc and the × go down together, and the disc deepens (20%). With `prefers-reduced-motion` only the disc remains. The hit area is 1.75em around a 1em ×. The Banner doesn't hide itself: the caller stops
 rendering it and decides whether it comes back, so the state stays one place. The button's look is
-`_shared/CloseButton`'s, shared with the close button of Dialog and Drawer; Banner supplies only its margin.
+`_shared/CloseButton`'s, shared with Toast's dismiss and the close button of Dialog and Drawer; Banner supplies only its margin.
 
 **Role.** `role="status"` (a polite live region), so a banner rendered after the page has loaded is
 announced without moving focus, as the W3C alert pattern advises. One already on the page at load is
@@ -1475,7 +1475,8 @@ the count changes, a `Tooltip`, wrapping Avatar's name and circle separately, a
 
 `_shared/useOverlay.ts` and `_shared/Overlay.module.css`: what Select's popup, Tooltip, Popover, Menu and
 Dialog share, and what the rest will. Extracted from Select's former `useSelectPopup` when Tooltip became
-the second consumer.
+the second consumer. Toast takes only the CSS (through `floatingClass`): its viewport is not an overlay
+with a trigger, so it has no use for the hook.
 
 ```tsx
 const overlay = useOverlay({
@@ -1521,7 +1522,9 @@ values are written once. They are logical: `start` puts the overlay's start edge
 (`block-end span-inline-end`), `end` puts the end edges together (`span-inline-start`), `center` centers
 it on the anchor. The overlay flips to the other side when it doesn't fit (`data-side` follows), and to
 the other edge when it overflows the side of the viewport; the inline fallback is not checked in a
-browser yet.
+browser yet. `floatingClass` is the `overlay` class alone, for an overlay that is placed by something
+else (Toast): the finish and motion, none of `anchored`, `modal` or the six placements. A consumer that
+sets `data-side` chooses which edge it grows from.
 
 **Dismissal is opt-in, and each option is the whole of its behavior.** Light dismiss is never the native
 one (`popover="auto"`): the consumer decides what closes it, so Select and Tooltip, which turn nothing on
@@ -1867,6 +1870,154 @@ dialog with no veil has little to set it apart from the page, but it could with 
 beside it live), a header and an actions row that stay in view while the content scrolls (Dialog has the
 same limit), and resizing.
 
+### Toast
+
+Researched against Base UI's Toast, Sonner, Radix, and WCAG 2.2.1 (Timing Adjustable). `Toast/` has
+`ToastProvider` (the list, the queue, the viewport, `useToast`), `Toast` (`ToastView`, one toast),
+`ToastAnnouncer` and `useToastTimers`.
+
+```tsx
+<ToastProvider placement="bottom" align="end" limit={3} duration={5000}>
+  <App />
+</ToastProvider>;
+
+const toast = useToast(); // { add, update, close }
+const id = toast.add({
+  id, // optional: an id that exists updates that toast in place and restarts its timer
+  title, // a short headline, in heavier type
+  description, // the message (ReactNode); one of title / description is required
+  action, // ReactNode: a Button or a link. A toast with one stays until dismissed (see Timer)
+  size, // ScaleProp: the font size, which the padding and gaps follow; default 'normal'
+  duration, // ms; default the provider's 5000; 0 = until dismissed
+  priority, // 'low' (polite, default) | 'high' (assertive)
+  onClose, // called once it is gone, whoever closed it
+}); // returns the id
+toast.update(id, { description: 'Saved' });
+toast.close(id);
+```
+
+A message that appears over the page for a moment, fired from an event handler or async code, not
+rendered where it concerns. Closest sibling is Popover, through [Overlay](#overlay): a small floating
+surface of text and a Button. (It was a Banner first, a flat block of the brand color with a shadow added;
+it floats, so it is drawn as the other floating things are, not as a block that has been lifted.) **Shared:**
+the overlay's finish and motion (`_shared/Overlay.module.css`, through `floatingClass` in `Overlay.ts`: the
+frosted glass, the squircle corners, the grow-out and shrink-back, the border under `forced-colors`), its
+surface color (`--color-toast-background` aliases `--color-overlay-background`, as Popover's), the shadow
+(`--elevation-more`), `_shared/CloseButton` for the ×, the `size` scale (`_shared/Size.module.css`: it is
+the only scale prop), and the vocabulary `OverlayPlacement` / `OverlayAlign` from `_shared/Overlay.ts`.
+**What differs:** it is fired, not rendered (a provider and a hook), it is one of a stack, it times out, it
+is placed by its viewport at a corner of the page and not against an anchor, and it has a title, an action
+and a ×. There is no `background` prop: no other overlay has one, and the surface is the overlay's. The
+provider and the hook are the first React context in the library besides the theme. They are the only
+shape that gives stacking: a declarative `<Toast isOpen>` leaves the queue and the limit to every caller.
+
+**One provider per page.** Each `ToastProvider` has its own list and its own viewport, fixed to its corner,
+so two on one page put their toasts on top of one another and don't share a limit. Put one near the root.
+Storybook's Docs page renders every story at once, each with its own provider, so the Toast stories are
+rendered in iframes there (`docs.story.inline: false`); in a story's own page there is only one.
+
+**Stack.** One viewport holds every toast, in a column at `placement` (`top` / `bottom`) and `align`
+(`start` / `center` / `end`; logical, so `start` and `end` swap in a right-to-left page); default bottom, end.
+The newest is nearest the edge. At most `limit` (3) show; the rest wait, unmounted, and the next one takes
+its place when one goes (so a burst is not read out in one go). A waiting toast can still be updated or
+closed by its id (a queued toast that is closed is dropped at once, with no exit). One that leaves stays
+mounted for its exit animation (`_shared/usePresence`, 300ms for a toast) and **holds its place until it
+is gone**: a queued toast takes over that place when the exit is over, not beside the leaving one. Showing
+it at once made the three on screen jump up a whole toast in one frame, as the old one began to fade, and
+back down when it was removed. This way the stack is never more than `limit` high, and a toast dismissed
+at the edge is replaced in the same place, with nothing moving. When the others do have to move (a toast
+added at the edge, one removed from the middle or the near end, a queued one arriving as the oldest leaves),
+they glide there in 250ms instead of jumping: `useReflow`, below. There is no collapsed "deck" of
+overlapping toasts (Sonner's); it is a second layout for the same content. Adding a toast whose `id` is there, even one that is leaving, updates it and brings it back.
+
+**Timer.** `duration` of 5000 ms from the moment it shows (not from when it was queued). It pauses while the pointer
+is over the viewport, while focus is inside it, and while the tab is hidden, and resumes with the time
+that was left. A toast with an `action` defaults to `duration: 0` (until dismissed): a message the person may
+need to act on must not vanish under the pointer. A caller can still pass a number. **The rule for callers:**
+a finite toast confirms something the page also shows (WCAG 2.2.1 allows a timed message the person can find
+another way). Anything they must read, and can't find elsewhere, is a Banner or `duration: 0`.
+Escape is not used: it belongs to the overlay below.
+
+**Announcing.** Each toast is announced once, by a persistent, visually hidden live region (polite for
+`low`, assertive for `high`) that the provider keeps mounted, and not by a `role="status"` on the toast
+itself: a live region that is inserted with its text is announced unreliably, and with the announcer it
+would say it twice. The toast has a non-live role (`group`). The visible
+viewport is `role="region"` named "Notifications", only while it holds a toast (an empty landmark is
+noise). The text is the title and the message's text content, said once per revision (an `update` says it
+again; a toast that waited in the queue says it when it shows) and cleared after 3 s so a screen reader's
+browse mode doesn't find it left behind. The same text twice is still read: the text node is replaced
+(`key`). The regions are `_shared/VisuallyHidden`, built with Toast (the foundations list's utility; not
+exported).
+
+**Inside a modal.** A modal `<dialog>` makes everything outside it inert (it can't be pressed, focused or
+read), and the top layer ignores `z-index`, so a toast beside it would show behind nothing and could not be
+used. `_shared/ModalFrame` registers its `<dialog>` as a toast host while it is open (a small context in
+`_shared/`, a no-op without a provider), and the provider portals the viewport and the announcer into the
+topmost host, else to its own place. The timers and the queue are the provider's state, not the DOM's, so
+the move does not reset them; the toasts remount (the enter motion plays again, focus inside a toast is
+lost) and the viewport shows itself again on mount. The viewport is then the last child of the dialog, so Tab
+reaches it after the content. It unregisters when the modal starts to close, not when it unmounts, so it
+is back on the page before the `<dialog>` is removed. Dialog and Drawer both get this through `ModalFrame`.
+
+**Look.** The overlay's frosted page-colored surface (`--color-toast-background`, the page color at 60%,
+with the page blurred behind it) with `--elevation-more`, and the overlay's `--radius-normal` corners. A
+toast has two elements: the surface (`.toast`, with the overlay classes, the background and the shadow) and
+inside it the content (`.content`), which has the padding, the layout and the font size. `size` is on the
+content and not on the surface because the overlay's `font: inherit` is on the surface, and a `font-size`
+beside it would be settled by file order. So the width is the content's: 24em, at most the viewport less
+2em, and a larger `size` makes a wider toast, as it makes a taller one. The content is a row: the text on
+the left (the title in `--weight-more`, the message under it, the `action` under that, `0.5em` apart) and
+the × at the top right, as Banner's, centered on the first line. The viewport is 1em from the edges and the
+gap between toasts is 0.5em. It comes in as the overlay does: it grows out of the edge it sits against
+(`data-side` is `top` for a toast above the bottom edge, so it grows from its bottom and starts a little
+lower; `bottom` for the top edge), with the springy `--ease-enter` and a fade; it leaves
+more slowly than an overlay does: the overlay's 150ms exit has an ease that is done in about 90ms of it,
+right for a popup that was asked for, and a cut for a toast that goes by itself with the page in view. So
+a toast's exit is the same two animations at 250ms (`animation-duration` and `animation-timing-function`
+in `Toast.module.css`, under `.viewport .toast` so the file order doesn't matter), the fade easing at
+both ends, and `usePresence` keeps it for 300ms; with `prefers-reduced-motion` only the fade, in 150ms. The ×'s look is `_shared/CloseButton`'s.
+The one new token is `--color-toast-background`, so a theme can recolor it on its own.
+
+**Shared code extracted in the same change.** `useOverlay` kept the 200 ms an overlay stays mounted to
+animate out; every toast needs the same, so it is `_shared/usePresence(isOpen)` and `useOverlay` calls it.
+`Overlay.ts` gained `floatingClass` for an overlay that is neither anchored nor modal. The viewport is
+not a `useOverlay` consumer: its life is the toasts' presence, there is no trigger or anchor, and it must
+show itself on mount to survive being moved into a modal. It sets `popover="manual"` and calls
+`showPopover()` itself (in `ToastProvider.tsx`; a popover's own `display: none` is only overridden once
+`:popover-open`). The timers are `useToastTimers`, which keeps each toast's time left in a map, outside
+the toasts, so a remount doesn't start it again. `usePresence(isOpen, exitMs)` takes the time the exit
+takes (default 200ms, the overlay's). `useReflow` is the glide: each render it reads where each child
+of the viewport was and is, and animates the difference away with `translate` (a property of its own, so
+it doesn't fight the `transform` of the enter and leave animations), over 250ms with `--ease-leave` read
+from the token; not under `prefers-reduced-motion` or without the Web Animations API. It reads nothing while
+the viewport is `display: none`, which it is until `showPopover()` has run (an effect, after the hook's
+layout effect): everything in a hidden element reads as 0, so the first toast, measured then and again at the
+next render, was "moved" 500px from the top of the page to its place. A regression test emulates that.
+
+**Checked in Chrome** (by a script driving the Storybook stories, not kept in the repo): a toast fired
+in an open Dialog is inside the `<dialog>`, is the element under the pointer, and its action and × can be
+pressed; the same toast moved out of the dialog by hand is under the `<dialog>` and can't be pressed (so
+the relocation is what makes it work); on the page it sits at the bottom end, a pointer over it holds the
+timer past 5 s, five fired shows three, and the queued ones take their turn; a toast that is dismissed
+is half faded at about 125ms (it was 48ms with the overlay's exit, and gone by 100ms) and under 5% at
+about 210ms, never more than `limit` are on screen, and the largest move of any toast between two frames is
+4px (a glide) or under 1px (when the queued one takes the dismissed one's place); it was 54px, in one frame; the viewport is back on the
+page, and usable, when the dialog closes. The look was checked over a striped page: the frosted glass
+blurs and tints what is behind it and the text stays readable, an action sits under the message, and
+`size` scales the padding and gaps with the text. Tests (jsdom) cover the rest: timers and pausing, the
+queue, update and revive, announcing, the surface's classes and the grow direction, and the move into and
+out of a modal.
+
+**Not checked:** with a screen reader (that the announcer speaks, and is not silent for the first message
+of a toast fired in the same render as a modal opening, when its live region has just moved), in Firefox
+or Safari, or that focus behaves in a toast pressed with the keyboard.
+
+**Not yet:** swipe to dismiss, promise toasts (`loading` / `success` / `error` in one call), dedupe of an
+identical message, the collapsed deck, an F6-style hotkey into the
+viewport, focus going somewhere sensible when a toast that had it is dismissed (it falls to the body), a
+global manager for use outside React (`createToastManager`), localisation of "Notifications", per-toast
+`placement`, and `closeAll`.
+
 ---
 
 ## Loading
@@ -2079,8 +2230,9 @@ more-or-less-ui/
 │   │   ├── Drawer/
 │   │   ├── Menu/
 │   │   ├── Popover/
+│   │   ├── Toast/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu; OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu; useTriggerRef: Tooltip + Popover + Menu)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu; useTriggerRef: Tooltip + Popover + Menu)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -2270,7 +2422,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 **Foundations first** (small, and the rest stand on them):
 
 - No `Icon` component, and no icon set. The consumer brings the icon library; every `icon` prop takes a `ReactNode` and `_shared/OptionIcon` is its one slot (decorative, `aria-hidden`). A second glyph slot beside it would only repeat it, and a library's own `size` and `color` props already cover sizing. If standalone icons outside an `icon` prop are ever needed, export `OptionIcon` under a better name rather than adding a new component
-- [ ] `VisuallyHidden`, `Portal` — utilities the overlays need
+- [ ] `Portal` — utility the overlays need. `VisuallyHidden` is built, in `_shared/` and not exported (Toast's announcer uses it); export it if a consumer needs it
 - [x] `Spinner` — size (unset: 1em, as big as the surrounding text), named by `aria-label` or hidden; moved out of `_shared/` (Button, Select use it)
 - [x] Overlay primitive in `_shared/` (`useOverlay` + `Overlay.module.css`; see [Overlay](#overlay)) — extracted from Select's former `useSelectPopup` in the same change as Tooltip, its second consumer. Outside-click dismissal, focus return and controlled state arrived with Popover, as opt-in options
 
@@ -2289,7 +2441,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 - [x] `Menu` (dropdown) — trigger prop and `items`, `onSelect`, placement, align, isOpen / defaultIsOpen / onOpenChange; roving focus on `menuitem` buttons (APG). Extracted Select's popup surface and rows into `_shared/OptionList.module.css`, its keyboard helpers and type-ahead into `_shared/optionNavigation`, and `TriggerProps` into `_shared/useTriggerRef`. Still to do: separators / groups, checkable items, submenus
 - [x] `Dialog` — a native `<dialog>` with `showModal()` (the page inert, so Tab stays inside; the backdrop), through `useOverlay`'s new `isModal`; optional trigger, `title`, `actions`, `isBackdropClosing`, isOpen / defaultIsOpen / onOpenChange. Named Dialog, not Modal (see [Dialog](#dialog)). Escape now closes only the topmost overlay, and `anchored` is split out of `Overlay.module.css`'s `overlay` class
 - [x] `Drawer` — Sibling: Dialog; the same modal floating beside an edge (`placement`: start, end, top, bottom; every corner rounded, a 1em gap) with a slide in place of the grow, and `isBackdropShown` to keep the page unveiled. Extracted Dialog's behavior and structure into `_shared/ModalFrame`, added `dockedClass` and the slide to the overlay, and renamed Dialog's two color recipes to the neutral `--color-modal-background` / `--color-modal-backdrop`, which `--color-dialog-*` and `--color-drawer-*` alias. Still to do: a width / `size`, a sticky header and actions
-- [ ] `Toast` — Sibling: Banner (it is a Banner that floats and times out; Banner's section says so)
+- [x] `Toast` — Sibling: Popover, through Overlay (it was a Banner first; it floats, so it takes the overlay's frosted surface, corners and motion through `floatingClass`, and has no `background` prop). `ToastProvider` + `useToast()` (`add` / `update` / `close`), `size`, a stack of up to `limit` (3; the rest queue), `duration` 5000 ms that pauses on hover, focus and a hidden tab, and is 0 for a toast with an `action`, a visually hidden announcer (`priority`), and a viewport that moves into an open modal (`ModalFrame` registers its `<dialog>` as a toast host through `_shared/ToastHost`). Added `--color-toast-background` (an alias of the overlay recipe), extracted `_shared/usePresence` from `useOverlay`, and built `_shared/VisuallyHidden`. See [Toast](#toast) for what was and was not checked
 
 **Navigation and disclosure:**
 

@@ -172,6 +172,8 @@
 
   --color-popover-background: var(--color-overlay-background);
 
+  --color-toast-background: var(--color-overlay-background);
+
   --color-dialog-background: var(--color-modal-background);
   --color-dialog-backdrop: var(--color-modal-backdrop);
 

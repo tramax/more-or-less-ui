@@ -1,0 +1,123 @@
+/*
+ * Toast: the overlay (_shared/Overlay.module.css) supplies the frosted glass, the corners and the motion
+ * (it grows out of the edge it sits against, and shrinks back); what is here is the viewport, the one
+ * element in the top layer that holds every toast, and the toast's surface and its inside, as Popover's
+ * is. Everything inside is in em, so `size` (which sets font-size on `.content`) scales the padding and
+ * the gaps too. The viewport's em is the font size of where the ToastProvider is rendered.
+ */
+
+/*
+ * A popover is centred by default, with a border, padding and a background. The viewport is a column
+ * at a corner of the viewport, as wide as its widest toast. `display: flex` only once it is shown: an
+ * author `display` would otherwise win over the browser's `display: none` for a popover that is closed.
+ */
+.viewport {
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: visible;
+  color: inherit;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: calc(100vw - 2em);
+}
+.viewport:popover-open {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.top {
+  inset-block-start: 1em;
+}
+.bottom {
+  inset-block-end: 1em;
+}
+/* Logical, so `start` and `end` swap in a right-to-left page; the cross axis of the column follows */
+.start {
+  inset-inline-start: 1em;
+  align-items: flex-start;
+}
+.center {
+  inset-inline: 0;
+  margin-inline: auto;
+  align-items: center;
+}
+.end {
+  inset-inline-end: 1em;
+  align-items: flex-end;
+}
+
+/* The surface: the overlay's frosted glass on the page color, lifted by a shadow */
+.toast {
+  background: var(--color-toast-background);
+  box-shadow: var(--elevation-more);
+}
+
+/*
+ * A toast leaves slower than an overlay does. The overlay's exit is 150ms with an ease that is done in
+ * about 90ms of it, which is right for a popup that was asked for and is closing, and reads as a cut for
+ * a toast, which goes by itself, with the page in view. The same two animations (their names are in
+ * Overlay.module.css and can't be reached from here), given longer, and a fade that eases at both ends.
+ * `.viewport .toast` outranks the overlay's `.overlay[data-state]`, so the order of the files does not
+ * matter. EXIT_MS in Toast.tsx is a little longer than this.
+ */
+.viewport .toast[data-state='closed'] {
+  animation-duration: 250ms, 250ms;
+  animation-timing-function: var(--ease-leave), ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* The overlay's reduced exit is a single fade */
+  .viewport .toast[data-state='closed'] {
+    animation-duration: 150ms;
+    animation-timing-function: ease-in-out;
+  }
+}
+
+/* No padding on the surface: it is here, so it follows the font size that `size` sets on this element */
+.content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75em;
+  box-sizing: border-box;
+  width: min(24em, calc(100vw - 2em));
+  padding: 0.75em 1em;
+  color: CanvasText;
+  line-height: 1.4;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-weight: var(--weight-more);
+}
+
+.message {
+  overflow-wrap: anywhere;
+}
+/* A message under a headline gets a little air; alone it needs none */
+.title + .message {
+  margin-top: 0.25em;
+}
+
+/* An action under the message: a Button or a link */
+.action {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+}
+.body > * + .action {
+  margin-top: 0.5em;
+}
+
+/* The button is _shared/CloseButton, 1.75em square. The negative margin keeps the toast as tall as its
+   text: the button is centered on the first line, which is 1.4em tall. */
+.dismiss {
+  margin: -0.25em -0.25em -0.25em 0;
+}

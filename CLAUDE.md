@@ -48,21 +48,26 @@ same recipe is defined under two names.
   popup, Menu's panel); the component sets `--list-background` and `--list-active` from its own tokens.
   `_shared/optionNavigation` is `stepEnabled`, `findByPrefix` and `useTypeahead` for the keyboard.
 - `_shared/useOverlay` + `Overlay.module.css` + `Overlay.ts` are every overlay (Select's popup, Tooltip,
-  Popover, Menu, and Dialog and Drawer through `isModal`); `_shared/useTriggerRef` is the trigger clone's ref and `TriggerProps`. `_shared/useScrollLock` stops the page scrolling under a modal (Dialog).
+  Popover, Menu, and Dialog and Drawer through `isModal`; Toast takes only the CSS, through `floatingClass`); `_shared/useTriggerRef` is the trigger clone's ref and `TriggerProps`. `_shared/useScrollLock` stops the page scrolling under a modal (Dialog).
 - `_shared/ModalFrame` is every modal (Dialog, Drawer): the `<dialog>`, trigger, backdrop press, scroll
   lock, header, actions, and `ModalProps`. A modal passes it `className` (the overlay classes from
   `Overlay.ts`, its size and placement, and `--modal-background` / `--modal-backdrop` from its own
   tokens) and `contentClassName`, and writes only where it sits and how big it is.
+- `_shared/usePresence` is how long a thing stays mounted after it closes, to animate out (`useOverlay`,
+  and each toast). `_shared/ToastHost` is how a modal tells `ToastProvider` "show toasts in me": the page
+  behind a modal `<dialog>` is inert, so a toast beside it can't be pressed. `ModalFrame` does it, so a new
+  modal built on it needs nothing; a new modal that is not built on it must call `useToastHost`.
+- `_shared/VisuallyHidden` is text for screen readers only (Toast's live regions); not exported.
 - `_shared/CheckIcon` and `_shared/CrossIcon` are the ✓ and ×, drawn with attributes; a consumer's
   class sets only size, color and motion.
-- `_shared/CloseButton` is the round × button (disc on hover, shrink on press) of Banner's dismiss and
-  Dialog's close; the consumer passes `label`, `onClick` and spacing through `className`.
+- `_shared/CloseButton` is the round × button (disc on hover, shrink on press) of Banner's and Toast's
+  dismiss and Dialog's close; the consumer passes `label`, `onClick` and spacing through `className`.
 - `_shared/Gap` is the `gap` scale (classes + `resolveGap`) for Stack and Grid, which both render a Box
   for padding and margin. A new layout component takes `gap` from it rather than its own classes.
 - `_shared/OptionText` is the label + description beside an option's control; `_shared/types.ts` has
   `NameProps` (the accessible-name union for every labelled input) and `OptionBase` (one option).
 - `_shared/Size.module.css` is the `size` scale as font-size. A component whose only scale prop is
-  `size` (Spinner, Progress) passes it to `resolveScaleProps` instead of copying the classes.
+  `size` (Spinner, Progress, Toast) passes it to `resolveScaleProps` instead of copying the classes.
 - `_shared/Ring` is the ring's drawing (viewBox, radius, stroke width, `pathLength` 100) for Spinner's
   arc and Progress's track and arc. A new circular mark takes it rather than its own SVG numbers.
 - `_shared/Placeholder` is what text and pictures look like inside `aria-busy="true"`: the one recipe

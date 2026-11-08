@@ -3,7 +3,7 @@ import { CrossIcon } from './CrossIcon';
 import styles from './CloseButton.module.css';
 
 /**
- * A round × button that takes the color and font size around it: Banner's dismiss and Dialog's close.
+ * A round × button that takes the color and font size around it: Banner's dismiss, Toast's, and Dialog's close.
  * It is a plain `type="button"`, in the tab order, named by `label`. Spacing and alignment go through
  * `className`.
  */

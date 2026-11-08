@@ -2,7 +2,8 @@
  * An overlay: an element in the top layer (a Popover API element, or a modal <dialog>) with one finish
  * and one motion (see useOverlay.ts, which shows it). Select's popup, Tooltip, Popover and Menu are
  * `anchored`: placed with CSS anchor positioning, growing out of their anchor when they open. Dialog is
- * `modal`: centred in the viewport, growing from its middle. A consumer adds its own `position-area`,
+ * `modal`: centred in the viewport, growing from its middle. Toast is neither: its viewport places it,
+ * and it grows from the edge it sits against. A consumer adds its own `position-area`,
  * width and surface (background, padding, shadow), and nothing about where it sits or how it moves.
  *
  * The popover's own defaults centre it in the viewport (inset: 0; margin: auto); `inset: auto` and

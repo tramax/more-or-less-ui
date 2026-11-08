@@ -7,9 +7,7 @@ import {
   type CSSProperties,
   type SyntheticEvent,
 } from 'react';
-
-// A little longer than the longest exit animation in Overlay.module.css (150ms)
-const EXIT_MS = 200;
+import { usePresence } from './usePresence';
 
 // The overlays listening for Escape, the one opened last at the end: only that one closes, so Escape in
 // a Menu or Popover inside a Dialog closes the Menu and the Dialog stays
@@ -68,14 +66,8 @@ export function useOverlay<Element extends HTMLElement = HTMLDivElement>({
 }: UseOverlayOptions = {}) {
   const [internalOpen, setInternalOpen] = useState(defaultIsOpen);
   const isOpen = isOpenProp ?? internalOpen;
-  const [isLeaving, setIsLeaving] = useState(false);
-  // Leaving starts in the render where it closes, not in an effect after it: for one frame there
-  // would be neither an open overlay nor a leaving one, and it would unmount and mount again.
-  const [wasOpen, setWasOpen] = useState(isOpen);
-  if (wasOpen !== isOpen) {
-    setWasOpen(isOpen);
-    setIsLeaving(!isOpen);
-  }
+  // It outlives `isOpen` by `EXIT_MS`, to animate out
+  const isPresent = usePresence(isOpen);
   // What `open` and `close` check: they may run from a timer or a listener set up in an earlier render
   const isOpenRef = useRef(isOpen);
   const onOpenChangeRef = useRef(onOpenChange);
@@ -113,12 +105,6 @@ export function useOverlay<Element extends HTMLElement = HTMLDivElement>({
     }
   }, [isOpen, isModal]);
 
-  useEffect(() => {
-    if (!isLeaving) return;
-    const timer = window.setTimeout(() => setIsLeaving(false), EXIT_MS);
-    return () => window.clearTimeout(timer);
-  }, [isLeaving]);
-
   const setOpen = (next: boolean) => {
     // Closing an overlay that isn't open (a blur) must not bring it back for its exit
     if (isOpenRef.current === next) return;
@@ -137,7 +123,6 @@ export function useOverlay<Element extends HTMLElement = HTMLDivElement>({
   const isPressClosing = useRef(false);
   // A modal keeps the page inert while it leaves, and an inert anchor can't take focus: it is
   // returned once the dialog is gone, not when it starts to leave
-  const isPresent = isOpen || isLeaving;
   const isShown = isModal ? isPresent : isOpen;
   const wasShownRef = useRef(isShown);
   useEffect(() => {

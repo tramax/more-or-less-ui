@@ -9,6 +9,7 @@ import {
 import { clsx } from '@/utils/clsx';
 import { Text } from '../Text';
 import { CloseButton } from './CloseButton';
+import { useToastHost } from './ToastHost';
 import { useOverlay } from './useOverlay';
 import { useScrollLock } from './useScrollLock';
 import { useTriggerRef, type TriggerProps } from './useTriggerRef';
@@ -101,6 +102,9 @@ export function ModalFrame({
   });
   // For as long as it is on screen, exit animation included: the page is inert until then
   useScrollLock(overlay.isPresent);
+  // Toasts fired while it is open show inside it: the rest of the page is inert. `isOpen`, not
+  // `isPresent`, so they are back on the page before the <dialog> is removed.
+  useToastHost(overlay.overlayRef, overlay.isOpen);
   const id = useId();
   const titleId = `${id}-title`;
   const triggerProps = trigger?.props as TriggerProps | undefined;
