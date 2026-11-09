@@ -125,11 +125,6 @@
   top: 0.875em;
   width: 1em;
   height: 1em;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
   pointer-events: none;
   /* Turns over with a slight overshoot when opening, and settles without one when closing */
   transition:

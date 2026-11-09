@@ -1,0 +1,135 @@
+/*
+ * Collapsible: a header button and the content it folds away. `size` is _shared/Size.module.css, as
+ * Tabs': it sets font-size, and everything here is in em.
+ *
+ * The header is a full-width row. While collapsed it is filled (a fill says "pressable", as Chip's, and
+ * is what tells a folded section from an empty one), and the fill steps up on hover. While open it has
+ * none, so the open content is not framed by a bar; hovering it brings the collapsed fill back as a hint.
+ * The chevron is at the end: it points right when collapsed (toward what is hidden) and down when open. The
+ * content opens by animating its grid row from 0fr to 1fr, which needs no measuring and follows content
+ * that changes size. It has no surface of its own: wrap it in a Card for one.
+ *
+ * Shapes are fixed, not props: the row's radius is --radius-less with a squircle, as an option row's.
+ */
+
+.root {
+  display: block;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  inline-size: 100%;
+  margin: 0;
+  padding: 0.625em 0.75em;
+  border: 0;
+  border-radius: var(--radius-less);
+  corner-shape: squircle;
+  background: var(--color-collapsible-background);
+  /* A button doesn't inherit these; the size comes from the scale classes */
+  color: inherit;
+  font: inherit;
+  line-height: 1.25;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+/* Open: no fill. Under the pointer it gets the collapsed one, a hint that it presses. */
+.root[data-state='open'] > .header {
+  background: transparent;
+}
+@media (hover: hover) {
+  .root[data-state='open'] > .header:hover:not(:disabled) {
+    background: var(--color-collapsible-background);
+  }
+  .root[data-state='closed'] > .header:hover:not(:disabled) {
+    background: var(--color-collapsible-background-hover);
+  }
+}
+.header:focus-visible {
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
+}
+.header:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.title {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.icon {
+  flex: none;
+}
+
+/* The chevron is drawn pointing down. Collapsed, it points right (left in a right-to-left layout; -90deg
+   is a quarter turn counterclockwise), toward the content that is not shown. Opening turns it down, with a
+   slight overshoot; closing settles without one, as Select's does. */
+.root {
+  --chevron-collapsed: -90deg;
+}
+.root:dir(rtl) {
+  --chevron-collapsed: 90deg;
+}
+.chevron {
+  flex: none;
+  width: 1em;
+  height: 1em;
+  transform: rotate(var(--chevron-collapsed));
+  transition:
+    transform 400ms var(--ease-leave),
+    scale 300ms var(--ease-pop);
+}
+.root[data-state='open'] .chevron {
+  transform: none;
+  transition:
+    transform 500ms var(--ease-pop),
+    scale 300ms var(--ease-pop);
+}
+/* Grows on hover by the same amount as a × does. `scale` is its own property, so it doesn't fight
+   the rotation. */
+@media (hover: hover) {
+  .header:hover:not(:disabled) .chevron {
+    scale: var(--scale-icon-hover);
+  }
+}
+
+/* A grid whose one row goes from 0fr to 1fr: the content is clipped to the row, so it grows and shrinks
+   with it. Closed, it is also hidden after the row has closed (the delay), which takes it out of the tab
+   order and the accessibility tree; opening shows it at once, so it is there while it grows. */
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 300ms var(--ease-leave),
+    visibility 0s linear 300ms;
+}
+.root[data-state='open'] > .panel {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows 400ms var(--ease-leave),
+    visibility 0s;
+}
+/* min-height 0 lets the grid row shrink below the content. Padding on the inline sides only: block
+   padding can't shrink with the row and would leave a sliver when closed. It lines the content up with
+   the header's text, and leaves room so the focus ring of what is inside is not clipped by the overflow. */
+.content {
+  min-height: 0;
+  overflow: hidden;
+  padding-inline: 0.75em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .chevron,
+  .root[data-state='open'] .chevron,
+  .panel,
+  .root[data-state='open'] > .panel {
+    transition: none;
+  }
+}

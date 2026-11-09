@@ -192,6 +192,12 @@
   --color-tabs-thumb: Canvas;
   --color-tabs-accent: var(--color-primary-strong);
 
+  /* Collapsible's header while it is collapsed: the field fill, since a fill says "pressable" (as
+     Chip's) and tells a folded section from an empty one; a step stronger under the pointer. Open, it has
+     none (and takes the first of these under the pointer). */
+  --color-collapsible-background: var(--color-field-background);
+  --color-collapsible-background-hover: var(--color-field-background-hover);
+
   /* Chip is filled, and a fill says "pressable", as a field's does. A removable chip (a value in a
      field) takes the stronger field tint, so it stands out from the Select field it sits in; a
      selectable one takes the field fill itself, off, and the brand color, on, as Checkbox and Toggle do. */

@@ -12,6 +12,8 @@ export { Chip } from './Chip';
 export type { ChipProps } from './Chip';
 export { Checkbox } from './Checkbox';
 export type { CheckboxProps, CheckboxOption } from './Checkbox';
+export { Collapsible } from './Collapsible';
+export type { CollapsibleProps } from './Collapsible';
 export { Divider } from './Divider';
 export type { DividerProps } from './Divider';
 export { Drawer } from './Drawer';

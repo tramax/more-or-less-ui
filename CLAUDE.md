@@ -58,7 +58,8 @@ same recipe is defined under two names.
   behind a modal `<dialog>` is inert, so a toast beside it can't be pressed. `ModalFrame` does it, so a new
   modal built on it needs nothing; a new modal that is not built on it must call `useToastHost`.
 - `_shared/VisuallyHidden` is text for screen readers only (Toast's live regions); not exported.
-- `_shared/CheckIcon` and `_shared/CrossIcon` are the ✓ and ×, drawn with attributes; a consumer's
+- `_shared/CheckIcon`, `_shared/CrossIcon` and `_shared/ChevronIcon` are the ✓, × and ⌄ (Select's field,
+  Collapsible's header), drawn with attributes on the shell of `_shared/StrokeIcon`; a consumer's
   class sets only size, color and motion.
 - `_shared/CloseButton` is the round × button (disc on hover, shrink on press) of Banner's and Toast's
   dismiss and Dialog's close; the consumer passes `label`, `onClick` and spacing through `className`.
@@ -87,7 +88,7 @@ same recipe is defined under two names.
 ## Before you finish
 
 Run `pnpm test`, `pnpm typecheck`, `pnpm lint` and `pnpm check:dup`. `check:dup` has a ceiling set at
-the current level, 1.3% (`.jscpd.json`, clones under 10 lines are ignored); if you add duplication it fails. Remove the duplication rather than
+the current level, 1.1% (`.jscpd.json`, clones under 10 lines are ignored); if you add duplication it fails. Remove the duplication rather than
 raising the ceiling. Lower the ceiling when you remove some. Note that `jscpd` can't see the same
 value under different names, which is what the tokens test is for.
 

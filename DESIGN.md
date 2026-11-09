@@ -2103,6 +2103,74 @@ focus, Enter or Space selects), keeping inactive panels mounted, a `Tabs.Tab` co
 can't be data, a badge / `Indicator` on a tab, a closable or reorderable tab, `description`, a variant without the
 tray, and a `fullWidth` list that spreads the tabs across it.
 
+### Collapsible
+
+```tsx
+type CollapsibleProps = Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'title' | 'color' | 'children' | 'defaultValue'
+> & {
+  title: ReactNode; // the header's text; the whole header is the button
+  icon?: ReactNode; // before the title; decorative
+  children: ReactNode; // what folds away
+  isOpen?: boolean; // controlled; pair with onOpenChange
+  defaultIsOpen?: boolean; // starts open, when uncontrolled; default false
+  onOpenChange?: (isOpen: boolean) => void;
+  isDisabled?: boolean; // default false
+  size?: ScaleProp; // font-size; default 'normal'
+};
+```
+
+One piece of content that a header folds away: the details of a row, an "Advanced" section of a form, an
+answer under its question. Not for choosing between panels (Tabs), and not for several that open one at a
+time (Accordion, not built yet, on top of this).
+
+Closest sibling is Popover on the _state_ side: `isOpen` / `defaultIsOpen` / `onOpenChange`, uncontrolled
+unless `isOpen` is given, and a controlled one wins over `defaultIsOpen`. It is not Tabs' required-and-controlled:
+a tab's selection decides what the screen shows (and may belong in the URL), but a Collapsible's open state
+is usually local to the widget (an FAQ answer, an "Advanced" section), and the major libraries and the
+native `<details>` all let it keep its own. Controlled is there for when the parent needs it (an "expand
+all", the URL). **Shared:** `size` from `_shared/Size.module.css` (the only scale prop), `OptionIcon`,
+`isDisabled`, and the chevron of Select's field, whose second consumer this is: `_shared/ChevronIcon` was
+extracted in the same change, with the shell it has in common with CheckIcon and CrossIcon
+(`_shared/StrokeIcon`). **What differs:** the height animation, and the content that stays mounted.
+
+**Behavior** (WAI-ARIA APG disclosure). The header is a `<button type="button">` with `aria-expanded` and
+`aria-controls` (the content's id, `<id>-panel`); Enter and Space press it as they do any button, so there
+is no key handling of our own. It toggles its own state unless `isOpen` is given, and calls `onOpenChange(!isOpen)` either way (a controlled one changes nothing itself). **The content
+stays mounted while closed**, so what is inside it (a half-filled form, a scroll position, a loaded image)
+is kept; it is `visibility: hidden`, which takes it out of the tab order and the accessibility tree. It is
+not `display: none` or unmounted, because the height has to animate. A disabled Collapsible is a native
+`disabled` button, and stays as open or closed as it was.
+
+**Accessibility.** The title is the button's name and the icon is decorative. The content has no `role`
+(APG: a `region` per panel is noise when there are many of them). No heading level is rendered: wrap the
+Collapsible's `title` in a heading yourself if the page outline needs one.
+
+**Look.** No surface of its own (wrap it in a Card for one). The affordance is the point of it. A bare
+line of text with a chevron left a collapsed section hard to tell from an empty one, so **the
+header is filled while collapsed** (`--color-collapsible-background`, an alias of `--color-field-background`;
+a fill says "pressable", as Chip's), a step stronger under the pointer
+(`--color-collapsible-background-hover`), and **has no fill while open**, so the open content is not framed
+by a bar; under the pointer an open header takes the collapsed fill back, as a hint that it presses. The
+row is a full-width `--radius-less` squircle, the title taking the room, and the chevron at the end. It is
+Select's glyph (`_shared/ChevronIcon`) but not its behavior: Select's flips down / up, which says "dropdown";
+this one **points right when collapsed** (left in a right-to-left layout, through `:dir(rtl)`), toward what is
+not shown, and turns a quarter turn to point down when open. It turns with Select's motion (an overshoot
+opening, none closing) and grows on hover by `--scale-icon-hover`. The state is carried by the fill, the
+chevron and the content together, not by the chevron alone. (Tried and dropped: the chevron at the start
+with the content indented under the title; it looked odd beside the padded content.)
+The content lines up with the header's text. It opens by animating its grid
+row from `0fr` to `1fr` (300 ms closing, 400 ms opening, `--ease-leave`), which needs no measuring and
+follows content that changes size while it is open. The content has inline padding only: block padding
+could not shrink with the row and would leave a sliver when closed. `prefers-reduced-motion` turns the
+motion off.
+
+**Not yet:** unmounting the closed content (a `keepMounted={false}`, for heavy content), `hidden="until-found"`
+so find-in-page opens it, a heading level, a trailing slot in the header (a count, an
+`Indicator`), an Accordion over several. Not yet checked by eye: the height animation and the hover fill
+were written from the CSS, not seen in Storybook.
+
 ---
 
 ## Loading
@@ -2317,8 +2385,9 @@ more-or-less-ui/
 │   │   ├── Popover/
 │   │   ├── Toast/
 │   │   ├── Tabs/
+│   │   ├── Collapsible/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -2532,7 +2601,8 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 **Navigation and disclosure:**
 
 - [x] `Tabs` — Sibling: Radio (one of several, arrow-key roving, `orientation`), Menu for the focus. `items` (each with its `content`), required `value` / `onChange` (the parent owns the selection), `orientation`, `size`; APG tabs with automatic activation, only the selected panel mounted. Adds only `--color-tabs-*` aliases, and takes the overlay's frosted finish through `floatingClass`. See [Tabs](#tabs)
-- [ ] `Accordion` / `Collapsible`
+- [x] `Collapsible` — Sibling: Tabs (disclosure), Popover for the open state (uncontrolled unless `isOpen` is given), Select for the chevron. `title`, `icon`, `children`, `isOpen` / `defaultIsOpen` / `onOpenChange`, `isDisabled`, `size`; APG disclosure (a button with `aria-expanded` / `aria-controls`), the content stays mounted and animates its height. Adds only `--color-collapsible-background-hover`, and extracted `_shared/ChevronIcon` (and its shell `_shared/StrokeIcon`, shared with CheckIcon and CrossIcon) from Select. See [Collapsible](#collapsible)
+- [ ] `Accordion` — Sibling: Collapsible (a group of them, one open at a time, arrow-key roving between headers); build it on Collapsible rather than beside it
 - [ ] `Breadcrumb`, `Pagination`, `Link` (or `Text as="a"`)
 
 **Inputs still missing:**

@@ -18,6 +18,7 @@ import { OptionText } from '../_shared/OptionText';
 import { Spinner } from '../Spinner';
 import type { NameProps, OptionBase } from '../_shared/types';
 import { CheckIcon } from '../_shared/CheckIcon';
+import { ChevronIcon } from '../_shared/ChevronIcon';
 import { CrossIcon } from '../_shared/CrossIcon';
 import { useOverlay } from '../_shared/useOverlay';
 import overlayStyles from '../_shared/Overlay.module.css';
@@ -157,12 +158,6 @@ function assignRef<T>(ref: ForwardedRef<T>, node: T | null) {
   if (typeof ref === 'function') ref(node);
   else if (ref) ref.current = node;
 }
-
-const Chevron = () => (
-  <svg className={styles.chevron} viewBox="0 0 16 16" aria-hidden="true">
-    <path d="M4 6l4 4 4-4" />
-  </svg>
-);
 
 export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawProps, ref) {
   const {
@@ -478,7 +473,7 @@ export const Select = forwardRef<HTMLElement, SelectProps>(function Select(rawPr
                 <CrossIcon className={styles.clearIcon} />
               </button>
             )}
-            <Chevron />
+            <ChevronIcon className={styles.chevron} />
             {isLoading && <Spinner className={styles.spinner} />}
             {name &&
               selectedValues.map((v) => (
