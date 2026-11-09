@@ -1,0 +1,137 @@
+/*
+ * Tabs: a floating tray of tabs, and the one panel they choose. `size` is _shared/Size.module.css, as
+ * Progress's: it sets font-size, and everything here is in em.
+ *
+ * The tray is an overlay's surface: it takes `floatingClass` (_shared/Overlay) for the frosted finish
+ * (blur, squircle, no border), and `--color-tabs-background` aliases the overlay's background. It is
+ * not placed or animated as an overlay is: it has no `data-state`. Behind the selected tab sits one
+ * thumb, a raised page-colored block that slides to the tab that is chosen (Tabs.tsx measures the tab
+ * and sets its size and place). Each tab stacks its icon over its label.
+ *
+ * The tray and the thumb have fixed shapes, not props. The thumb's radius is the tray's less its
+ * padding, so the two curves are concentric. corner-shape: squircle, as in Card.
+ */
+
+.root {
+  display: flex;
+  gap: 1em;
+}
+.horizontal {
+  flex-direction: column;
+}
+.vertical {
+  flex-direction: row;
+}
+
+.list {
+  --tabs-padding: 0.375em;
+  --tabs-radius: calc(var(--radius-normal) - var(--tabs-padding));
+  position: relative;
+  display: flex;
+  flex: none;
+  gap: 0.25em;
+  align-self: flex-start;
+  padding: var(--tabs-padding);
+  background: var(--color-tabs-background);
+  /* The radius is the overlay's (--radius-normal), which --tabs-radius is derived from */
+  box-shadow: var(--elevation-more);
+}
+.horizontal > .list {
+  flex-direction: row;
+}
+.vertical > .list {
+  flex-direction: column;
+}
+
+/* The thumb. Its size and place are set inline, in pixels, from the measured tab, so it is placed
+   from the physical top-left corner whatever the writing direction: offsets are physical too. */
+.thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: var(--tabs-radius);
+  corner-shape: squircle;
+  background: var(--color-tabs-thumb);
+  /* Raised off a translucent tray, so it needs more than the least shadow */
+  box-shadow: var(--elevation-normal);
+  pointer-events: none;
+  transition:
+    transform 400ms var(--ease-pop),
+    width 400ms var(--ease-pop),
+    height 400ms var(--ease-pop);
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+  margin: 0;
+  padding: 0.625em 1.25em;
+  border: 0;
+  border-radius: var(--tabs-radius);
+  corner-shape: squircle;
+  background: transparent;
+  /* A button doesn't inherit these; the size comes from the scale classes */
+  font: inherit;
+  line-height: 1.25;
+  white-space: nowrap;
+  /* The tabs that are not selected speak more quietly */
+  color: var(--color-text-less);
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+/* The option's icon (OptionIcon), larger than in a Chip: it is the first thing a tab shows */
+.icon {
+  --option-icon-size: 1.5em;
+}
+.tab[aria-selected='true'] .icon {
+  color: var(--color-tabs-accent);
+}
+
+/* Gated on hover-capable pointers: touch would leave the color stuck after a tap */
+@media (hover: hover) {
+  .tab:hover:not(:disabled) {
+    color: CanvasText;
+  }
+}
+
+.tab[aria-selected='true'] {
+  color: CanvasText;
+}
+
+.tab:focus-visible {
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
+}
+
+.tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.panel {
+  flex: 1;
+  min-inline-size: 0;
+}
+.panel:focus-visible {
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab,
+  .thumb {
+    transition: none;
+  }
+}
+
+/* Backgrounds are replaced by system colors in forced-colors mode, which would hide the thumb: mark
+   the selected tab with an outline instead */
+@media (forced-colors: active) {
+  .tab[aria-selected='true'] {
+    outline: 2px solid Highlight;
+  }
+}

@@ -184,6 +184,14 @@
   /* The item the keyboard (or the pointer) is on */
   --color-menu-item-active: var(--color-field-background-hover);
 
+  /* Tabs: a floating tray, an overlay's frosted surface, with a raised thumb behind the selected tab.
+     Not the field fill: tabs often sit right above a form, and a brand-tinted tray would read as one
+     more field. The thumb is the page color (opaque, so it stands out of the translucent tray), and
+     the selected tab's icon the strong primary (the plain primary is 2.1:1 on white). */
+  --color-tabs-background: var(--color-overlay-background);
+  --color-tabs-thumb: Canvas;
+  --color-tabs-accent: var(--color-primary-strong);
+
   /* Chip is filled, and a fill says "pressable", as a field's does. A removable chip (a value in a
      field) takes the stronger field tint, so it stands out from the Select field it sits in; a
      selectable one takes the field fill itself, off, and the brand color, on, as Checkbox and Toggle do. */

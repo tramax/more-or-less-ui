@@ -48,7 +48,7 @@ same recipe is defined under two names.
   popup, Menu's panel); the component sets `--list-background` and `--list-active` from its own tokens.
   `_shared/optionNavigation` is `stepEnabled`, `findByPrefix` and `useTypeahead` for the keyboard.
 - `_shared/useOverlay` + `Overlay.module.css` + `Overlay.ts` are every overlay (Select's popup, Tooltip,
-  Popover, Menu, and Dialog and Drawer through `isModal`; Toast takes only the CSS, through `floatingClass`); `_shared/useTriggerRef` is the trigger clone's ref and `TriggerProps`. `_shared/useScrollLock` stops the page scrolling under a modal (Dialog).
+  Popover, Menu, and Dialog and Drawer through `isModal`; Toast and Tabs (the tray) take only the CSS, through `floatingClass`); `_shared/useTriggerRef` is the trigger clone's ref and `TriggerProps`. `_shared/useScrollLock` stops the page scrolling under a modal (Dialog).
 - `_shared/ModalFrame` is every modal (Dialog, Drawer): the `<dialog>`, trigger, backdrop press, scroll
   lock, header, actions, and `ModalProps`. A modal passes it `className` (the overlay classes from
   `Overlay.ts`, its size and placement, and `--modal-background` / `--modal-backdrop` from its own
@@ -67,7 +67,7 @@ same recipe is defined under two names.
 - `_shared/OptionText` is the label + description beside an option's control; `_shared/types.ts` has
   `NameProps` (the accessible-name union for every labelled input) and `OptionBase` (one option).
 - `_shared/Size.module.css` is the `size` scale as font-size. A component whose only scale prop is
-  `size` (Spinner, Progress, Toast) passes it to `resolveScaleProps` instead of copying the classes.
+  `size` (Spinner, Progress, Toast, Tabs) passes it to `resolveScaleProps` instead of copying the classes.
 - `_shared/Ring` is the ring's drawing (viewBox, radius, stroke width, `pathLength` 100) for Spinner's
   arc and Progress's track and arc. A new circular mark takes it rather than its own SVG numbers.
 - `_shared/Placeholder` is what text and pictures look like inside `aria-busy="true"`: the one recipe

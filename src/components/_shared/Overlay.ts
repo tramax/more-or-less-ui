@@ -23,7 +23,8 @@ export const overlayClass = (placement: OverlayPlacement, align: OverlayAlign = 
 
 /**
  * The classes of an overlay that is neither anchored nor modal: the same finish and motion, and the
- * consumer puts it where it goes (Toast's viewport). It grows from the edge that `data-side` names, as an
+ * consumer puts it where it goes (Toast's viewport, Tabs' tray; the latter has no `data-state`, so none of the
+ * motion applies and only the frosted finish is taken). It grows from the edge that `data-side` names, as an
  * anchored one does: `top` for one that sits above its edge, `bottom` for one below.
  */
 export const floatingClass = clsx(styles.overlay);

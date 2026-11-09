@@ -36,6 +36,8 @@ export { Spinner } from './Spinner';
 export type { SpinnerProps } from './Spinner';
 export { Stack } from './Stack';
 export type { StackProps } from './Stack';
+export { Tabs } from './Tabs';
+export type { TabsProps, TabItem } from './Tabs';
 export { Text } from './Text';
 export type { TextProps, TextElement, TextColor } from './Text';
 export { TextField } from './TextField';

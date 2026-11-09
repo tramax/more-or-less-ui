@@ -2023,6 +2023,78 @@ viewport, focus going somewhere sensible when a toast that had it is dismissed (
 global manager for use outside React (`createToastManager`), localisation of "Notifications", per-toast
 `placement`, and `closeAll`.
 
+### Tabs
+
+```tsx
+type TabItem = Omit<OptionBase, 'description'> & {
+  icon?: ReactNode; // value, label, isDisabled? and:
+  content: ReactNode; // the panel while this tab is selected
+};
+
+type TabsProps = Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'onChange' | 'defaultValue' | 'color' | 'children' | 'role'
+> & {
+  items: TabItem[];
+  value: string; // always controlled: the parent owns the selection
+  onChange: (value: string) => void; // not called for the tab that is already selected
+  orientation?: 'horizontal' | 'vertical'; // default 'horizontal'
+  size?: ScaleProp; // font-size; default 'normal'
+  'aria-label'?: string; // name the tablist; optional, each tab has its label
+  'aria-labelledby'?: string;
+};
+```
+
+One panel at a time, chosen from a row (or column) of tabs. Tabs are data (`items`, as Radio's `options`
+and Menu's `items`), not children, so the roles and the keyboard model can't be broken by custom content;
+the panel's content rides along as each item's `content`.
+
+Closest sibling is Radio (one of several, a roving arrow-key model, `orientation`, `value` /
+`onChange`), and Menu for the focus. **Shared:** `OptionBase` (minus `description`, which a tab has no
+room for), `OptionIcon`, `stepEnabled` from `_shared/optionNavigation`, and `size` from
+`_shared/Size.module.css` (the only scale prop, as Progress's). **Not shared: uncontrolled state.** Radio
+and Checkbox are inputs, so a lone `<Radio options>` that keeps its own choice makes sense. Tabs is not an
+input: what the screen shows follows the selected tab, and it may belong in the URL, so the state lives in
+the parent and `value` and `onChange` are required (a `defaultValue` would only save a `useState`).
+**What differs:** a Radio's value is data for a form, so its inputs are native and the browser roves
+them; a tab has no native element, so the roving is ours (as Menu's): the focused tab is found from its
+element, with no state for it, and the tab stop is the selected one. And a selection has a panel, which
+only the selected tab mounts.
+
+**Behavior** (WAI-ARIA APG tabs, automatic activation). ← → (↑ ↓ when vertical) move focus _and_ select,
+and wrap at the ends (as a native radio group does; Menu and Select stop). Home and End go to the first
+and last enabled tab. Disabled tabs are native `disabled` buttons, so they are skipped. Left and right swap
+in a right-to-left list. Tab leaves the row for the panel (`tabIndex={0}`, so a panel with nothing focusable
+is still readable by keyboard). A `value` that names no tab falls back to the
+first enabled one. Only the selected panel is mounted, and it remounts on each change, so one panel's state
+isn't carried into the next.
+
+**Accessibility.** `role="tablist"` with `aria-orientation`; each tab a `role="tab"` button with
+`aria-selected` and, on the selected one only, `aria-controls` (the others have no panel to point at); the
+panel `role="tabpanel"` named by its tab. The icon is decorative.
+
+**Look.** A floating tray with the **overlay look**: it takes `floatingClass` from `_shared/Overlay` (the
+frosted blur, the squircle at `--radius-normal`, no border), `--color-tabs-background` aliases
+`--color-overlay-background`, and the shadow is `--elevation-more`, as Popover and Menu have. It has no
+`data-state`, so none of the overlay's open / close motion applies. It is deliberately not the field fill,
+which is brand-tinted: tabs often sit right above a form, and a tray in the field color would read as one
+more field. Behind the selected tab sits **one thumb**, a raised block in the page color
+(`--color-tabs-thumb`, an opaque `Canvas`, so it stands out of the translucent tray; `--elevation-normal`) with a
+radius of the tray's less its padding, so the curves are concentric. `Tabs.tsx` measures the selected tab
+(`offsetLeft` / `offsetTop` / size, in a layout effect, and again from a `ResizeObserver` on the tab and its
+list) and sets the thumb's size and `translate`; it is one element that moves, so it slides, with the
+overlay's springy `--ease-pop` curve. It is placed from the physical top-left, which is what the offsets
+are, so it holds in a right-to-left list. It mounts already in place (no slide in from the corner) and is
+not rendered while nothing is selected. A tab stacks its icon (1.5em) over its label; unselected tabs are
+`--color-text-less`, the selected one `CanvasText` with its icon in `--color-tabs-accent`, which aliases
+`--color-primary-strong` (the plain primary is 2.1:1 on white). Hover changes only the text color. In
+`forced-colors`, where a background can't show the thumb, the selected tab gets a `Highlight` outline. Not yet checked by eye: the tray and the thumb are both the page color (the tray at 60%, over a blur), so on a plain page the thumb is told from the tray by its shadow and the blur's tint, not by a fill. If that reads weakly, give `--color-tabs-thumb` a stronger value (a light brand tint, and a dark one in `themes.css`).
+
+**Not yet:** a list wider than its box (scrolling, or an overflow menu), manual activation (arrows move
+focus, Enter or Space selects), keeping inactive panels mounted, a `Tabs.Tab` compound form for content that
+can't be data, a badge / `Indicator` on a tab, a closable or reorderable tab, `description`, a variant without the
+tray, and a `fullWidth` list that spreads the tabs across it.
+
 ---
 
 ## Loading
@@ -2236,8 +2308,9 @@ more-or-less-ui/
 │   │   ├── Menu/
 │   │   ├── Popover/
 │   │   ├── Toast/
+│   │   ├── Tabs/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon and Chip's (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu; useTriggerRef: Tooltip + Popover + Menu)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs; Ring: Spinner + Progress's circle; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -2450,7 +2523,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 
 **Navigation and disclosure:**
 
-- [ ] `Tabs` — Sibling: Radio (one of several, arrow-key roving, `orientation`)
+- [x] `Tabs` — Sibling: Radio (one of several, arrow-key roving, `orientation`), Menu for the focus. `items` (each with its `content`), required `value` / `onChange` (the parent owns the selection), `orientation`, `size`; APG tabs with automatic activation, only the selected panel mounted. Adds only `--color-tabs-*` aliases, and takes the overlay's frosted finish through `floatingClass`. See [Tabs](#tabs)
 - [ ] `Accordion` / `Collapsible`
 - [ ] `Breadcrumb`, `Pagination`, `Link` (or `Text as="a"`)
 
