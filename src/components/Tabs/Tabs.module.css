@@ -36,6 +36,14 @@
   /* The radius is the overlay's (--radius-normal), which --tabs-radius is derived from */
   box-shadow: var(--elevation-more);
 }
+/* Sticks inside the root, so it lets go when the panel has scrolled past. The z-index keeps the panel
+   from painting over it. `top` is a hook for the consumer, not a token: it is a length, not a color. */
+.sticky > .list {
+  position: sticky;
+  top: var(--tabs-sticky-top, 0.25rem);
+  z-index: 1;
+}
+
 .horizontal > .list {
   flex-direction: row;
 }

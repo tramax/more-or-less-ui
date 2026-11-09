@@ -67,6 +67,13 @@ export type TabsProps = Omit<
    * it, moved with ↑ ↓. Default `horizontal`.
    */
   orientation?: 'horizontal' | 'vertical';
+  /**
+   * Keeps the tabs in view while the panel scrolls under them (the tray is frosted, so the text shows
+   * through), and lets go once the panel has scrolled past. It sticks to the nearest scrolling ancestor,
+   * so an `overflow: hidden` or `auto` box in between stops it. The gap to the top edge is
+   * `--tabs-sticky-top` (set it on the Tabs; default `0.25rem`).
+   */
+  isSticky?: boolean;
   /** Sets the font size; the padding and the gaps follow it. `1em` takes the surrounding text's size. */
   size?: ScaleProp;
   /**
@@ -91,6 +98,7 @@ export const Tabs = forwardRef<HTMLDivElement, TabsProps>(function Tabs(
     value,
     onChange,
     orientation = 'horizontal',
+    isSticky = false,
     size,
     'aria-label': ariaLabel,
     'aria-labelledby': ariaLabelledBy,
@@ -189,7 +197,13 @@ export const Tabs = forwardRef<HTMLDivElement, TabsProps>(function Tabs(
       {...rest}
       ref={ref}
       id={id}
-      className={clsx(styles.root, styles[orientation], classNames, className)}
+      className={clsx(
+        styles.root,
+        styles[orientation],
+        isSticky && styles.sticky,
+        classNames,
+        className,
+      )}
       style={{ ...scaleStyle, ...style }}
     >
       <div

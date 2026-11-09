@@ -2,6 +2,7 @@ import { createRef, useState } from 'react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { Tabs, type TabItem, type TabsProps } from './Tabs';
+import styles from './Tabs.module.css';
 
 const ITEMS: TabItem[] = [
   { value: 'account', label: 'Account', content: <p>Account settings</p> },
@@ -114,6 +115,25 @@ describe('Tabs', () => {
     it('reports its orientation', () => {
       renderTabs({ orientation: 'vertical' });
       expect(screen.getByRole('tablist').getAttribute('aria-orientation')).toBe('vertical');
+    });
+  });
+
+  describe('isSticky', () => {
+    // The sticking itself is CSS, which jsdom doesn't lay out: this checks that it is switched on
+    it('is off unless asked for', () => {
+      renderTabs({ 'data-testid': 'root' } as Partial<TabsProps>);
+      expect(screen.getByTestId('root').classList.contains(styles.sticky!)).toBe(false);
+    });
+
+    it('switches the sticky list on, and keeps the caller class', () => {
+      renderTabs({
+        isSticky: true,
+        className: 'mine',
+        'data-testid': 'root',
+      } as Partial<TabsProps>);
+      const root = screen.getByTestId('root');
+      expect(root.classList.contains(styles.sticky!)).toBe(true);
+      expect(root.classList.contains('mine')).toBe(true);
     });
   });
 

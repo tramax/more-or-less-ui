@@ -156,28 +156,23 @@ const STICKY_ITEMS: TabItem[] = [
 ];
 
 /**
- * Tabs has no `sticky` prop: the list sticks inside the Tabs root, so one rule on it is enough, and it
- * lets go when the panel has scrolled past. It needs a scrolling ancestor with no `overflow` in between
- * (an `overflow: hidden` parent stops `position: sticky`). The `top` leaves a gap, since the tray floats.
+ * `isSticky` keeps the tabs in view while the panel scrolls under them, and lets go once the panel has
+ * scrolled past. It needs a scrolling ancestor with no `overflow` in between (an `overflow: hidden`
+ * parent stops `position: sticky`). The gap to the top edge is `--tabs-sticky-top` on the Tabs.
  */
 export const Sticky: Story = {
-  parameters: showCode(`.sticky-tabs [role='tablist'] {
-  position: sticky;
-  top: 0.25rem;
-  z-index: 1;
-}
-
-<Tabs className="sticky-tabs" items={items} value={value} onChange={setValue} aria-label="Product" />`),
+  parameters: showCode(
+    `<Tabs isSticky items={items} value={value} onChange={setValue} aria-label="Product" />`,
+  ),
   render: () => (
     <div style={{ height: '24rem', overflow: 'auto', padding: '1rem' }}>
-      <style>{`.sticky-tabs [role='tablist'] { position: sticky; top: 0.25rem; z-index: 1; }`}</style>
       <Stack gap="normal">
         <Text as="h2" size="more">
           Trail jacket
         </Text>
         <Text>Scroll the box. The tabs stay at the top.</Text>
         <Stateful
-          className="sticky-tabs"
+          isSticky
           items={STICKY_ITEMS}
           value="overview"
           onChange={() => {}}

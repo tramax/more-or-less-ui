@@ -2039,6 +2039,7 @@ type TabsProps = Omit<
   value: string; // always controlled: the parent owns the selection
   onChange: (value: string) => void; // not called for the tab that is already selected
   orientation?: 'horizontal' | 'vertical'; // default 'horizontal'
+  isSticky?: boolean; // keeps the tabs in view while the panel scrolls under them; default false
   size?: ScaleProp; // font-size; default 'normal'
   'aria-label'?: string; // name the tablist; optional, each tab has its label
   'aria-labelledby'?: string;
@@ -2089,6 +2090,13 @@ not rendered while nothing is selected. A tab stacks its icon (1.5em) over its l
 `--color-text-less`, the selected one `CanvasText` with its icon in `--color-tabs-accent`, which aliases
 `--color-primary-strong` (the plain primary is 2.1:1 on white). Hover changes only the text color. In
 `forced-colors`, where a background can't show the thumb, the selected tab gets a `Highlight` outline. Not yet checked by eye: the tray and the thumb are both the page color (the tray at 60%, over a blur), so on a plain page the thumb is told from the tray by its shadow and the blur's tint, not by a fill. If that reads weakly, give `--color-tabs-thumb` a stronger value (a light brand tint, and a dark one in `themes.css`).
+
+**Sticky.** `isSticky` puts `position: sticky` on the list (`z-index: 1`, `top: var(--tabs-sticky-top, 0.25rem)`).
+The list is a child of the root, so it sticks _inside_ it: it holds while the panel scrolls under the frosted
+tray and lets go once the panel has scrolled past, with no wrapper. It sticks to the nearest scrolling
+ancestor, so an `overflow: hidden` or `auto` box in between stops it (a platform rule, not ours). Works in
+both orientations. The gap to the edge is a CSS variable on the Tabs, not a token, since it is a length. The
+fixed-to-the-viewport bar of a mobile app (`position: fixed`, at the bottom) is a different thing, not done.
 
 **Not yet:** a list wider than its box (scrolling, or an overflow menu), manual activation (arrows move
 focus, Enter or Space selects), keeping inactive panels mounted, a `Tabs.Tab` compound form for content that
