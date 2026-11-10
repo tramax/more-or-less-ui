@@ -2153,7 +2153,11 @@ overlay's springy `--ease-pop` curve. It is placed from the physical top-left, w
 are, so it holds in a right-to-left list. It mounts already in place (no slide in from the corner) and is
 not rendered while nothing is selected. A tab stacks its icon (1.5em) over its label; unselected tabs are
 `--color-text-less`, the selected one `CanvasText` with its icon in `--color-tabs-accent`, which aliases
-`--color-primary-strong` (the plain primary is 2.1:1 on white). Hover changes only the text color. In
+`--color-primary-strong` (the plain primary is 2.1:1 on white). Hover changes the text color and has the system's motion, as
+SegmentedControl's: a tab springs to 1.06 on `--ease-enter` (500 ms, overshoots and settles) and returns on
+`--ease-leave`; pressed, it shrinks to 0.95 in 120 ms with no overshoot. The thumb does the same when the selected
+tab is the one under the pointer or pressed (the same scale from the same middle, so the tab stays inside it),
+through `--thumb-scale` on `_shared/SlidingThumb`. With `prefers-reduced-motion` nothing scales. In
 `forced-colors`, where a background can't show the thumb, the selected tab gets a `Highlight` outline. Not yet checked by eye: the tray and the thumb are both the page color (the tray at 60%, over a blur), so on a plain page the thumb is told from the tray by its shadow and the blur's tint, not by a fill. If that reads weakly, give `--color-tabs-thumb` a stronger value (a light brand tint, and a dark one in `themes.css`).
 
 **Sticky.** `isSticky` puts `position: sticky` on the list (`z-index: 1`, `top: var(--tabs-sticky-top, 0.25rem)`).

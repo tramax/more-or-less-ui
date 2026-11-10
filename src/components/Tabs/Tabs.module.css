@@ -79,7 +79,15 @@
   /* The tabs that are not selected speak more quietly */
   color: var(--color-text-less);
   cursor: pointer;
-  transition: color 150ms ease;
+  /* Hover motion, as Button's, Pagination's and SegmentedControl's: entering overshoots (--ease-enter) and
+     settles; leaving is the plain ease-out, so the tab doesn't dip below its size and wobble once the
+     pointer has gone. This is the leaving one, which is also what the tab returns on. Fixed, not a prop. */
+  --tabs-hover-scale: 1.06;
+  transform: scale(1);
+  transition:
+    transform 400ms var(--ease-leave),
+    color 150ms ease,
+    opacity 150ms ease;
 }
 /* The option's icon (OptionIcon), larger than in a Chip: it is the first thing a tab shows */
 .icon {
@@ -89,11 +97,38 @@
   color: var(--color-tabs-accent);
 }
 
-/* Gated on hover-capable pointers: touch would leave the color stuck after a tap */
+/* Gated on hover-capable pointers: touch would leave the color and the size stuck after a tap. The tab
+   grows, and the selected tab's thumb grows with it (the same scale, from the same middle, so the tab
+   stays inside it). */
 @media (hover: hover) {
   .tab:hover:not(:disabled) {
     color: CanvasText;
+    transform: scale(var(--tabs-hover-scale));
+    transition:
+      transform 500ms var(--ease-enter),
+      color 150ms ease,
+      opacity 150ms ease;
   }
+  .list:has(.tab[aria-selected='true']:hover:not(:disabled)) {
+    --thumb-scale: var(--tabs-hover-scale);
+    --thumb-scale-time: 500ms;
+    --thumb-scale-ease: var(--ease-enter);
+  }
+}
+
+/* Pressed: it settles below its size, quickly and without overshoot, so a press reads as one where there
+   is no hover (touch). After the hover rules, which it outranks by order; releasing springs back. */
+.tab:active:not(:disabled) {
+  transform: scale(0.95);
+  transition:
+    transform 120ms var(--ease-leave),
+    color 150ms ease,
+    opacity 150ms ease;
+}
+.list:has(.tab[aria-selected='true']:active:not(:disabled)) {
+  --thumb-scale: 0.95;
+  --thumb-scale-time: 120ms;
+  --thumb-scale-ease: var(--ease-leave);
 }
 
 .tab[aria-selected='true'] {
@@ -122,6 +157,11 @@
 @media (prefers-reduced-motion: reduce) {
   .tab {
     transition: none;
+  }
+  /* No scaling (the thumb's own is off in SlidingThumb): the color remains as the hover cue */
+  .tab:hover:not(:disabled),
+  .tab:active:not(:disabled) {
+    transform: none;
   }
 }
 
