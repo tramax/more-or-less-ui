@@ -32,3 +32,30 @@ export const showCode = (code: string, { hasControls = false } = {}) => ({
   ...(hasControls ? {} : { controls: { disable: true } }),
   docs: { source: { code, transform: (c: string) => c } },
 });
+
+/**
+ * Snippet transform for a story whose controls render through a stateful wrapper (`Stateful`), because
+ * the component is always controlled and a story needs somewhere to keep the value. Storybook prints the
+ * wrapper (`<Stateful value="account" />`); this prints what a user writes: the component itself, with
+ * the prop taken from their own state and the handler that sets it (`<Tabs value={value}
+ * onChange={setValue} />`). Drops props at their default as `omitDefaults` does.
+ *
+ * `prop` is the controlled prop (`value`, `page`); `setter` is what the user's `useState` calls it.
+ */
+export const asControlled =
+  (
+    defaults: Record<string, string>,
+    { as, prop, setter }: { as: string; prop: string; setter: string },
+  ) =>
+  (code: string) =>
+    omitDefaults(defaults)(code)
+      .replace('<Stateful', `<${as}`)
+      // The starting value (a string or an expression: `value="account"`, `page={5}`) is the story's
+      // own; the user's is their state
+      .replace(new RegExp(String.raw`\b${prop}=(?:"[^"]*"|\{[^{}]*\})`), `${prop}={${prop}}`)
+      // Before the closing `/>`, in the layout the printer chose: one line, or one prop per line
+      .replace(/(\s*)\/>\s*$/, (_, space: string) =>
+        space.includes('\n')
+          ? `\n  onChange={${setter}}${space}/>`
+          : ` onChange={${setter}}${space}/>`,
+      );

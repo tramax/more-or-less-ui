@@ -220,6 +220,13 @@
   /* The static chip (no handler) is outlined, never filled: the line is what says it isn't pressable */
   --color-chip-border: var(--color-primary);
 
+  /* Pagination: a page has nothing behind it until the pointer is on it (the field's stronger tint, a
+     fill says "pressable"), and the current page is the brand color, as a selected chip is. */
+  --color-pagination-background-hover: var(--color-field-background-hover);
+  --color-pagination-background-current: var(--color-primary);
+  /* Text on the current background; set with it, as Chip's (themes.css does) */
+  --color-pagination-text-current: var(--color-on-primary);
+
   /* Banner's `background` scale: how loudly it speaks, in the brand color. A faint tint, an opaque tint,
      then the brand color itself. */
   --color-banner-background-less: var(--color-field-background);

@@ -1,0 +1,201 @@
+/*
+ * Pagination: a row of round controls with a chevron at each end. `size` is _shared/Size.module.css,
+ * as Breadcrumb's and Tabs': it sets font-size, and everything here is in em. A control is a <button>,
+ * or in link mode an <a>; both get the same look from `.control`.
+ *
+ * The look is Chip's selectable pair in a quieter form: nothing behind a page until it is under the
+ * pointer (the field's hover fill), and the brand color behind the current one. A control is flat, no
+ * shadow, as a chip is. The motion is the system's: Button's spring on hover, Chip's growing mark and
+ * shrinking press, and the thumb of Tabs and Toggle that pops in (here the current page's fill).
+ */
+
+.root {
+  display: block;
+}
+
+/* A narrow screen wraps the row onto more lines instead of overflowing */
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.control {
+  /* The fill of the current page is the ::before below, which sits behind the label: the control is its
+     own stacking context so the fill stays inside it */
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  min-inline-size: 2.25em;
+  block-size: 2.25em;
+  margin: 0;
+  padding-block: 0;
+  padding-inline: 0.5em;
+  border: 0;
+  /* Half the height, so a single digit is a circle and "100" a pill: round arcs, as a chip's ends, and
+     not the squircle of Button and Card. Fixed, not a prop. */
+  border-radius: 1.125em;
+  background: transparent;
+  color: CanvasText;
+  /* A button doesn't inherit the font, and the em sizes here follow the `size` on the root */
+  font: inherit;
+  line-height: 1;
+  text-decoration: none;
+  /* Digits of one width, so "11" is no wider than "88" */
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  user-select: none;
+  /* Hover motion, as Button's: entering overshoots (--ease-enter) and settles; leaving is the plain
+     ease-out, so the control doesn't dip below its size and wobble once the pointer has gone. This is
+     the leaving one, which is also what the control returns on. */
+  --pagination-hover-scale: 1.1;
+  transform: scale(1);
+  transition:
+    transform 400ms var(--ease-leave),
+    background-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+}
+
+/* The fill of the current page. It grows from the middle of the control with the pop curve, and the
+   page that stops being current shrinks away on the same curve, so the brand color seems to move along
+   the row. A layer behind the label rather than the control's own background, because a background
+   can't scale on its own. */
+.control::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--color-pagination-background-current);
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    transform 400ms var(--ease-pop),
+    opacity 150ms ease;
+}
+.control.current::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.control.current {
+  /* The base CanvasText is unreadable on a dark brand fill */
+  color: var(--color-pagination-text-current);
+  font-weight: var(--weight-more);
+}
+
+/* Gated on hover-capable pointers (touch would leave a control stuck grown after a tap), and off for
+   a disabled one. The fill is a background, so the current page, which has its own, takes none. */
+@media (hover: hover) {
+  .control:hover:not(:disabled, [aria-disabled='true']) {
+    transform: scale(var(--pagination-hover-scale));
+    transition:
+      transform 500ms var(--ease-enter),
+      background-color 150ms ease,
+      color 150ms ease,
+      opacity 150ms ease;
+  }
+  .control:hover:not(.current, :disabled, [aria-disabled='true']) {
+    background: var(--color-pagination-background-hover);
+  }
+}
+
+/* Pressed: it settles below its size, quickly and without overshoot, so a press reads as one where
+   there is no hover (touch). After the hover rule, which it outranks by order; releasing springs back. */
+.control:active:not(:disabled, [aria-disabled='true']) {
+  transform: scale(0.95);
+  transition:
+    transform 120ms var(--ease-leave),
+    background-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+}
+
+.control:focus-visible {
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
+}
+
+.control:disabled,
+.control[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* In forced colors a background is dropped, so the current page would look like the rest */
+@media (forced-colors: active) {
+  .control.current {
+    outline: 2px solid Highlight;
+  }
+}
+
+/* "…": the width of a control, so a gap is a place in the row */
+.gap {
+  box-sizing: border-box;
+  min-inline-size: 2.25em;
+  text-align: center;
+  color: var(--color-text-less);
+  user-select: none;
+}
+
+/* The chevron is drawn pointing down. A quarter turn clockwise points it left, back to the previous
+   page; counterclockwise points it right, to the next (swapped in a right-to-left layout, as
+   Breadcrumb's separator and Collapsible's). The turn is a variable so the grow on hover below keeps
+   it; both transforms list rotate then scale, so each is interpolated on its own. */
+.chevron {
+  width: 1em;
+  height: 1em;
+  transform: rotate(var(--chevron-turn)) scale(1);
+  transition: transform 300ms var(--ease-pop);
+}
+.previous {
+  --chevron-turn: 90deg;
+}
+.next {
+  --chevron-turn: -90deg;
+}
+.root:dir(rtl) .previous {
+  --chevron-turn: -90deg;
+}
+.root:dir(rtl) .next {
+  --chevron-turn: 90deg;
+}
+
+/* The chevron grows as Chip's × does: the control is the hover target, the mark is what swells */
+@media (hover: hover) {
+  .control:hover:not(:disabled, [aria-disabled='true']) .chevron {
+    transform: rotate(var(--chevron-turn)) scale(var(--scale-icon-hover));
+  }
+}
+/* Pressed: the growth gives way to the control's own shrink, so the chevron ends at the control's scale
+   instead of 1.3 × 0.95. After the hover rule, which it outranks by order. */
+.control:active:not(:disabled, [aria-disabled='true']) .chevron {
+  transform: rotate(var(--chevron-turn)) scale(1);
+  transition: transform 120ms var(--ease-leave);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control,
+  .control::before,
+  .chevron {
+    transition: none;
+  }
+  /* The fill and the hover tint stay as the cues; nothing scales or springs */
+  .control:hover:not(:disabled, [aria-disabled='true']),
+  .control:active:not(:disabled, [aria-disabled='true']),
+  .control::before {
+    transform: none;
+  }
+  .control:hover:not(:disabled, [aria-disabled='true']) .chevron,
+  .control:active:not(:disabled, [aria-disabled='true']) .chevron {
+    transform: rotate(var(--chevron-turn)) scale(1);
+  }
+}

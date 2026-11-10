@@ -30,6 +30,8 @@ export { Menu } from './Menu';
 export type { MenuProps, MenuItem } from './Menu';
 export { Dialog } from './Dialog';
 export type { DialogProps } from './Dialog';
+export { Pagination } from './Pagination';
+export type { PaginationProps, PaginationLabels } from './Pagination';
 export { Popover } from './Popover';
 export type { PopoverProps } from './Popover';
 export { Progress } from './Progress';

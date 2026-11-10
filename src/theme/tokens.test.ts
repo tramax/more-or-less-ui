@@ -70,4 +70,11 @@ describe('theme/themes.css', () => {
     expect(css.includes('--color-chip-background-selected:')).toBe(true);
     expect(css.includes('--color-chip-text-selected:')).toBe(true);
   });
+
+  it('overrides the Pagination current-page text whenever it overrides its background', () => {
+    // Same reason as Chip's: --color-pagination-text-current follows --color-primary, not the background
+    const css = readFileSync(resolve(process.cwd(), 'src/theme/themes.css'), 'utf8');
+    expect(css.includes('--color-pagination-background-current:')).toBe(true);
+    expect(css.includes('--color-pagination-text-current:')).toBe(true);
+  });
 });

@@ -1,6 +1,6 @@
 import { useState, type ComponentProps, type ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { omitDefaults, showCode } from '../../../.storybook/snippet';
+import { asControlled, showCode } from '../../../.storybook/snippet';
 import { Stack } from '../Stack';
 import { Text } from '../Text';
 import { Tabs, TABS_DEFAULTS, type TabItem } from './Tabs';
@@ -71,7 +71,13 @@ const meta: Meta<typeof Tabs> = {
   // Start the controls at the component's defaults
   args: { ...TABS_DEFAULTS, items: ITEMS, value: 'account', 'aria-label': 'Settings' },
   render: (args) => <Stateful {...args} />,
-  parameters: { docs: { source: { transform: omitDefaults(TABS_DEFAULTS) } } },
+  parameters: {
+    docs: {
+      source: {
+        transform: asControlled(TABS_DEFAULTS, { as: 'Tabs', prop: 'value', setter: 'setValue' }),
+      },
+    },
+  },
   decorators: [
     (Story) => (
       <div style={{ width: '32rem', maxWidth: '100%', padding: '1rem' }}>

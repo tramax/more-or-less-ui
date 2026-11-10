@@ -2225,7 +2225,7 @@ and every link below it uses it. The provider needs no clone, so no React 18 / 1
 - Without a provider a link is a plain anchor, so the library has no router dependency.
 - The logic is `_shared/useLinkProps` (the context, `LinkRouter`, and the hook that returns `href` and
   `onClick`), so Link is its first consumer, not its only: Breadcrumb's items are Links, and a Menu item
-  that is a link, a Card with an `href` and Pagination call the same hook.
+  that is a link, and Pagination's pages in link mode, call the same hook; a Card with an `href` would too.
 
 **Not through the router:** prefetching on hover or in view (Next's `<Link>`, TanStack's `preload`),
 typed routes, and an active-link state that the router works out. A string `href` can't give typed
@@ -2286,6 +2286,86 @@ descriptions.
 collapsed middle, and the schema.org `BreadcrumbList` markup for search engines (a JSON-LD concern, not
 the component's). Not yet checked by eye: the row, the chevron's turn and the wrapping were written from
 the CSS, not seen in Storybook.
+
+### Pagination
+
+```tsx
+type PaginationLabels = {
+  previous?: string; // default 'Previous page'
+  next?: string; // default 'Next page'
+  page?: (page: number) => string; // default (n) => `Page ${n}`
+};
+
+type PaginationProps = Omit<HTMLAttributes<HTMLElement>, 'onChange' | 'color' | 'children'> & {
+  page: number; // current, from 1; always controlled. Out of range: the nearest page that exists
+  pageCount: number; // how many pages (not items); 1 or fewer renders nothing
+  siblingCount?: number; // pages each side of the current one; default 1
+  boundaryCount?: number; // pages always shown at each end; default 1
+  isDisabled?: boolean; // default false
+  size?: ScaleProp; // font-size; default 'normal'
+  labels?: PaginationLabels; // another language; a label left out is the English default
+  'aria-label'?: string; // default 'Pagination'; aria-labelledby replaces it
+} & (
+    | { onChange: (page: number) => void; getHref?: (page: number) => string } // buttons
+    | { getHref: (page: number) => string; onChange?: (page: number) => void } // links
+  );
+```
+
+Moving between the pages of a long list or table. Not for the sections of one page (Tabs) or where the
+reader is in a site (Breadcrumb).
+
+Closest sibling is Tabs on the _state_ (the current page decides what the screen shows and belongs in the
+URL, so `page` is required and controlled, with no `defaultPage`), and Breadcrumb on the _shell_ (a `<nav>`
+holding an `<ol>`, `aria-label` with a default, `size` from `_shared/Size.module.css`, `ChevronIcon` turned
+a quarter and flipped under `:dir(rtl)`). **Shared:** those, `useLinkProps` for link mode (its second direct caller, after Link), and the look of Chip's selectable pair (nothing behind
+it, the field's hover fill, the brand color for the current one, the press that shrinks). **New:** the
+window of pages (`pageSlots.ts`), and a control that is a button or a link. It adds three tokens, all
+aliases: `--color-pagination-background-hover` (the field's stronger tint), and
+`--color-pagination-background-current` with `--color-pagination-text-current` (the brand color and its
+text, as Chip's selected pair; `themes.css` overrides both, and a test fails if only one is overridden).
+
+- **`pageCount`, not `total` + `pageSize`.** Pagination draws page numbers; `Math.ceil(total / pageSize)` is
+  the caller's, and a page-size selector is a different component.
+- **Buttons or links.** With only `onChange` the pages are `<button>`s. With `getHref` they are real
+  `<a href>`s through `useLinkProps`, so "open in new tab", "copy link address" and crawlers work (which
+  matter more for pagination than for most things), and under a `LinkProvider` a click goes to the router
+  with no page load. The prop type needs at least one of the two. With both, `onChange` is called on a
+  plain click before the link is followed (analytics, scroll to top). Link mode does not use the `Link`
+  component, whose underline look is wrong for a page button; it takes only its hook.
+- **The row is the same width on every page.** Longer than `2 * boundaryCount + 2 * siblingCount + 3`, it
+  is exactly that many places, so nothing moves under the pointer as you page. To keep it so, a gap that
+  would hide one page shows that page instead; a gap stands for two or more. Fewer pages than places: all
+  are shown, with no gap. (MUI's Pagination is the model; its algorithm is `pageSlots.ts`.)
+- **The gap "…" is decoration:** `aria-hidden`, not a button, no jump-ahead. Any page is a press of
+  previous or next away from one in view. A screen reader hears "list, N items" and each name.
+- **Previous and next stop at the ends, not hide**, so the row doesn't shift. They are `aria-disabled`
+  and not `disabled`, so pressing Next onto the last page doesn't drop the focus on the body (a disabled
+  button can't keep it). In link mode an end has no `href` and `tabindex="0"`, for the same reason.
+  `isDisabled` is different: nothing can be pressed, so the buttons are natively `disabled` and a link has
+  no `href` and no tab stop, as Link's `isDisabled`.
+- **The current page is `aria-current="page"`** and still a control: a button that does nothing when
+  pressed, or a link to itself (reload, copy the address). `onChange` is not called for it, as Tabs'.
+  Each page's accessible name is `labels.page(n)` ("Page 3"), since it shows only its number; previous
+  and next show only a chevron and are named by `labels`.
+- **Labels are one object**, not three flat props, so the prop list stays short; the other components
+  take only `aria-label`, which this still has for the landmark.
+- **Look.** A control 2.25em high (and at least as wide, so "1000" grows it) with a radius of half that, so
+  a single digit is a circle and "100" a pill: round arcs as a chip's ends, not the squircle of Button and
+  Card. Flat, no shadow. In `forced-colors` the current page gets a `Highlight` outline, since its
+  background is dropped. The row wraps on a narrow screen. Digits are tabular.
+- **Motion** is the system's, not a fade. Hover scales a control to 1.1 on `--ease-enter` (Button's
+  overshoot, entering; the plain `--ease-leave` leaving) and fills it with the field's hover tint (not the
+  current page, which has its own); `:active` settles it to 0.95 without overshoot. The chevron swells to
+  `--scale-icon-hover` as Chip's × does. The current page's fill is a layer (`::before`) behind the
+  label that grows from the middle on `--ease-pop`, and shrinks away on the page that stops being
+  current, so the brand color seems to move along the row (the thumb of Tabs and Toggle, as a pop and not
+  a slide: the pages come and go as the window moves, so there is no one element to slide). Hover is
+  off for a touch pointer, and under `prefers-reduced-motion` nothing scales: the tints are the cues.
+
+**Not yet:** a compact "3 / 12" form for a narrow screen, a "go to" input, a page-size selector, First and
+Last buttons (the boundary pages do that), a gap that opens a menu of the pages it hides, and a count of
+the items ("21–40 of 312"). Not yet checked by eye: the controls, the current page's fill, the turned
+chevrons and the focus ring were written from the CSS, not seen in Storybook.
 
 ---
 
@@ -2504,8 +2584,9 @@ more-or-less-ui/
 │   │   ├── Collapsible/
 │   │   ├── Link/           # Link + LinkProvider
 │   │   ├── Breadcrumb/
+│   │   ├── Pagination/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -2723,7 +2804,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 - [ ] `Accordion` — Sibling: Collapsible (a group of them, one open at a time, arrow-key roving between headers); build it on Collapsible rather than beside it
 - [x] `Link` — Sibling: Text (the type size) and Chip / Button (the focus ring). A real `<a href>`, `size` (unset: the surrounding text's), `isCurrent`, `isDisabled`; routing through one `LinkProvider` with `navigate` and `resolveHref`, whose logic is `_shared/useLinkProps` (a plain left click on an in-app link goes to the router; everything else is the browser's). Adds only `--color-link`, an alias of `--color-primary-strong`. See [Link](#link)
 - [x] `Breadcrumb` — Sibling: Link (each item, and its routing), Tabs for the `items` shape and `size`, Collapsible for the turned chevron. `items` (`label`, optional `href`), `size`, `aria-label`; APG breadcrumb (`<nav>` + `<ol>`), the last item is the current page (`aria-current="page"`), a long trail wraps. Adds no token and no shared file. See [Breadcrumb](#breadcrumb). Still to do: collapsing the middle of a long trail, an item `icon`, a custom separator
-- [ ] `Pagination`
+- [x] `Pagination` — Sibling: Tabs (required, controlled `page`), Breadcrumb (the `<nav>` + `<ol>` shell, `size`, the turned chevron), Link for `useLinkProps`, Chip for the look. `page`, `pageCount`, `siblingCount`, `boundaryCount`, `isDisabled`, `size`, `labels`; buttons with `onChange`, or links with `getHref` (routed by a `LinkProvider`); a row of constant width with "…" gaps. Adds three alias tokens and no shared file. See [Pagination](#pagination). Still to do: a compact form, a gap that opens a menu, an item count
 
 **Inputs still missing:**
 

@@ -25,6 +25,8 @@
   --color-banner-text-more: white;
   --color-chip-background-selected: #4a3f33; /* umber */
   --color-chip-text-selected: white;
+  --color-pagination-background-current: #4a3f33; /* umber */
+  --color-pagination-text-current: white;
   /* Dark enough that the avatar's text turns white by itself */
   --color-avatar-lightness: 0.45;
 
