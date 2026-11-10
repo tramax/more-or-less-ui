@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useControlledState } from './useControlledState';
 
 /**
  * The state of a group where one option is chosen (Radio, SegmentedControl): controlled by `value`
@@ -10,11 +10,10 @@ export function useChoice(
   defaultValue: string | undefined,
   onChange: ((value: string) => void) | undefined,
 ) {
-  const [uncontrolledValue, setUncontrolledValue] = useState<string | null>(defaultValue ?? null);
-  const chosen = value === undefined ? uncontrolledValue : value;
+  const [chosen, record] = useControlledState<string | null>(value, defaultValue ?? null);
 
   const choose = (next: string) => {
-    if (value === undefined) setUncontrolledValue(next);
+    record(next);
     onChange?.(next);
   };
 

@@ -166,6 +166,7 @@ To switch a default off, pass an escape-hatch value: `padding={0}`, or `backgrou
 - `Input` — Form input
 - `Textarea` — Multi-line input
 - `Slider` — Pick a number from a range
+- `FileUpload` — Drop zone and file list; keep files in the form, or upload each one as it is picked
 - `Select` — Compound select component
 
 ## Extensibility

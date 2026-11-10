@@ -36,11 +36,12 @@ same recipe is defined under two names.
 
 - `components/_shared/` holds CSS shared by several components (`OptionGroup`: Checkbox + Radio).
 - Components set `--option-*` style hooks on their root from their own tokens, and shape only their control.
-- `_shared/TextFieldFrame` is the frame of a single-control field (TextField, Textarea, Select, Slider): root, `size`,
+- `_shared/TextFieldFrame` is the frame of a single-control field (TextField, Textarea, Select, Slider, FileUpload): root, `size`,
   label, error message, and the id / `aria-invalid` / `aria-describedby` wiring. A component passes it
   its props and renders only its control (`<input>`, `<textarea>`) from what the frame hands back; it
   sets the `--field-*` color hooks from its own tokens on its root class.
-  Slider ignores the `className` it hands back (a text field's filled box) and draws its own control.
+  Slider ignores the `className` it hands back (a text field's filled box) and draws its own control;
+  FileUpload puts it on its drop zone, a box that holds the focused input, as Select's box of chips does.
   Its `end` slot (with `endCount`) puts `IconButton`s inside the field at the inline end and leaves the control
   room for them; TextField's password reveal and number steppers use it.
 - `_shared/FieldError` is the error message + icon for every field and group. Pass spacing through
@@ -72,6 +73,7 @@ same recipe is defined under two names.
 - `_shared/OptionGroupFrame` is the frame of a group of options (Checkbox, Radio, SegmentedControl): the
   fieldset, legend, error message and the `aria-describedby` wiring. It hands its children `rootId` and
   `hasError`; a component renders only its controls and sets the look of its root through `className`.
+  `_shared/useControlledState` is "controlled by `value`, or kept from `defaultValue`" (useChoice, FileUpload).
   `_shared/useChoice` is the one-of-several state (Radio, SegmentedControl): controlled by `value`,
   or kept from `defaultValue`.
 - `_shared/SlidingThumb` is the thumb that slides to the selected option (Tabs, SegmentedControl):

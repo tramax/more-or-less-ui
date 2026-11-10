@@ -8,11 +8,22 @@ import { IconButton } from './IconButton';
 export function CloseButton({
   label,
   onClick,
+  isDisabled,
   className,
 }: {
   label: string;
   onClick: () => void;
+  /** Native `disabled` (FileUpload's remove button in a disabled field). */
+  isDisabled?: boolean;
   className?: string;
 }) {
-  return <IconButton label={label} icon={CrossIcon} onClick={onClick} className={className} />;
+  return (
+    <IconButton
+      label={label}
+      icon={CrossIcon}
+      onClick={onClick}
+      {...(isDisabled !== undefined && { isDisabled })}
+      className={className}
+    />
+  );
 }

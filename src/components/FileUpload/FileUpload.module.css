@@ -1,0 +1,156 @@
+/*
+ * FileUpload: a drop zone and the list of files under it. The frame (root, `size`, label, error
+ * message, id wiring, the disabled dimming) and the look of the zone's box (fill, hover tint, focus
+ * border, error fill) are _shared/TextFieldFrame, whose `.control` class is on the zone: like Select's
+ * box of chips, the box holds the focused element (the input) rather than being it.
+ *
+ * The colors are set on the root class from the --color-fileupload-* tokens (theme/tokens.css), so
+ * each can be customised on its own:
+ *   --field-background, --field-background-hover,
+ *   --field-background-error, --field-background-error-hover
+ *
+ * Everything is in em, so `size` (font-size on the root) scales the zone and the rows.
+ */
+
+.root {
+  --field-background: var(--color-fileupload-background);
+  --field-background-hover: var(--color-fileupload-background-hover);
+  --field-background-error: var(--color-fileupload-background-error);
+  --field-background-error-hover: var(--color-fileupload-background-error-hover);
+}
+
+/*
+ * The zone is pressable (it opens the picker), so it moves like an option row: a gentle grow on hover
+ * (1.02, a wide box crowds its neighbours less than Button's 1.0667) that overshoots and settles, and a
+ * shrink when pressed, quickly and without overshoot. A drag over it is the same as a hover. The
+ * selectors carry `.root` to outrank the frame's `.control` transition, whichever file loads last.
+ */
+.root .zone {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: 1.5em;
+  text-align: start;
+  cursor: pointer;
+  transform: scale(1);
+  transition:
+    background-color 150ms ease,
+    box-shadow 250ms ease,
+    transform 400ms var(--ease-leave);
+}
+@media (hover: hover) {
+  .root .zone:hover {
+    transform: scale(1.02);
+    transition:
+      background-color 150ms ease,
+      box-shadow 250ms ease,
+      transform 500ms var(--ease-enter);
+  }
+}
+.root .zone:active {
+  transform: scale(0.98);
+  transition:
+    background-color 150ms ease,
+    box-shadow 250ms ease,
+    transform 150ms var(--ease-leave);
+}
+
+/* A file is over the zone: the hover fill and the focus border's shape, so it needs no new color. A
+   drag does not update :hover, so the fill is set here. */
+.root .zone[data-dragging] {
+  transform: scale(1.02);
+  background: var(--field-background-hover);
+  box-shadow: inset 0 0 0 2px var(--field-focus-color);
+  transition:
+    background-color 150ms ease,
+    box-shadow 250ms ease,
+    transform 500ms var(--ease-enter);
+}
+.root .zone[data-dragging][data-invalid] {
+  background: var(--field-background-error-hover);
+}
+
+/* As Select's box: nothing reaches a disabled input, so the zone takes no pointer at all */
+.root .zone:has(input:disabled) {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root .zone,
+  .root .zone:hover,
+  .root .zone:active,
+  .root .zone[data-dragging] {
+    transform: none;
+    transition:
+      background-color 150ms ease,
+      box-shadow 250ms ease;
+  }
+}
+
+/* The native input over the whole zone, invisible: the browser's click, keyboard and drop handling
+   with nothing of its own to draw. Safari opens the picker only from the button, so that fills it too. */
+.input {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.input::file-selector-button {
+  inline-size: 100%;
+  block-size: 100%;
+  cursor: pointer;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A file: its name and size, the state and the remove button; under them the progress bar or the
+   error. No fill: a fill says "pressable", and a row is not. */
+.file {
+  display: grid;
+  gap: 0.375em;
+}
+.main {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+/* A long name wraps rather than pushing the remove button out */
+.text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+.actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+
+/* The ✓ on an uploaded file: a shape as well as a color, and named for a screen reader */
+.done {
+  display: grid;
+  place-items: center;
+  inline-size: 1em;
+  block-size: 1em;
+  margin-inline-end: 0.25em;
+  color: var(--color-primary-strong);
+}
+.doneIcon {
+  inline-size: 100%;
+  block-size: 100%;
+}

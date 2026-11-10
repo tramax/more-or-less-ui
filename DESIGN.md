@@ -2542,6 +2542,124 @@ Last buttons (the boundary pages do that), a gap that opens a menu of the pages 
 the items ("21–40 of 312"). Not yet checked by eye: the controls, the current page's fill, the turned
 chevrons and the focus ring were written from the CSS, not seen in Storybook.
 
+### FileUpload
+
+```tsx
+type FileUploadProps = Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  | 'type'
+  | 'value'
+  | 'defaultValue'
+  | 'onChange'
+  | 'size'
+  | 'color'
+  | 'disabled'
+  | 'readOnly'
+  | 'required'
+  | 'accept'
+  | 'multiple'
+  | 'children'
+> &
+  NameProps & {
+    size?: ScaleProp; // font-size on the root, as TextField
+    label?: string;
+    error?: string; // the caller decides when; the component never writes a message
+    isDisabled?: boolean;
+    isRequired?: boolean; // native `required` (form mode) + the asterisk
+    accept?: string; // native syntax (".pdf, image/*"); also checked in code, since a drop ignores it
+    multiple?: boolean; // without it a new file replaces the old one
+    maxSize?: number; // bytes, per file
+    maxFiles?: number;
+    value?: File[]; // controlled
+    defaultValue?: File[]; // uncontrolled; never uploaded (they are already there)
+    onChange?: (files: File[]) => void; // after every add or remove, with the whole list
+    onReject?: (rejections: { file: File; reason: 'type' | 'size' | 'count' }[]) => void;
+  } & (
+    | { uploadFile?: undefined; onUploaded?: never } // form mode
+    | {
+        uploadFile: (
+          file: File,
+          control: { signal: AbortSignal; onProgress: (fraction: number) => void },
+        ) => Promise<unknown>;
+        onUploaded?: (file: File, result: unknown) => void; // the promise's value (a pre-signed key, ...)
+      }
+  );
+```
+
+Two uses, told apart by one prop, the way `type` unlocks `isRevealable` in TextField:
+
+- **Form mode** (no `uploadFile`): the files stay in the native `<input type="file">` and go with the
+  form (`name`). Nothing is sent by the component.
+- **Upload mode** (`uploadFile`): each file the user picks is handed to `uploadFile` at once, for a
+  pre-signed URL and a PUT, say, and the result is attached to the consumer's own data. The component still
+  does no network: `uploadFile` is the consumer's. It is named for what it does to one file; `upload`
+  would repeat the component's name and read as a mode flag, and `onUpload` would say it is an event
+  whose result is ignored, which this one's is not.
+
+**Control.** The native input is stretched over the drop zone at `opacity: 0`, so click, keyboard,
+dropping a file on it, `accept`, `multiple`, `required` and form submission are the browser's. The label
+points at it. The zone is `_shared/TextFieldFrame`'s `.control` class on a `<div>` (as Select's box of
+chips: the box holds the focused element rather than being it), so the fill, hover, focus border and
+error fill are the field's; the frame gives the root, `size`, label, error message, id /
+`aria-invalid` / `aria-describedby` wiring and the disabled dimming. A disabled zone takes no pointer
+(as Select's box). Content is an `OptionText` with an upload icon (`FileUpload/FileIcons.tsx`, on
+`StrokeIcon`'s shell): "Drop files here or browse" (or "a file" when not `multiple`) and a hint built
+from the limits, "Accepts .pdf, image/\* · Up to 5 MB each · Up to 3 files". Labels are English and fixed,
+like Select's "Clear". Dragging a file over the zone (counted `dragenter` / `dragleave`, only for drags
+whose `types` include `Files`, since the enters outnumber the leaves while the pointer is over what is
+inside the zone) gives it the hover fill and the 2px brand inset border of the focus state: no new
+recipe, and a drag does not update `:hover`, so the fill is set on `data-dragging`. The zone is
+pressable, so it has the option row's motion: grow to 1.02 on hover (overshooting on `--ease-enter`), shrink to
+0.98 when pressed, a drag over it as a hover; `prefers-reduced-motion` keeps the colors and drops the scale.
+
+**Value.** `value` / `defaultValue` / `onChange`, on `_shared/useControlledState` (extracted from
+`useChoice`, which now sits on it). In form mode `input.files` is rebuilt through `DataTransfer` whenever
+the list changes (`syncInputFiles`), so submission and `required` match the list; where there is no
+`DataTransfer` (jsdom, an old browser) the call is a no-op in a try / catch and the list is still right.
+In upload mode the input is emptied after each pick, since the list now holds the files (and the same
+file can be picked again), so `name` submits nothing, and `isRequired` is `aria-required` only, because
+an always-empty input would never validate.
+
+**Filtering** (`files.ts`, `filterFiles`). A file that fails `accept` (extension, MIME, `image/*`),
+`maxSize` or `maxFiles` is not added; `onReject` gets it with the reason, and the caller sets `error`.
+Type and size are checked before the count, so `'count'` is only ever a valid file that did not fit. Without
+`multiple`, a pick takes the first valid file and rejects the rest as `'count'`. A file that is already in
+the list (same name, size and date) is dropped without a rejection: nothing was wrong with it.
+
+**List.** A `<ul>` between the zone and the error message, inside the frame; no fill (a fill says
+"pressable", and a row is not). A row is `OptionText` (name, formatted size) and a `CloseButton` named
+"Remove <name>" (now with `isDisabled`); in upload mode also the state:
+
+- **uploading:** `Progress` bar (`size="1em"`, named "Uploading <name>"), determinate once `onProgress`
+  is called and indeterminate before (the pre-signed fetch);
+- **done:** a ✓ (`CheckIcon`) named "Uploaded";
+- **error:** the `Error`'s message in a `FieldError` ("Upload failed" for anything without one) and a
+  Retry `IconButton` named "Retry <name>".
+
+The component keeps the state by `File` identity (`FileUpload/useFileUploads`, which does no network: it
+calls `uploadFile`, keeps the status map and the `AbortController`s, and retries). One row draws every
+state. Removing a row aborts its upload and calls `onChange`, so the consumer can delete what `onUploaded`
+gave it. A single-file field aborts the old upload when a new file replaces it, a controlled parent that
+drops a file aborts it, and unmounting aborts everything in flight. An aborted upload never reports:
+its result, its failure (an `AbortError` included) and its progress are ignored, so a consumer that
+ignores `signal` is still safe. `uploadFile` throwing before it returns a promise is a failure like any
+other. Uploads run in parallel. Files from `defaultValue` or a controlled `value` that the user did not pick are not uploaded.
+
+**Accessibility.** After a removal, focus goes to the next Remove button (the previous one when the last
+was removed), or to the input when the list is empty. A polite `VisuallyHidden` live region (`role="status"`)
+says "2 files added", "report.pdf removed", "report.pdf uploaded" and "report.pdf failed".
+
+**Tokens.** `--color-fileupload-background`, `-hover`, `-error`, `-error-hover`: aliases of the
+`--color-field-background*` recipe, and no other token. Progress, danger and the check use theirs; the ✓ is
+`--color-primary-strong` in the CSS module, a fixed finish.
+
+**Not yet:** blocking form submit while an upload is in flight or failed (`setCustomValidity` on the
+input), `maxConcurrent`, pause and resume, previews, folder upload, paste, a compact button-only form, a
+`labels` prop. Chunked and resumable uploads belong in the consumer's `uploadFile`. Not yet checked by eye:
+the zone, the rows and the drag state were written from the CSS and tested in jsdom, which has no
+`DataTransfer`, no drag-and-drop and no layout, so look at them in Storybook (and drop a real file) before
+relying on them.
+
 ---
 
 ## Loading
@@ -2750,6 +2868,7 @@ more-or-less-ui/
 │   │   ├── TextField/
 │   │   ├── Textarea/
 │   │   ├── Slider/
+│   │   ├── FileUpload/     # FileUpload + files.ts (accept, size, DataTransfer sync) + useFileUploads
 │   │   ├── Select/
 │   │   ├── Dialog/
 │   │   ├── Drawer/
@@ -2763,7 +2882,7 @@ more-or-less-ui/
 │   │   ├── Breadcrumb/
 │   │   ├── Pagination/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio + SegmentedControl's frame, and Toggle's control; OptionGroupFrame: Checkbox + Radio + SegmentedControl (the fieldset, legend and error); useChoice: Radio + SegmentedControl (single-choice state); SlidingThumb: Tabs + SegmentedControl; TextFieldFrame: TextField + Textarea + Select + Slider (its end slot: TextField's buttons); FieldError, FieldLabel, types: all fields; IconButton: CloseButton + TextField's reveal and steppers; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio + SegmentedControl's frame, and Toggle's control; OptionGroupFrame: Checkbox + Radio + SegmentedControl (the fieldset, legend and error); useChoice: Radio + SegmentedControl (single-choice state); useControlledState: useChoice + FileUpload (controlled or kept here); SlidingThumb: Tabs + SegmentedControl; TextFieldFrame: TextField + Textarea + Select + Slider + FileUpload (its end slot: TextField's buttons); FieldError, FieldLabel, types: all fields; IconButton: CloseButton + TextField's reveal and steppers; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame) + FileUpload's remove; ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, FileUpload's zone and rows, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -2793,6 +2912,7 @@ export { Card } from './components/Card';
 export { TextField } from './components/TextField';
 export { Textarea } from './components/Textarea';
 export { Slider } from './components/Slider';
+export { FileUpload } from './components/FileUpload';
 export { Select } from './components/Select';
 
 // Patterns
@@ -2989,7 +3109,8 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 - [x] `Slider` — Sibling: Toggle (a custom-drawn native input, the thumb's hover and press motion) and TextFieldFrame for label and error. A native `<input type="range">`: `min` / `max` / `step`, `value` / `defaultValue` / `onChange(number)`, `formatValue` (aria-valuetext), `label`, `error`, `isDisabled`, `size`; the fill is drawn from `--slider-value` as Progress's is. Adds only `--color-slider-*` aliases and no shared file (its one piece of repeated CSS, the WebKit and Firefox pseudo-element rules, is kept short with a `--thumb-transition` property). See [Slider](#slider). Still to do: a visible value, tick marks, a two-thumb range, vertical
 - [x] `SegmentedControl` — Sibling: Radio (native radios in a `radiogroup`, controlled or uncontrolled), Tabs for the thumb and `size`. `options` (with an optional `icon`), `value` / `defaultValue` / `onChange`, `name`, `label`, `error`, `isDisabled`, `isRequired`, `size`; one value that applies at once (a quick filter, a view), not navigation (that is Tabs). Adds `--color-segmented-*` aliases of the field fill and the brand color, and extracted `_shared/OptionGroupFrame` (the third option group), `_shared/useChoice` and `_shared/SlidingThumb` (Tabs' thumb). See [SegmentedControl](#segmentedcontrol)
 - [x] `NumberInput`, password reveal — variants of TextField, not new components: `type="number"` with `hasSteppers`, and `type="password"` with `isRevealable`. Sibling: Select (buttons inside a field). Adds `TextFieldFrame`'s `end` slot, extracts `_shared/IconButton` from `CloseButton`, and no token. See [TextField](#textfield). Still to do: a `labels` prop, press-and-hold repeat, a unit suffix
-- [ ] `FileUpload`, `DatePicker` (and Calendar) — the largest; last
+- [x] `FileUpload` — Sibling: Select and Slider (`TextFieldFrame` around a custom control), Progress / `CloseButton` / `OptionText` for the file rows. A drop zone over a native file input, and a list of the files. Form mode (files stay in the input and submit with the form) and upload mode (`uploadFile`, the consumer's function, called per picked file with a `signal` and `onProgress`; `onUploaded` gets its result; progress, done, error with Retry, removing aborts). `accept` / `maxSize` / `maxFiles` with `onReject`. Adds `--color-fileupload-*` aliases, `_shared/useControlledState` (extracted from `useChoice`) and `isDisabled` on `CloseButton`. See [FileUpload](#fileupload)
+- [ ] `DatePicker` (and Calendar) — the largest; last
 
 **Data display:** `Table` (Sibling: Grid, Card).
 

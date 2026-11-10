@@ -3,7 +3,8 @@
  *
  * - Scale tokens: 3 values per property (less/normal/more), 15 CSS variables (5 scales × 3)
  * - Color tokens: deliberately minimal. One brand color, an error color, a background scale for Card
- *   and one for Button, and one faint field fill that TextField, Textarea, Checkbox, Radio, Toggle, Slider and Select alias.
+ *   and one for Button, and one faint field fill that TextField, Textarea, Checkbox, Radio, Toggle, Slider,
+ *   FileUpload and Select alias.
  */
 
 :root {
@@ -173,6 +174,13 @@
   --color-slider-fill: var(--color-primary);
   --color-slider-thumb: var(--color-primary-strong);
   --color-slider-error: var(--color-danger);
+
+  /* The drop zone: the field fill, a step stronger on hover, with the error pair. A file dragged over
+     it takes the hover fill, so there is no color of its own for that. */
+  --color-fileupload-background: var(--color-field-background);
+  --color-fileupload-background-hover: var(--color-field-background-hover);
+  --color-fileupload-background-error: var(--color-field-background-error);
+  --color-fileupload-background-error-hover: var(--color-field-background-error-hover);
 
   --color-select-background: var(--color-field-background);
   --color-select-background-hover: var(--color-field-background-hover);

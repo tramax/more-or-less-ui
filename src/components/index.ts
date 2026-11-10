@@ -20,6 +20,15 @@ export { Divider } from './Divider';
 export type { DividerProps } from './Divider';
 export { Drawer } from './Drawer';
 export type { DrawerProps, DrawerPlacement } from './Drawer';
+export { FileUpload } from './FileUpload';
+export type {
+  FileUploadProps,
+  FileRejection,
+  RejectionReason,
+  FileStatus,
+  UploadControl,
+  UploadFile,
+} from './FileUpload';
 export { Grid } from './Grid';
 export type { GridProps } from './Grid';
 export { Indicator } from './Indicator';
