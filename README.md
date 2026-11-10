@@ -165,6 +165,7 @@ To switch a default off, pass an escape-hatch value: `padding={0}`, or `backgrou
 - `Button` — Interactive button with all scale props
 - `Input` — Form input
 - `Textarea` — Multi-line input
+- `Slider` — Pick a number from a range
 - `Select` — Compound select component
 
 ## Extensibility

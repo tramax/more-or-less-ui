@@ -36,10 +36,11 @@ same recipe is defined under two names.
 
 - `components/_shared/` holds CSS shared by several components (`OptionGroup`: Checkbox + Radio).
 - Components set `--option-*` style hooks on their root from their own tokens, and shape only their control.
-- `_shared/TextFieldFrame` is the frame of a text-entry field (TextField, Textarea): root, `size`,
+- `_shared/TextFieldFrame` is the frame of a single-control field (TextField, Textarea, Select, Slider): root, `size`,
   label, error message, and the id / `aria-invalid` / `aria-describedby` wiring. A component passes it
   its props and renders only its control (`<input>`, `<textarea>`) from what the frame hands back; it
   sets the `--field-*` color hooks from its own tokens on its root class.
+  Slider ignores the `className` it hands back (a text field's filled box) and draws its own control.
   Its `end` slot (with `endCount`) puts `IconButton`s inside the field at the inline end and leaves the control
   room for them; TextField's password reveal and number steppers use it.
 - `_shared/FieldError` is the error message + icon for every field and group. Pass spacing through

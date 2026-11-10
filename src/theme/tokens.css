@@ -3,7 +3,7 @@
  *
  * - Scale tokens: 3 values per property (less/normal/more), 15 CSS variables (5 scales × 3)
  * - Color tokens: deliberately minimal. One brand color, an error color, a background scale for Card
- *   and one for Button, and one faint field fill that TextField, Textarea, Checkbox, Radio, Toggle and Select alias.
+ *   and one for Button, and one faint field fill that TextField, Textarea, Checkbox, Radio, Toggle, Slider and Select alias.
  */
 
 :root {
@@ -162,6 +162,17 @@
   --color-toggle-background-hover: var(--color-field-background-hover);
   /* The thumb when on, and the cross on it when off; both sit against --color-primary */
   --color-toggle-thumb: var(--color-on-primary);
+
+  /* The empty track, as Toggle's, with the error pair (a Slider can be rejected by its form). The part
+     filled up to the thumb is the brand color; the thumb is the strong one, since the plain primary is
+     2.1:1 on white and the thumb is what shows where the value is. An error recolors both. */
+  --color-slider-track: var(--color-field-background);
+  --color-slider-track-hover: var(--color-field-background-hover);
+  --color-slider-track-error: var(--color-field-background-error);
+  --color-slider-track-error-hover: var(--color-field-background-error-hover);
+  --color-slider-fill: var(--color-primary);
+  --color-slider-thumb: var(--color-primary-strong);
+  --color-slider-error: var(--color-danger);
 
   --color-select-background: var(--color-field-background);
   --color-select-background-hover: var(--color-field-background-hover);

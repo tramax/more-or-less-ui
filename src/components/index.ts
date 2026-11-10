@@ -42,6 +42,8 @@ export { SegmentedControl } from './SegmentedControl';
 export type { SegmentedControlProps, SegmentOption } from './SegmentedControl';
 export { Select } from './Select';
 export type { SelectProps, SelectOption } from './Select';
+export { Slider } from './Slider';
+export type { SliderProps } from './Slider';
 export { Spinner } from './Spinner';
 export type { SpinnerProps } from './Spinner';
 export { Stack } from './Stack';

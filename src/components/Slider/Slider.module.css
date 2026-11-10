@@ -1,0 +1,155 @@
+/*
+ * Slider: a native range input, drawn as a track with a fill up to a thumb. The frame around it (label,
+ * error message, `size`, the disabled dimming) is _shared/TextFieldFrame; this file is only the control.
+ *
+ * Slider.tsx sets --slider-value (0-100) on the input, as Progress sets --progress-value, and the track
+ * is drawn from it: the fill is a gradient to the thumb's centre over the empty track's color. The
+ * thumb is 1.25em and the track 0.5em, all in em, so `size` (font-size on the root) scales it whole.
+ *
+ * The colors are set on the root class from the --color-slider-* tokens (theme/tokens.css), so each
+ * can be customised on its own:
+ *   --slider-track, --slider-track-hover, --slider-fill, --slider-thumb
+ * An input with an error swaps them for --color-slider-error (the fill and the thumb) and the error
+ * track pair.
+ *
+ * Browsers draw the track and thumb through different pseudo-elements, and one selector list with
+ * both is dropped whole by the one that doesn't know the other, so each rule is written twice.
+ */
+
+.root {
+  --slider-track: var(--color-slider-track);
+  --slider-track-hover: var(--color-slider-track-hover);
+  --slider-fill: var(--color-slider-fill);
+  --slider-thumb: var(--color-slider-thumb);
+}
+
+.input {
+  --thumb-size: 1.25em;
+  --track-size: 0.5em;
+  /* Where the fill ends: the thumb's centre, which travels from half a thumb in to half a thumb short
+     of the far end (the track is the thumb's width longer than the distance it covers) */
+  --reach: calc(var(--thumb-size) / 2 + var(--slider-value, 0) / 100 * (100% - var(--thumb-size)));
+  --direction: to right;
+  --track-color: var(--slider-track);
+  --thumb-scale: 1;
+  --thumb-shadow: none;
+  /* Leaving, and rest: settles without overshoot */
+  --thumb-transition:
+    transform 400ms var(--ease-leave), box-shadow 400ms var(--ease-leave),
+    background-color 150ms ease;
+  /* The fill: the brand color up to the thumb's centre, then nothing, over the track's color */
+  --track-fill: linear-gradient(
+    var(--direction),
+    var(--slider-fill) var(--reach),
+    transparent var(--reach)
+  );
+  appearance: none;
+  box-sizing: border-box;
+  /* Form controls don't inherit font-size, which these em would be measured from */
+  font: inherit;
+  width: 100%;
+  /* Taller than the thumb, so there is room to take hold of it with a finger */
+  height: 1.75em;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  /* Focus is drawn around the thumb instead (below) */
+  outline: none;
+}
+/* The input flips in a right-to-left page: the start of the track is on the right */
+.input:dir(rtl) {
+  --direction: to left;
+}
+
+.input[aria-invalid='true'] {
+  --slider-track: var(--color-slider-track-error);
+  --slider-track-hover: var(--color-slider-track-error-hover);
+  --slider-fill: var(--color-slider-error);
+  --slider-thumb: var(--color-slider-error);
+}
+
+.input::-webkit-slider-runnable-track {
+  height: var(--track-size);
+  border-radius: 999px;
+  background: var(--track-fill) var(--track-color);
+  transition: background-color 150ms ease;
+}
+.input::-moz-range-track {
+  height: var(--track-size);
+  border-radius: 999px;
+  background: var(--track-fill) var(--track-color);
+  transition: background-color 150ms ease;
+}
+
+/* The thumb: a disc with no border, whose scale and shadow are the two things hover and press move, with
+   the timing of the state (--thumb-transition, below). WebKit also needs the thumb pulled to the middle
+   of the track, where Firefox centres it itself. */
+.input::-webkit-slider-thumb {
+  appearance: none;
+  margin-top: calc((var(--track-size) - var(--thumb-size)) / 2);
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  border: 0;
+  border-radius: 50%;
+  background: var(--slider-thumb);
+  box-shadow: var(--thumb-shadow);
+  transform: scale(var(--thumb-scale));
+  transition: var(--thumb-transition);
+}
+.input::-moz-range-thumb {
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  border: 0;
+  border-radius: 50%;
+  background: var(--slider-thumb);
+  box-shadow: var(--thumb-shadow);
+  transform: scale(var(--thumb-scale));
+  transition: var(--thumb-transition);
+}
+
+.input:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
+}
+.input:focus-visible::-moz-range-thumb {
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+/* Hover answers on the control as a whole, as Toggle's does: the thumb grows and lifts, springing past
+   its size and settling, and the empty track warms up. Gated on hover-capable pointers, so a tap
+   doesn't leave it stuck. */
+@media (hover: hover) {
+  .input:hover:not(:disabled) {
+    --thumb-scale: 1.15;
+    --thumb-shadow: var(--elevation-more);
+    --thumb-transition:
+      transform 500ms var(--ease-enter), box-shadow 500ms var(--ease-leave),
+      background-color 150ms ease;
+    --track-color: var(--slider-track-hover);
+  }
+}
+
+/* Pressed, and held while it is dragged: the thumb settles below its size, quickly and without
+   overshoot, and drops its shadow. Not gated on hover: a finger presses too. */
+.input:active:not(:disabled) {
+  --thumb-scale: 0.95;
+  --thumb-shadow: none;
+  --thumb-transition:
+    transform 150ms var(--ease-leave), box-shadow 150ms var(--ease-leave),
+    background-color 150ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .input:hover:not(:disabled),
+  .input:active:not(:disabled) {
+    --thumb-scale: 1;
+    --thumb-transition: background-color 150ms ease;
+  }
+}

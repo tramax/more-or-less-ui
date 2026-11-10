@@ -101,7 +101,7 @@ Checkbox / Radio options (`_shared/OptionGroup.module.css`) and the Select popup
 
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Card, Button, Banner), one opaque brand tint (`--color-primary-tint`) that Button's `normal` and Banner's `normal` alias, the opposite of the current text color (`--color-text-inverse`, which Banner's glow aliases), one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio, Toggle and Select alias** (Banner's `less` aliases it too), **and secondary text (`--color-text-less`, 70% of the text color) that the option descriptions and Select's empty message share with Text's `color` scale**. That scale is `--color-text-less` / `-normal` / `-more` (the last is the brand color toward the text color, for contrast). No palettes, no
+Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Card, Button, Banner), one opaque brand tint (`--color-primary-tint`) that Button's `normal` and Banner's `normal` alias, the opposite of the current text color (`--color-text-inverse`, which Banner's glow aliases), one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio, Toggle, Slider and Select alias** (Banner's `less` aliases it too), **and secondary text (`--color-text-less`, 70% of the text color) that the option descriptions and Select's empty message share with Text's `color` scale**. That scale is `--color-text-less` / `-normal` / `-more` (the last is the brand color toward the text color, for contrast). No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -874,6 +874,82 @@ The text beside it is `_shared/OptionText`, and the control is the same `.contro
 
 **Open:** the thumb moves with `translateX`, so it is not mirrored in right-to-left layouts.
 
+### Slider
+
+```tsx
+interface SliderProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  | 'type'
+  | 'value'
+  | 'defaultValue'
+  | 'onChange'
+  | 'min'
+  | 'max'
+  | 'step'
+  | 'disabled'
+  | 'readOnly'
+  | 'required'
+  | 'size'
+  | 'color'
+  | 'list'
+  | 'children'
+> {
+  size?: ScaleProp; // font-size on the root, as TextField; the track and thumb are in em
+  min?: number; // default 0
+  max?: number; // default 100
+  step?: number; // default 1; zero or negative falls back to it
+  value?: number; // controlled
+  defaultValue?: number; // uncontrolled; the middle of the track without it
+  onChange?: (value: number) => void; // while it is dragged or keyed, not only on release
+  formatValue?: (value: number) => string; // aria-valuetext: "30%", "Medium"
+  label?: string; // as TextField; without it aria-label/aria-labelledby is required
+  error?: string;
+  isDisabled?: boolean;
+}
+```
+
+One number picked from a range by dragging: a native `<input type="range">`, so the keys (arrows, Home,
+End, Page Up/Down), touch, form submission (`name`) and the `slider` role are the browser's. For a number
+that is typed or must be exact, use TextField with `type="number"`; for one of a few named choices,
+SegmentedControl. Closest sibling is Toggle (a custom-drawn native input, the thumb's hover and press
+motion), and the frame is `_shared/TextFieldFrame` (as Textarea and Select): root, `size`, label, error,
+the id / `aria-invalid` / `aria-describedby` wiring and the disabled dimming. The one thing it does not
+use is the frame's `className`, the look of a text field's filled box; the slider draws its own control
+in `Slider.module.css`. `readOnly` and `required` are dropped from the props, since a range input has
+neither, and there is no `isRequired` asterisk: a slider always has a value.
+
+**One number draws the track.** Slider keeps the value in React (from `defaultValue` unless `value` is
+given, so the fill can follow an uncontrolled slider too) and sets `--slider-value` (0-100) on the input,
+as Progress sets `--progress-value`. The empty track is a `background-color` and the fill a gradient from
+the brand color up to the thumb's centre (half a thumb in, since the centre travels the track's length
+minus the thumb's width). The value is held to `min` / `max` and snapped to a step counted from `min`
+before it is shown, with a tie rounded up, as the browser does; a sliding thumb and its fill are never
+animated against each other, so the fill is always under the thumb. In a right-to-left page the input
+runs from the right, and the gradient flips with `:dir(rtl)`.
+
+**Look and motion.** A pill track 0.5em thick and a 1.25em disc in a 1.75em-tall input, so there is room
+for a finger. Hover answers on the whole control, as Toggle's does: the thumb grows to 1.15 on
+`--ease-enter` (500ms, overshoots and settles) and lifts on `--elevation-normal`, and the empty track
+warms up. Pressed, and held while dragging, the thumb settles to 0.95 in 150ms on `--ease-leave` and
+drops its shadow; that is not gated on hover, since a finger presses too. Hover is gated on `(hover:
+hover)`; `prefers-reduced-motion` keeps the colors and drops the scale. The timing is a `--thumb-transition`
+custom property set per state on the input, which both browsers' thumb pseudo-elements read, so the two
+rules (`::-webkit-slider-thumb`, `::-moz-range-thumb`, which can't share a selector list) stay short.
+Focus is a 2px `CanvasText` outline around the thumb, not the input.
+
+**Colors.** Aliases only: the track is the field fill (`--color-slider-track*`, with the error pair),
+the fill the brand color (`--color-slider-fill`), the thumb the strong brand color
+(`--color-slider-thumb`, an alias of `--color-primary-strong`: the plain primary is 2.1:1 on white and the
+thumb is what shows where the value is), and an error recolors the fill and thumb to
+`--color-slider-error` (an alias of `--color-danger`). The error also shows as a message with its icon, as
+in every field, so color is not the only cue. The empty track at 15% is faint on white by the same choice
+as the other fields; the value stays readable from the thumb's place and `aria-valuenow`.
+
+**Not yet:** a visible value (a bubble over the thumb, or beside the label: until then, show it from the
+parent's state), tick marks, a range with two thumbs, a vertical orientation, `onChangeEnd` for a costly
+update (the native `change` event fires on release; React's `onChange` is the `input` event), and a
+`prefers-contrast` / forced-colors treatment of the track.
+
 ### Textarea
 
 ```tsx
@@ -1067,7 +1143,7 @@ tick (`--color-select-check`), so selection is never color alone. A chip is the 
 remove button (`aria-label="Remove <label>"`). A disabled option's chip, or any chip in a disabled
 field, is `isDisabled`: dimmed, with no ×.
 
-Shared with TextField and Textarea through `_shared/TextFieldFrame`: root, `size`, label, error, the
+Shared with TextField, Textarea and Slider through `_shared/TextFieldFrame`: root, `size`, label, error, the
 id / `aria-invalid` / `aria-describedby` wiring and the look of the control. The frame's focus border
 also matches `:has(:focus-visible)`, so the multiple box shows it when its input is focused. The
 option text is `_shared/OptionText`, and `SelectOption` is `OptionBase`. The popup's surface and rows
@@ -2673,6 +2749,7 @@ more-or-less-ui/
 │   │   ├── Card/
 │   │   ├── TextField/
 │   │   ├── Textarea/
+│   │   ├── Slider/
 │   │   ├── Select/
 │   │   ├── Dialog/
 │   │   ├── Drawer/
@@ -2686,7 +2763,7 @@ more-or-less-ui/
 │   │   ├── Breadcrumb/
 │   │   ├── Pagination/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio + SegmentedControl's frame, and Toggle's control; OptionGroupFrame: Checkbox + Radio + SegmentedControl (the fieldset, legend and error); useChoice: Radio + SegmentedControl (single-choice state); SlidingThumb: Tabs + SegmentedControl; TextFieldFrame: TextField + Textarea + Select (its end slot: TextField's buttons); FieldError, FieldLabel, types: all fields; IconButton: CloseButton + TextField's reveal and steppers; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio + SegmentedControl's frame, and Toggle's control; OptionGroupFrame: Checkbox + Radio + SegmentedControl (the fieldset, legend and error); useChoice: Radio + SegmentedControl (single-choice state); SlidingThumb: Tabs + SegmentedControl; TextFieldFrame: TextField + Textarea + Select + Slider (its end slot: TextField's buttons); FieldError, FieldLabel, types: all fields; IconButton: CloseButton + TextField's reveal and steppers; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -2715,6 +2792,7 @@ export { Button } from './components/Button';
 export { Card } from './components/Card';
 export { TextField } from './components/TextField';
 export { Textarea } from './components/Textarea';
+export { Slider } from './components/Slider';
 export { Select } from './components/Select';
 
 // Patterns
@@ -2908,7 +2986,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 
 **Inputs still missing:**
 
-- [ ] `Slider` — Sibling: Toggle (a custom control on `OptionGroup` classes) and TextFieldFrame for label and error
+- [x] `Slider` — Sibling: Toggle (a custom-drawn native input, the thumb's hover and press motion) and TextFieldFrame for label and error. A native `<input type="range">`: `min` / `max` / `step`, `value` / `defaultValue` / `onChange(number)`, `formatValue` (aria-valuetext), `label`, `error`, `isDisabled`, `size`; the fill is drawn from `--slider-value` as Progress's is. Adds only `--color-slider-*` aliases and no shared file (its one piece of repeated CSS, the WebKit and Firefox pseudo-element rules, is kept short with a `--thumb-transition` property). See [Slider](#slider). Still to do: a visible value, tick marks, a two-thumb range, vertical
 - [x] `SegmentedControl` — Sibling: Radio (native radios in a `radiogroup`, controlled or uncontrolled), Tabs for the thumb and `size`. `options` (with an optional `icon`), `value` / `defaultValue` / `onChange`, `name`, `label`, `error`, `isDisabled`, `isRequired`, `size`; one value that applies at once (a quick filter, a view), not navigation (that is Tabs). Adds `--color-segmented-*` aliases of the field fill and the brand color, and extracted `_shared/OptionGroupFrame` (the third option group), `_shared/useChoice` and `_shared/SlidingThumb` (Tabs' thumb). See [SegmentedControl](#segmentedcontrol)
 - [x] `NumberInput`, password reveal — variants of TextField, not new components: `type="number"` with `hasSteppers`, and `type="password"` with `isRevealable`. Sibling: Select (buttons inside a field). Adds `TextFieldFrame`'s `end` slot, extracts `_shared/IconButton` from `CloseButton`, and no token. See [TextField](#textfield). Still to do: a `labels` prop, press-and-hold repeat, a unit suffix
 - [ ] `FileUpload`, `DatePicker` (and Calendar) — the largest; last
