@@ -2243,6 +2243,52 @@ written from the CSS, not seen in Storybook.
 
 ---
 
+### Breadcrumb
+
+```tsx
+type BreadcrumbItem = {
+  label: string;
+  href?: string; // as Link's; none: plain text (the current page, or a level that is not a page)
+};
+
+type BreadcrumbProps = Omit<HTMLAttributes<HTMLElement>, 'color' | 'children'> & {
+  items: BreadcrumbItem[]; // top level first; the last item is the current page
+  size?: ScaleProp; // font-size; default 'normal'
+  'aria-label'?: string; // default 'Breadcrumb'; aria-labelledby replaces it
+};
+```
+
+Where the reader is in a site and the way back up. Not for the sections of one page (Tabs) or the steps of
+a flow (a Stepper, not built).
+
+Closest sibling is Link, which draws each item and routes it: under a `LinkProvider` a click on a level
+goes to the router with no page load, and nothing in Breadcrumb knows about routers. **Shared:** `items`
+as data, as Tabs and Menu take theirs; `size` from `_shared/Size.module.css` (the only scale prop),
+default `normal` as Tabs'; the separator is `_shared/ChevronIcon` turned a quarter, with Collapsible's
+`:dir(rtl)` flip. **New:** the `<nav>` + `<ol>`, which item is current, and the row. It adds no token:
+the color, the highlight and the ring are Link's, and the separator is `--color-text-less` as the option
+descriptions.
+
+- **APG breadcrumb:** a `<nav>` landmark named `Breadcrumb` (an `aria-label` for another language or a
+  second trail), holding an ordered list, since the order is the meaning. The separators are decorative
+  (`aria-hidden`) and not list items, so a screen reader hears "list, 3 items" and each name. The `<ol>`
+  carries `role="list"`: Safari and VoiceOver stop announcing a list whose bullets are removed.
+- **The last item is the current page.** It gets `aria-current="page"`, a heavier weight and no link
+  color. With no `href` it is a `<span>`; with one it is a Link with `isCurrent`, which is still a link
+  (to reload, or copy the address). No `isCurrent` prop on the item: where the reader is, is the end of
+  the trail. A level before the end with no `href` is plain text and not marked.
+- **Long trails wrap** onto more lines (`flex-wrap`). Not done: collapsing the middle into a "…" that
+  opens a Menu, which the big libraries all have. It needs a measuring pass (as Tabs' thumb) or a
+  `maxItems`; add it when a trail is long in real use.
+- An empty `items` renders nothing, and a landmark with no list would be noise.
+
+**Not yet:** an `icon` on an item (a home glyph for the first), a custom separator (`/`, a dot), the
+collapsed middle, and the schema.org `BreadcrumbList` markup for search engines (a JSON-LD concern, not
+the component's). Not yet checked by eye: the row, the chevron's turn and the wrapping were written from
+the CSS, not seen in Storybook.
+
+---
+
 ## Loading
 
 There is no `Skeleton` component and no `isLoading` prop. Loading is the **state of a region**: set
@@ -2457,8 +2503,9 @@ more-or-less-ui/
 │   │   ├── Tabs/
 │   │   ├── Collapsible/
 │   │   ├── Link/           # Link + LinkProvider
+│   │   ├── Breadcrumb/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, then Breadcrumb)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -2675,7 +2722,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 - [x] `Collapsible` — Sibling: Tabs (disclosure), Popover for the open state (uncontrolled unless `isOpen` is given), Select for the chevron. `title`, `icon`, `children`, `isOpen` / `defaultIsOpen` / `onOpenChange`, `isDisabled`, `size`; APG disclosure (a button with `aria-expanded` / `aria-controls`), the content stays mounted and animates its height. Adds only `--color-collapsible-background-hover`, and extracted `_shared/ChevronIcon` (and its shell `_shared/StrokeIcon`, shared with CheckIcon and CrossIcon) from Select. See [Collapsible](#collapsible)
 - [ ] `Accordion` — Sibling: Collapsible (a group of them, one open at a time, arrow-key roving between headers); build it on Collapsible rather than beside it
 - [x] `Link` — Sibling: Text (the type size) and Chip / Button (the focus ring). A real `<a href>`, `size` (unset: the surrounding text's), `isCurrent`, `isDisabled`; routing through one `LinkProvider` with `navigate` and `resolveHref`, whose logic is `_shared/useLinkProps` (a plain left click on an in-app link goes to the router; everything else is the browser's). Adds only `--color-link`, an alias of `--color-primary-strong`. See [Link](#link)
-- [ ] `Breadcrumb` — Sibling: Link (each item), Tabs / Menu for the `items` shape; `<nav aria-label>` + `<ol>`, the last item `isCurrent`, separators in CSS. Build it on Link
+- [x] `Breadcrumb` — Sibling: Link (each item, and its routing), Tabs for the `items` shape and `size`, Collapsible for the turned chevron. `items` (`label`, optional `href`), `size`, `aria-label`; APG breadcrumb (`<nav>` + `<ol>`), the last item is the current page (`aria-current="page"`), a long trail wraps. Adds no token and no shared file. See [Breadcrumb](#breadcrumb). Still to do: collapsing the middle of a long trail, an item `icon`, a custom separator
 - [ ] `Pagination`
 
 **Inputs still missing:**

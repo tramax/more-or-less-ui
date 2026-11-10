@@ -1,0 +1,45 @@
+/*
+ * Breadcrumb: a row of Links with a chevron between them. `size` is _shared/Size.module.css, as Tabs':
+ * it sets font-size, and everything here is in em. The links are Link's (the color, the highlight on
+ * hover, the focus ring); this file is only the row.
+ */
+
+.root {
+  display: block;
+}
+
+/* A long trail wraps onto more lines, tight in the block direction */
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25em 0.5em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  min-inline-size: 0;
+}
+
+/* Where the reader is: a step heavier than the ways back up (the fixed finish, not a token) */
+.current {
+  font-weight: var(--weight-more);
+}
+
+/* The chevron is drawn pointing down; a quarter turn counterclockwise points it right, toward the next
+   level (left in a right-to-left layout, as Collapsible's). */
+.separator {
+  flex: none;
+  width: 0.875em;
+  height: 0.875em;
+  color: var(--color-text-less);
+  transform: rotate(-90deg);
+}
+.root:dir(rtl) .separator {
+  transform: rotate(90deg);
+}
