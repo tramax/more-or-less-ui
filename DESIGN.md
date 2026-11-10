@@ -2173,6 +2173,76 @@ were written from the CSS, not seen in Storybook.
 
 ---
 
+### Link
+
+```tsx
+type LinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'color'> & {
+  size?: ScaleProp; // font-size; unset, it is the size of the surrounding text
+  isCurrent?: boolean; // aria-current="page", and the surrounding text color
+  isDisabled?: boolean; // no href, dimmed, role="link" aria-disabled; does nothing
+};
+
+type LinkProviderProps = {
+  navigate: (href: string) => void; // the router's: useNavigate(), router.push
+  resolveHref?: (href: string) => string; // what the anchor carries: a base path, or '#' + href
+  children: ReactNode;
+};
+```
+
+A real `<a href>` with no `text-decoration`. Its underline is the `::after`: a faint rule (0.12em, the
+field fill) along the bottom of the text that grows up to cover it on hover, drawn behind the text. It
+has the ring of Chip and Button on `:focus-visible`. The rule and the highlight are one color,
+`--color-link-underline`, an alias of the field fill: the highlight is the rule, grown.
+
+**Wrapping.** The `::after` is positioned against the link, and a link that wraps onto a second line is
+two boxes to the browser: the rule and the highlight then span from the first box's corner to the last
+box's, not each line. Fine for a link that is a word or a phrase on one line (breadcrumbs, nav, buttons
+in text), wrong for a long link in a paragraph. The fix, if needed, is a `background` gradient with
+`box-decoration-break: clone` in place of the `::after`. **Contrast.** The 15% rule is faint on purpose,
+so it is not a 3:1 cue on its own; the link color is the other cue.
+
+**Routers.** Researched against React Aria (`RouterProvider`), Radix and Chakra v3 (`asChild`), MUI and
+Mantine (`component`), Base UI (`render`) and TanStack Router (`createLink`). A plain `<a>` works with
+any router but loads the whole page, so a link needs a way to reach the router. The three prop-based
+ways (`component`, `asChild`, `render`) make every call site write `<Link asChild><RouterLink to=…/>`,
+and our components take data (`items`), where there is no call site to write it at. So it is React Aria's:
+**one `LinkProvider`** inside the router, which takes `navigate` (a function, so it fits any router),
+and every link below it uses it. The provider needs no clone, so no React 18 / 19 `ref` branch.
+
+- A plain left click on a link to a place in the app calls `navigate(href)` and `preventDefault`s. The
+  browser keeps every other click: Ctrl / Cmd / Shift / Alt, a button other than the left, `target` other
+  than `_self`, `download`, another origin (`https:`, `mailto:`, `tel:`), a fragment (`#section`), and a
+  click the caller's own `onClick` already handled (`preventDefault`).
+- **`resolveHref`** (optional) turns the `href` a link is written with, in the router's terms (`/about`),
+  into the real URL for the anchor's `href` attribute. It is needed only when the two differ: the app is
+  under a base path (`basename: '/app'`: `/about` → `/app/about`), or uses a hash router (`/about` →
+  `#/about`). A normal click goes to `navigate` and never reads the attribute, so the router alone would
+  work; everything else reads it: Ctrl / Cmd-click and "open in new tab" (`/about` would be a 404 under
+  `/app`), "copy link address", the status bar, a crawler, and the page before React has run. `navigate`
+  always gets the `href` as written, so the router still gets its own terms. Leave it out for an app
+  served from `/` with a browser router, which is most. It is a plain function, not a hook as React
+  Aria's `useHref` is, so it can't call a router hook: pass the base path yourself.
+- Without a provider a link is a plain anchor, so the library has no router dependency.
+- The logic is `_shared/useLinkProps` (the context, `LinkRouter`, and the hook that returns `href` and
+  `onClick`), so Link is its first consumer, not its only: Breadcrumb's items are Links, and a Menu item
+  that is a link, a Card with an `href` and Pagination call the same hook.
+
+**Not through the router:** prefetching on hover or in view (Next's `<Link>`, TanStack's `preload`),
+typed routes, and an active-link state that the router works out. A string `href` can't give typed
+routes, and `isCurrent` is passed by the caller. The way out, when it is asked for, is a `render` prop on
+Link; it would sit beside the provider and break nothing.
+
+**Size.** `size` is its only scale prop, so it passes `_shared/Size.module.css`, and has no default: a
+link in a sentence is the sentence's size (as Spinner is 1em). `--color-link` aliases
+`--color-primary-strong`, the neutral shared token Indicator's mark and Text's `more` use.
+
+**Not yet:** `isExternal` (a `target="_blank"` with `rel`, and a mark that says so), `Button` rendering
+as a link (`href`), a visited color, Link on a `more` Banner or Button, where the brand color is the
+background and the link would vanish. Not yet checked by eye: the underline, the hover and the ring were
+written from the CSS, not seen in Storybook.
+
+---
+
 ## Loading
 
 There is no `Skeleton` component and no `isLoading` prop. Loading is the **state of a region**: set
@@ -2386,8 +2456,9 @@ more-or-less-ui/
 │   │   ├── Toast/
 │   │   ├── Tabs/
 │   │   ├── Collapsible/
+│   │   ├── Link/           # Link + LinkProvider
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, then Breadcrumb)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -2603,7 +2674,9 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 - [x] `Tabs` — Sibling: Radio (one of several, arrow-key roving, `orientation`), Menu for the focus. `items` (each with its `content`), required `value` / `onChange` (the parent owns the selection), `orientation`, `size`; APG tabs with automatic activation, only the selected panel mounted. Adds only `--color-tabs-*` aliases, and takes the overlay's frosted finish through `floatingClass`. See [Tabs](#tabs)
 - [x] `Collapsible` — Sibling: Tabs (disclosure), Popover for the open state (uncontrolled unless `isOpen` is given), Select for the chevron. `title`, `icon`, `children`, `isOpen` / `defaultIsOpen` / `onOpenChange`, `isDisabled`, `size`; APG disclosure (a button with `aria-expanded` / `aria-controls`), the content stays mounted and animates its height. Adds only `--color-collapsible-background-hover`, and extracted `_shared/ChevronIcon` (and its shell `_shared/StrokeIcon`, shared with CheckIcon and CrossIcon) from Select. See [Collapsible](#collapsible)
 - [ ] `Accordion` — Sibling: Collapsible (a group of them, one open at a time, arrow-key roving between headers); build it on Collapsible rather than beside it
-- [ ] `Breadcrumb`, `Pagination`, `Link` (or `Text as="a"`)
+- [x] `Link` — Sibling: Text (the type size) and Chip / Button (the focus ring). A real `<a href>`, `size` (unset: the surrounding text's), `isCurrent`, `isDisabled`; routing through one `LinkProvider` with `navigate` and `resolveHref`, whose logic is `_shared/useLinkProps` (a plain left click on an in-app link goes to the router; everything else is the browser's). Adds only `--color-link`, an alias of `--color-primary-strong`. See [Link](#link)
+- [ ] `Breadcrumb` — Sibling: Link (each item), Tabs / Menu for the `items` shape; `<nav aria-label>` + `<ol>`, the last item `isCurrent`, separators in CSS. Build it on Link
+- [ ] `Pagination`
 
 **Inputs still missing:**
 

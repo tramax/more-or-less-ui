@@ -127,6 +127,11 @@
   --color-text-normal: CanvasText;
   --color-text-more: var(--color-primary-strong);
 
+  /* Link's text: the strong primary, since the plain primary is 2.1:1 on white. Under it a rule in the
+     field fill, which on hover grows up into a highlight behind the text. */
+  --color-link: var(--color-primary-strong);
+  --color-link-underline: var(--color-field-background);
+
   /* Per-component tokens. Each aliases the shared value above, so a component can be customised on
      its own while the default stays defined once. Only set one to something else when the component
      really differs; a new input component adds its aliases here rather than a new recipe. */

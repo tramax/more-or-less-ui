@@ -1,0 +1,51 @@
+/*
+ * Link: size is _shared/Size.module.css (see Link.tsx). The color is --color-link.
+ *
+ * The underline is not text-decoration: it is the ::after, a faint rule along the bottom of the text
+ * that grows up to cover it on hover, like a highlighter. It is drawn behind the text (z-index -1,
+ * inside the link's own stacking context, so it can't slip behind the page).
+ */
+
+.link {
+  position: relative;
+  isolation: isolate;
+  color: var(--color-link);
+  text-decoration: none;
+  cursor: pointer;
+}
+.link::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  /* A little wider than the text, so the highlight has room around it. It takes no space. */
+  inset-inline: -0.15em;
+  bottom: 0;
+  height: 0.12em;
+  border-radius: 0.125em;
+  background: var(--color-link-underline);
+  pointer-events: none;
+  transition: height 250ms var(--ease-leave);
+}
+.link:hover::after {
+  /* The height of the text's own box, so the highlight covers the text and nothing above it. The
+     same color as the rule: it is the rule, grown. */
+  height: 100%;
+}
+.link:focus-visible {
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
+  border-radius: 0.125em;
+}
+
+/* Where the reader is already: not a place to go to, so it drops the link color for the text's own */
+.current {
+  color: inherit;
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.disabled:hover::after {
+  height: 0.12em;
+}

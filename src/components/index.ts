@@ -22,6 +22,8 @@ export { Grid } from './Grid';
 export type { GridProps } from './Grid';
 export { Indicator } from './Indicator';
 export type { IndicatorProps } from './Indicator';
+export { Link, LinkProvider } from './Link';
+export type { LinkProps, LinkProviderProps } from './Link';
 export { Menu } from './Menu';
 export type { MenuProps, MenuItem } from './Menu';
 export { Dialog } from './Dialog';
