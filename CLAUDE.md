@@ -40,6 +40,8 @@ same recipe is defined under two names.
   label, error message, and the id / `aria-invalid` / `aria-describedby` wiring. A component passes it
   its props and renders only its control (`<input>`, `<textarea>`) from what the frame hands back; it
   sets the `--field-*` color hooks from its own tokens on its root class.
+  Its `end` slot (with `endCount`) puts `IconButton`s inside the field at the inline end and leaves the control
+  room for them; TextField's password reveal and number steppers use it.
 - `_shared/FieldError` is the error message + icon for every field and group. Pass spacing through
   `className`; a new input component renders it rather than its own `<p>` and `<svg>`.
 - `_shared/FieldLabel` is the visible name (a `<label>` for TextField, a `<legend>` for groups) with
@@ -61,8 +63,9 @@ same recipe is defined under two names.
 - `_shared/CheckIcon`, `_shared/CrossIcon` and `_shared/ChevronIcon` are the ✓, × and ⌄ (Select's field,
   Collapsible's header), drawn with attributes on the shell of `_shared/StrokeIcon`; a consumer's
   class sets only size, color and motion.
-- `_shared/CloseButton` is the round × button (disc on hover, shrink on press) of Banner's and Toast's
-  dismiss and Dialog's close; the consumer passes `label`, `onClick` and spacing through `className`.
+- `_shared/IconButton` is the round icon button (disc on hover, shrink on press): the consumer passes `label`,
+  `icon` (a component taking `className`), `onClick` and spacing through `className`. `_shared/CloseButton` is
+  it with the ×, for Banner's and Toast's dismiss and Dialog's close; TextField's reveal and steppers use it.
 - `_shared/Gap` is the `gap` scale (classes + `resolveGap`) for Stack and Grid, which both render a Box
   for padding and margin. A new layout component takes `gap` from it rather than its own classes.
 - `_shared/OptionGroupFrame` is the frame of a group of options (Checkbox, Radio, SegmentedControl): the

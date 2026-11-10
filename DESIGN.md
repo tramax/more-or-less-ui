@@ -584,18 +584,21 @@ interface CardProps {
 ### TextField
 
 ```tsx
-interface TextFieldProps extends Omit<
+type TextFieldProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
   'size' | 'color' | 'disabled' | 'readOnly' | 'required' | 'type'
-> {
+> & {
   size?: ScaleProp; // font-size on the root; padding and gaps are in em, so they follow
-  type?: 'text' | 'email' | 'password' | 'search' | 'tel' | 'url';
   label?: string; // visible, above the field; without it aria-label/aria-labelledby is required
   error?: string; // invalid state + message below the field; the caller decides when
   isDisabled?: boolean; // native `disabled`, dimmed
   isReadOnly?: boolean; // not editable, plain text: no fill, padding or focus border; tabIndex -1
   isRequired?: boolean; // native `required` + an aria-hidden asterisk after the label
-}
+} & (
+    | { type?: 'text' | 'email' | 'search' | 'tel' | 'url' }
+    | { type: 'password'; isRevealable?: boolean } // a show / hide button at the end of the field
+    | { type: 'number'; hasSteppers?: boolean } // − and + buttons at the end; min / max / step are native
+  );
 ```
 
 `size` is the only scale prop: no `background`, no `borderRadius`. The field is a block of faint
@@ -613,11 +616,38 @@ Based on NN/g and GOV.UK guidance: visible label above the field, no placeholder
 required fields marked, error specific and below the field, validated when the user leaves the field
 rather than on every keystroke (the component doesn't validate; see the `ValidateOnBlur` story).
 
-**Not yet:** hint text (probably alongside a Tooltip), adornments, `type="number"`. Multiline is a separate
-component, `Textarea`, not a mode of this one.
+**Password reveal and number** are variants of this component, not new ones: `type` unlocks the extra
+prop, so `isRevealable` exists only on `type="password"` and `hasSteppers` only on `type="number"`. Both
+are buttons inside the field at the inline end: `_shared/TextFieldFrame`'s `end` slot (a wrapper that
+exists only when there are buttons, and `padding-inline-end` sized from `endCount`), filled with
+`_shared/IconButton`s (the disc on hover, the shrink on press, `size` follows) and the icons in
+`TextField/FieldIcons.tsx`.
+
+- **`isRevealable`.** The button switches the input between `type="password"` and `type="text"` (the value, the caret and the
+  focus stay). Its name changes with the state, "Show password" / "Hide password", and it has no
+  `aria-pressed`, so it is not said twice. It is in the tab order (no other keyboard way to it); a
+  mousedown on it is cancelled so a click keeps the focus in the input. It is disabled with the field and
+  still works when read-only (showing is not editing). Opt-in: a password the user did not choose, or on
+  a screen others can see, should not offer it.
+- **`type="number"`** is the native `<input type="number">`: the spinbutton role, `min`, `max`, `step`,
+  validity, the mobile keyboard and form submission are the browser's. The value stays a string and
+  `onChange` gets the event as always (read `event.target.valueAsNumber`); a `number | null` API would be
+  a separate component. The native spin buttons are hidden always (they cannot be themed and differ between browsers; the arrow
+  keys still step), and digits are tabular.
+- **`hasSteppers`** (off by default; the arrow keys always work) adds "Decrease" and "Increase" for the
+  pointer. They call `stepDown()` / `stepUp()` on the input and dispatch an `input` event, so `onChange` fires
+  and a controlled field gets the new value. A stepper is disabled when a step would not change the
+  value (asked of a clone of the input, so `max`, `step` and an empty field follow the browser's rules,
+  e.g. `max=10 step=3` stops at 9). They are out of the tab order (a spinbutton is one stop) and are not
+  shown when read-only or with `step="any"` (`stepUp` throws there).
+- Labels are English and fixed, like Select's "Clear".
+
+**Not yet:** hint text (probably alongside a Tooltip), a clear button, a `labels` prop for the buttons,
+press-and-hold to repeat a stepper, prefix / suffix text (a unit). Multiline is a separate component,
+`Textarea`, not a mode of this one.
 
 TextField renders only the `<input>`. The frame around it (root, `size`, label, error message, id and
-`aria-describedby` wiring) and the look of the field are `_shared/TextFieldFrame`, shared with Textarea;
+`aria-describedby` wiring) and the look of the field are `_shared/TextFieldFrame`, shared with Textarea and Select;
 `--color-textfield-*` are set as the `--field-*` hooks that module reads.
 **Open:** a borderless faint fill may not meet WCAG 1.4.11 (3:1 for the control's boundary); check it
 in Storybook, and add a stronger bottom edge if it needs one.
@@ -986,7 +1016,7 @@ button. It sits beside the chevron (`aria-label="Clear"`, out of the tab order l
 shift when a value is picked. It clears what can be cleared: a disabled option stays, as for
 Backspace. Keyboard: Backspace with nothing typed clears a non-searchable single Select (a multiple
 one already removes the last chip); a searchable single one clears when its text is emptied. The ×
-is `_shared/CrossIcon`, shared with the chip, Banner's and Toast's dismiss buttons and the close button of Dialog and Drawer (all `_shared/CloseButton`).
+is `_shared/CrossIcon`, shared with the chip, Banner's and Toast's dismiss buttons and the close button of Dialog and Drawer (all `_shared/CloseButton`, an `_shared/IconButton`).
 
 **Value.** Like Radio (`null` is the explicit empty value) for a single one, like Checkbox (`string[]`,
 options order) for a multiple one. The user can't clear a single Select unless `isClearable`, which
@@ -1851,7 +1881,7 @@ add it as a pure role with no behavior tied to it.
 **Close button.** A × at the top right, on by default: a dialog should have a visible way out, and
 `isBackdropClosing={false}` with no Cancel would leave none. It is `_shared/CloseButton` (named "Close"),
 the same round button as Banner's dismiss: a faint disc on hover, shrinks when pressed. Larger than
-Banner's, through `CloseButton`'s `--close-size` and `--close-icon-size` hooks: a 2.25em hit area around a
+Banner's, through `IconButton`'s `--icon-button-size` and `--icon-button-icon-size` hooks: a 2.25em hit area around a
 1.25em ×. It shares a row with the title (the title wraps before it, not under it); with no title it is
 alone on the row, at the end. It sits in the content, so it scrolls away with a long dialog. Its hit area
 reaches 0.75em up and right into the padding, so the × is the same distance (1.875em) from the top and the
@@ -2656,7 +2686,7 @@ more-or-less-ui/
 │   │   ├── Breadcrumb/
 │   │   ├── Pagination/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio + SegmentedControl's frame, and Toggle's control; OptionGroupFrame: Checkbox + Radio + SegmentedControl (the fieldset, legend and error); useChoice: Radio + SegmentedControl (single-choice state); SlidingThumb: Tabs + SegmentedControl; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio + SegmentedControl's frame, and Toggle's control; OptionGroupFrame: Checkbox + Radio + SegmentedControl (the fieldset, legend and error); useChoice: Radio + SegmentedControl (single-choice state); SlidingThumb: Tabs + SegmentedControl; TextFieldFrame: TextField + Textarea + Select (its end slot: TextField's buttons); FieldError, FieldLabel, types: all fields; IconButton: CloseButton + TextField's reveal and steppers; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -2880,7 +2910,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 
 - [ ] `Slider` — Sibling: Toggle (a custom control on `OptionGroup` classes) and TextFieldFrame for label and error
 - [x] `SegmentedControl` — Sibling: Radio (native radios in a `radiogroup`, controlled or uncontrolled), Tabs for the thumb and `size`. `options` (with an optional `icon`), `value` / `defaultValue` / `onChange`, `name`, `label`, `error`, `isDisabled`, `isRequired`, `size`; one value that applies at once (a quick filter, a view), not navigation (that is Tabs). Adds `--color-segmented-*` aliases of the field fill and the brand color, and extracted `_shared/OptionGroupFrame` (the third option group), `_shared/useChoice` and `_shared/SlidingThumb` (Tabs' thumb). See [SegmentedControl](#segmentedcontrol)
-- [ ] `NumberInput`, password reveal — variants of TextField, not new components (add to `TextFieldFrame` only what they share)
+- [x] `NumberInput`, password reveal — variants of TextField, not new components: `type="number"` with `hasSteppers`, and `type="password"` with `isRevealable`. Sibling: Select (buttons inside a field). Adds `TextFieldFrame`'s `end` slot, extracts `_shared/IconButton` from `CloseButton`, and no token. See [TextField](#textfield). Still to do: a `labels` prop, press-and-hold repeat, a unit suffix
 - [ ] `FileUpload`, `DatePicker` (and Calendar) — the largest; last
 
 **Data display:** `Table` (Sibling: Grid, Card).

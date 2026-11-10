@@ -1,14 +1,15 @@
 import { createRef, useState, type ComponentProps } from 'react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { render, fireEvent, cleanup } from '@testing-library/react';
-import { TextField } from './TextField';
+import { render, fireEvent, cleanup, screen } from '@testing-library/react';
+import { TextField, type TextFieldProps } from './TextField';
 import styles from './TextField.module.css';
 import frameStyles from '../_shared/TextFieldFrame.module.css';
 import labelStyles from '../_shared/FieldLabel.module.css';
 import errorStyles from '../_shared/FieldError.module.css';
 
+// A partial of a union of props is a union of partials, which no single spread satisfies
 const renderField = (props: Partial<ComponentProps<typeof TextField>> = {}) => {
-  const { container } = render(<TextField label="Name" {...props} />);
+  const { container } = render(<TextField label="Name" {...(props as TextFieldProps)} />);
   return {
     root: container.firstElementChild as HTMLDivElement,
     input: container.querySelector('input') as HTMLInputElement,
@@ -29,9 +30,12 @@ describe('TextField', () => {
       expect(input.type).toBe('text');
     });
 
-    it.each(['email', 'password', 'search', 'tel', 'url'] as const)('accepts type="%s"', (type) => {
-      expect(renderField({ type }).input.type).toBe(type);
-    });
+    it.each(['email', 'password', 'search', 'tel', 'url', 'number'] as const)(
+      'accepts type="%s"',
+      (type) => {
+        expect(renderField({ type }).input.type).toBe(type);
+      },
+    );
 
     it('forwards the ref to the input', () => {
       const ref = createRef<HTMLInputElement>();
@@ -227,6 +231,171 @@ describe('TextField', () => {
       expect(
         renderField({ 'aria-describedby': 'other' }).input.getAttribute('aria-describedby'),
       ).toBe('other');
+    });
+  });
+
+  describe('type="password" with isRevealable', () => {
+    const toggle = () => screen.getByRole('button', { name: /password$/ });
+
+    it('has no button unless asked', () => {
+      renderField({ type: 'password' });
+      expect(screen.queryByRole('button')).toBeNull();
+    });
+
+    it('shows the password as text and hides it again', () => {
+      const { input } = renderField({
+        type: 'password',
+        isRevealable: true,
+        defaultValue: 'secret',
+      });
+      expect(input.type).toBe('password');
+      expect(toggle().getAttribute('aria-label')).toBe('Show password');
+
+      fireEvent.click(toggle());
+      expect(input.type).toBe('text');
+      expect(input.value).toBe('secret');
+      expect(toggle().getAttribute('aria-label')).toBe('Hide password');
+
+      fireEvent.click(toggle());
+      expect(input.type).toBe('password');
+    });
+
+    it('keeps the input focused when the button is pressed', () => {
+      renderField({ type: 'password', isRevealable: true });
+      // fireEvent returns false when the default action (what moves focus) was cancelled
+      expect(fireEvent.mouseDown(toggle())).toBe(false);
+    });
+
+    it('is disabled with the field, and still works when read-only', () => {
+      renderField({ type: 'password', isRevealable: true, isDisabled: true });
+      expect((toggle() as HTMLButtonElement).disabled).toBe(true);
+      cleanup();
+
+      const { input } = renderField({ type: 'password', isRevealable: true, isReadOnly: true });
+      fireEvent.click(toggle());
+      expect(input.type).toBe('text');
+    });
+
+    it('puts the button beside the input in a wrapper, and makes room for it', () => {
+      const { root, input } = renderField({ type: 'password', isRevealable: true });
+      const wrapper = input.parentElement as HTMLElement;
+      expect(wrapper.classList.contains(frameStyles.field as string)).toBe(true);
+      expect(wrapper.style.getPropertyValue('--field-end-count')).toBe('1');
+      expect(root.querySelector(`.${frameStyles.end}`)?.contains(toggle())).toBe(true);
+    });
+
+    it('adds no wrapper to a plain field', () => {
+      const { root, input } = renderField();
+      expect(input.parentElement).toBe(root);
+    });
+
+    it('keeps the ref and the consumer onChange', () => {
+      const ref = createRef<HTMLInputElement>();
+      const onChange = vi.fn();
+      render(<TextField ref={ref} label="Pw" type="password" isRevealable onChange={onChange} />);
+      expect(ref.current).toBeInstanceOf(HTMLInputElement);
+      fireEvent.change(ref.current as HTMLInputElement, { target: { value: 'x' } });
+      expect(onChange).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('type="number"', () => {
+    const up = () => screen.getByRole('button', { name: 'Increase' }) as HTMLButtonElement;
+    const down = () => screen.getByRole('button', { name: 'Decrease' }) as HTMLButtonElement;
+
+    it('marks the input so the native spin buttons are hidden', () => {
+      const numberClass = styles.number as string;
+      expect(renderField({ type: 'number' }).input.classList.contains(numberClass)).toBe(true);
+      cleanup();
+      expect(renderField().input.classList.contains(numberClass)).toBe(false);
+    });
+
+    it('has no steppers unless asked', () => {
+      renderField({ type: 'number' });
+      expect(screen.queryByRole('button', { hidden: true })).toBeNull();
+    });
+
+    it('steps by `step` and reports it through onChange', () => {
+      const onChange = vi.fn();
+      const { input } = renderField({
+        type: 'number',
+        hasSteppers: true,
+        defaultValue: 4,
+        step: 2,
+        onChange,
+      });
+      fireEvent.click(up());
+      expect(input.value).toBe('6');
+      fireEvent.click(down());
+      fireEvent.click(down());
+      expect(input.value).toBe('2');
+      expect(onChange).toHaveBeenCalledTimes(3);
+    });
+
+    it('steps a controlled field through its own state', () => {
+      const Controlled = () => {
+        const [value, setValue] = useState('1');
+        return (
+          <TextField
+            label="Qty"
+            type="number"
+            hasSteppers
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+          />
+        );
+      };
+      const { container } = render(<Controlled />);
+      fireEvent.click(up());
+      expect((container.querySelector('input') as HTMLInputElement).value).toBe('2');
+    });
+
+    it('steps from an empty field to the first value', () => {
+      const { input } = renderField({ type: 'number', hasSteppers: true, min: 3 });
+      fireEvent.click(up());
+      expect(input.value).toBe('3');
+    });
+
+    it('disables a stepper at its limit, and enables it again', () => {
+      const { input } = renderField({
+        type: 'number',
+        hasSteppers: true,
+        defaultValue: 9,
+        min: 0,
+        max: 10,
+        step: 3,
+      });
+      // 9 is the highest value on the step grid below 10
+      expect(up().disabled).toBe(true);
+      expect(down().disabled).toBe(false);
+      fireEvent.click(down());
+      expect(input.value).toBe('6');
+      expect(up().disabled).toBe(false);
+      fireEvent.change(input, { target: { value: '0' } });
+      expect(down().disabled).toBe(true);
+    });
+
+    it('keeps both steppers out of the tab order, and makes room for two', () => {
+      const { input } = renderField({ type: 'number', hasSteppers: true });
+      expect(up().tabIndex).toBe(-1);
+      expect(down().tabIndex).toBe(-1);
+      expect((input.parentElement as HTMLElement).style.getPropertyValue('--field-end-count')).toBe(
+        '2',
+      );
+    });
+
+    it('disables both with the field', () => {
+      renderField({ type: 'number', hasSteppers: true, isDisabled: true });
+      expect(up().disabled).toBe(true);
+      expect(down().disabled).toBe(true);
+    });
+
+    it('shows no steppers when read-only or with step="any"', () => {
+      renderField({ type: 'number', hasSteppers: true, isReadOnly: true });
+      expect(screen.queryByRole('button', { hidden: true })).toBeNull();
+      cleanup();
+      renderField({ type: 'number', hasSteppers: true, step: 'any' });
+      expect(screen.queryByRole('button', { hidden: true })).toBeNull();
     });
   });
 });

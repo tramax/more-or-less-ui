@@ -1,6 +1,6 @@
 /*
  * Shared by TextField, Textarea and Select: the frame (a column of label, control and error message)
- * and the look of the control itself.
+ * and the look of the control itself, and the room for buttons at the end of it.
  *
  * The component sets its colors on its own root class (from its own --color-<component>-* tokens in
  * theme/tokens.css), so each can be customised on its own:
@@ -47,6 +47,26 @@
     box-shadow 250ms ease;
 }
 
+/*
+ * Buttons inside the field, at the inline end (TextField's reveal and steppers: IconButtons, 1.75em).
+ * The wrapper exists only when there are some. `--field-end-count`, set by the frame, is how many; the
+ * control's padding leaves room for them and the 0.75em the first one sits in from the edge.
+ */
+.field {
+  position: relative;
+  --field-end-room: calc(0.75em + var(--field-end-count) * 1.75em);
+}
+.field > .control {
+  padding-inline-end: var(--field-end-room);
+}
+.end {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0.5em;
+  display: flex;
+  align-items: center;
+}
+
 .control::placeholder {
   color: color-mix(in oklab, CanvasText 55%, transparent);
 }
@@ -70,6 +90,10 @@
   padding: 0;
   background: transparent;
   resize: none;
+}
+/* The padding is gone, but not the room for the buttons */
+.field > .control[readonly] {
+  padding-inline-end: var(--field-end-room);
 }
 .control[readonly]:focus-visible {
   box-shadow: inset 0 0 0 2px transparent;

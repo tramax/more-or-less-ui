@@ -53,6 +53,12 @@ interface TextFieldFrameOwnProps {
 type TextFieldFrameProps<P> = P & {
   /** The component's own root class, which sets the `--field-*` color hooks. */
   rootClassName: string | undefined;
+  /**
+   * Buttons at the inline end of the control, inside the field (TextField's reveal and steppers). Pass
+   * `IconButton`s, and how many as `endCount`, so the control leaves room for them.
+   */
+  end?: ReactNode;
+  endCount?: number;
   /** Renders the control from what the frame gives it and the field props the frame didn't use. */
   children: (
     control: TextFieldControlProps,
@@ -70,6 +76,8 @@ type TextFieldFrameProps<P> = P & {
  */
 export function TextFieldFrame<P extends TextFieldFrameOwnProps>({
   rootClassName,
+  end,
+  endCount = 1,
   children,
   ...props
 }: TextFieldFrameProps<P>) {
@@ -85,6 +93,7 @@ export function TextFieldFrame<P extends TextFieldFrameOwnProps>({
     style,
     ...fieldProps
   } = props;
+  const hasEnd = Boolean(end);
   const autoId = useId();
   const controlId = id ?? autoId;
   const errorId = `${controlId}-error`;
@@ -95,6 +104,20 @@ export function TextFieldFrame<P extends TextFieldFrameOwnProps>({
     style: scaleStyle,
     rest,
   } = resolveScaleProps(styles, SCALE_SPEC, fieldProps as { size?: ScaleProp });
+
+  const control = children(
+    {
+      id: controlId,
+      className: styles.control as string,
+      disabled: isDisabled,
+      readOnly: isReadOnly,
+      ...(isReadOnly && { tabIndex: -1 as const }),
+      required: isRequired,
+      'aria-invalid': hasError || undefined,
+      'aria-describedby': clsx(describedBy, hasError && errorId) || undefined,
+    },
+    rest as Omit<P, keyof TextFieldFrameOwnProps | 'rootClassName' | 'children'>,
+  );
 
   return (
     // className and style go on the root, so the scale classes and `size` reach the label and the
@@ -115,18 +138,15 @@ export function TextFieldFrame<P extends TextFieldFrameOwnProps>({
           {label}
         </FieldLabel>
       )}
-      {children(
-        {
-          id: controlId,
-          className: styles.control as string,
-          disabled: isDisabled,
-          readOnly: isReadOnly,
-          ...(isReadOnly && { tabIndex: -1 as const }),
-          required: isRequired,
-          'aria-invalid': hasError || undefined,
-          'aria-describedby': clsx(describedBy, hasError && errorId) || undefined,
-        },
-        rest as Omit<P, keyof TextFieldFrameOwnProps | 'rootClassName' | 'children'>,
+      {hasEnd ? (
+        // A wrapper only when there is something to put over the control, so a plain field's DOM is
+        // just its control
+        <div className={styles.field} style={{ '--field-end-count': endCount } as CSSProperties}>
+          {control}
+          <div className={styles.end}>{end}</div>
+        </div>
+      ) : (
+        control
       )}
       {hasError && <FieldError id={errorId}>{error}</FieldError>}
     </div>

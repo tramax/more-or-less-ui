@@ -1,18 +1,21 @@
 /*
- * The × button of Banner (dismiss) and Dialog (close): a round hit area around a 1em ×, in em, so it
- * follows the font size where it is rendered. Where it sits (margins, alignment) is the consumer's, via
- * `className`. Chip's remove and Select's clear are × buttons too, but have no disc and no press shrink.
+ * A round icon button: a disc on hover, a shrink on press, a hit area around a 1em icon, all in em so it
+ * follows the font size where it is rendered. CloseButton (Banner's dismiss, Toast's, Dialog's close)
+ * and TextField's reveal and stepper buttons are this. Where it sits (margins, alignment) is the
+ * consumer's, via `className`. Chip's remove and Select's clear are × buttons too, but have no disc and
+ * no press shrink.
  */
 
-/* The hit area is 1.75em (28px at the default size, above the 24px WCAG 2.5.8 minimum) around a 1em ×.
-   A consumer that wants it bigger sets `--close-size` and `--close-icon-size`; hooks, not overrides of
-   `width`, because its class and this one are the same specificity and the order of the files decides. */
+/* The hit area is 1.75em (28px at the default size, above the 24px WCAG 2.5.8 minimum) around a 1em icon.
+   A consumer that wants it bigger sets `--icon-button-size` and `--icon-button-icon-size`; hooks, not
+   overrides of `width`, because its class and this one are the same specificity and the order of the
+   files decides. */
 .button {
   flex: none;
   display: grid;
   place-items: center;
-  width: var(--close-size, 1.75em);
-  height: var(--close-size, 1.75em);
+  width: var(--icon-button-size, 1.75em);
+  height: var(--icon-button-size, 1.75em);
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -48,9 +51,15 @@
   outline-offset: 0;
 }
 
+/* A stepper at its limit: no hover, no press, no pointer events at all */
+.button:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .icon {
-  width: var(--close-icon-size, 1em);
-  height: var(--close-icon-size, 1em);
+  width: var(--icon-button-icon-size, 1em);
+  height: var(--icon-button-icon-size, 1em);
   transition: transform 300ms var(--ease-pop);
 }
 @media (hover: hover) {

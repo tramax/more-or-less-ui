@@ -61,8 +61,8 @@
    area reaches into the padding, up and to the right by the same 0.75em, so the × sits the same
    distance (1.875em) from the top and the right edges, not level with the title. */
 .close {
-  --close-size: 2.25em;
-  --close-icon-size: 1.25em;
+  --icon-button-size: 2.25em;
+  --icon-button-icon-size: 1.25em;
   margin: -0.75em -0.75em 0 auto;
 }
 

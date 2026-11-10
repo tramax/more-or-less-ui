@@ -10,3 +10,18 @@
   --field-background-error: var(--color-textfield-background-error);
   --field-background-error-hover: var(--color-textfield-background-error-hover);
 }
+
+/*
+ * type="number": the native spin buttons are hidden everywhere (they cannot be themed, and differ
+ * between browsers); the arrow keys still step, and `hasSteppers` adds buttons that look like the
+ * rest. Tabular figures, so digits do not jiggle as they change.
+ */
+.number {
+  appearance: textfield;
+  font-variant-numeric: tabular-nums;
+}
+.number::-webkit-inner-spin-button,
+.number::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
