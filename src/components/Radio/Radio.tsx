@@ -1,10 +1,10 @@
-import { forwardRef, useId, useState, type FieldsetHTMLAttributes } from 'react';
+import { forwardRef, type FieldsetHTMLAttributes } from 'react';
 import { clsx } from '@/utils/clsx';
 import shared from '../_shared/OptionGroup.module.css';
-import { FieldError } from '../_shared/FieldError';
-import { FieldLabel } from '../_shared/FieldLabel';
+import { OptionGroupFrame } from '../_shared/OptionGroupFrame';
 import { OptionText } from '../_shared/OptionText';
 import type { NameProps, OptionBase } from '../_shared/types';
+import { useChoice } from '../_shared/useChoice';
 import styles from './Radio.module.css';
 
 export type RadioOption = OptionBase;
@@ -43,80 +43,59 @@ export const Radio = forwardRef<HTMLFieldSetElement, RadioProps>(function Radio(
     onChange,
     name,
     orientation = 'vertical',
-    label,
-    error,
     isDisabled = false,
     isRequired = false,
-    id,
     className,
-    'aria-describedby': describedBy,
     ...props
   },
   ref,
 ) {
-  const autoId = useId();
-  const rootId = id ?? autoId;
-  const errorId = `${rootId}-error`;
-  const hasError = Boolean(error);
-
-  const [uncontrolledValue, setUncontrolledValue] = useState<string | null>(defaultValue ?? null);
-  const selected = value === undefined ? uncontrolledValue : value;
+  const [selected, choose] = useChoice(value, defaultValue, onChange);
 
   return (
-    <fieldset
+    <OptionGroupFrame
       {...props}
       ref={ref}
-      id={id}
       role="radiogroup"
-      disabled={isDisabled}
-      aria-describedby={clsx(describedBy, hasError && errorId) || undefined}
-      className={clsx(shared.root, styles.root, isDisabled && shared.disabled, className)}
+      isDisabled={isDisabled}
+      isRequired={isRequired}
+      className={clsx(styles.root, className)}
     >
-      {label && (
-        <FieldLabel as="legend" isRequired={isRequired} className={shared.legend}>
-          {label}
-        </FieldLabel>
-      )}
-      <div className={clsx(shared.options, shared[orientation])}>
-        {options.map((option, index) => {
-          const optionDisabled = isDisabled || Boolean(option.isDisabled);
-          const descriptionId = option.description ? `${rootId}-${index}-description` : undefined;
+      {({ rootId, hasError }) => (
+        <div className={clsx(shared.options, shared[orientation])}>
+          {options.map((option, index) => {
+            const optionDisabled = isDisabled || Boolean(option.isDisabled);
+            const descriptionId = option.description ? `${rootId}-${index}-description` : undefined;
 
-          return (
-            <label key={option.value} className={shared.option}>
-              <span className={shared.control}>
-                <input
-                  type="radio"
-                  className={clsx(shared.input, styles.input)}
-                  name={name ?? `${rootId}-name`}
-                  value={option.value}
-                  checked={option.value === selected}
-                  disabled={optionDisabled}
-                  required={isRequired}
-                  aria-invalid={hasError || undefined}
-                  aria-describedby={descriptionId}
-                  onChange={() => {
-                    if (optionDisabled) return;
-                    if (value === undefined) setUncontrolledValue(option.value);
-                    onChange?.(option.value);
-                  }}
+            return (
+              <label key={option.value} className={shared.option}>
+                <span className={shared.control}>
+                  <input
+                    type="radio"
+                    className={clsx(shared.input, styles.input)}
+                    name={name ?? `${rootId}-name`}
+                    value={option.value}
+                    checked={option.value === selected}
+                    disabled={optionDisabled}
+                    required={isRequired}
+                    aria-invalid={hasError || undefined}
+                    aria-describedby={descriptionId}
+                    onChange={() => {
+                      if (!optionDisabled) choose(option.value);
+                    }}
+                  />
+                  <span className={clsx(shared.mark, styles.dot)} aria-hidden="true" />
+                </span>
+                <OptionText
+                  label={option.label}
+                  description={option.description}
+                  descriptionId={descriptionId}
                 />
-                <span className={clsx(shared.mark, styles.dot)} aria-hidden="true" />
-              </span>
-              <OptionText
-                label={option.label}
-                description={option.description}
-                descriptionId={descriptionId}
-              />
-            </label>
-          );
-        })}
-      </div>
-      {hasError && (
-        <FieldError id={errorId} className={shared.error}>
-          {error}
-        </FieldError>
+              </label>
+            );
+          })}
+        </div>
       )}
-    </fieldset>
+    </OptionGroupFrame>
   );
 });

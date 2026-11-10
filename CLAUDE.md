@@ -65,6 +65,14 @@ same recipe is defined under two names.
   dismiss and Dialog's close; the consumer passes `label`, `onClick` and spacing through `className`.
 - `_shared/Gap` is the `gap` scale (classes + `resolveGap`) for Stack and Grid, which both render a Box
   for padding and margin. A new layout component takes `gap` from it rather than its own classes.
+- `_shared/OptionGroupFrame` is the frame of a group of options (Checkbox, Radio, SegmentedControl): the
+  fieldset, legend, error message and the `aria-describedby` wiring. It hands its children `rootId` and
+  `hasError`; a component renders only its controls and sets the look of its root through `className`.
+  `_shared/useChoice` is the one-of-several state (Radio, SegmentedControl): controlled by `value`,
+  or kept from `defaultValue`.
+- `_shared/SlidingThumb` is the thumb that slides to the selected option (Tabs, SegmentedControl):
+  `useSlidingThumb` measures the option's element and `SlidingThumb` draws it; the component's class gives
+  its fill, radius and shadow.
 - `_shared/OptionText` is the label + description beside an option's control; `_shared/types.ts` has
   `NameProps` (the accessible-name union for every labelled input) and `OptionBase` (one option).
 - `_shared/Size.module.css` is the `size` scale as font-size. A component whose only scale prop is
@@ -76,11 +84,10 @@ same recipe is defined under two names.
   `placeholder.placeholder` on the part that becomes a block and has nothing else to write. A new
   component that shows text or a picture does the same, rather than its own loading styles.
 - Left duplicated on purpose (`pnpm check:dup` reports them):
-  - The group frame in Checkbox and Radio: id and error-id wiring, controlled/uncontrolled state, the
-    fieldset, legend, options container and error footer. Extracting it needs a `renderControl`
-    callback that hides each component's input in another file, and only two components would use
-    it. Extract it when a third option-group component appears, and not before. Until then, keep the
-    two in step: a fix to one is a fix to the other.
+  - The option row in Checkbox and Radio (label, control, `OptionText`): about 15 lines of markup that
+    differ only in the input's `type`, its `checked` logic and the mark. Extracting it needs a
+    `renderControl` callback that hides each input in another file; SegmentedControl, the third group, does not
+    use the row, so only two components would use it. Until then, keep the two in step.
   - The `size*` classes in Button, Banner, Avatar, Chip, Text and `_shared/TextFieldFrame`, which `resolveScaleProps` looks up in
     each component's own CSS module. They could take `size` from `_shared/Size.module.css` by passing
     `{ ...sizes, ...styles }` to it; that is not done yet.
@@ -88,7 +95,7 @@ same recipe is defined under two names.
 ## Before you finish
 
 Run `pnpm test`, `pnpm typecheck`, `pnpm lint` and `pnpm check:dup`. `check:dup` has a ceiling set at
-the current level, 1.1% (`.jscpd.json`, clones under 10 lines are ignored); if you add duplication it fails. Remove the duplication rather than
+the current level, 0.8% (`.jscpd.json`, clones under 10 lines are ignored); if you add duplication it fails. Remove the duplication rather than
 raising the ceiling. Lower the ceiling when you remove some. Note that `jscpd` can't see the same
 value under different names, which is what the tokens test is for.
 

@@ -1,9 +1,8 @@
-import { forwardRef, useId, useState, type FieldsetHTMLAttributes } from 'react';
+import { forwardRef, useState, type FieldsetHTMLAttributes } from 'react';
 import { clsx } from '@/utils/clsx';
 import shared from '../_shared/OptionGroup.module.css';
 import { CheckIcon } from '../_shared/CheckIcon';
-import { FieldError } from '../_shared/FieldError';
-import { FieldLabel } from '../_shared/FieldLabel';
+import { OptionGroupFrame } from '../_shared/OptionGroupFrame';
 import { OptionText } from '../_shared/OptionText';
 import type { NameProps, OptionBase } from '../_shared/types';
 import styles from './Checkbox.module.css';
@@ -52,21 +51,12 @@ export const Checkbox = forwardRef<HTMLFieldSetElement, CheckboxProps>(function 
     orientation = 'vertical',
     minChecked,
     maxChecked,
-    label,
-    error,
     isDisabled = false,
-    id,
     className,
-    'aria-describedby': describedBy,
     ...props
   },
   ref,
 ) {
-  const autoId = useId();
-  const rootId = id ?? autoId;
-  const errorId = `${rootId}-error`;
-  const hasError = Boolean(error);
-
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue ?? []);
   const checked = value ?? uncontrolledValue;
 
@@ -86,60 +76,50 @@ export const Checkbox = forwardRef<HTMLFieldSetElement, CheckboxProps>(function 
   };
 
   return (
-    <fieldset
+    <OptionGroupFrame
       {...props}
       ref={ref}
-      id={id}
-      disabled={isDisabled}
-      aria-describedby={clsx(describedBy, hasError && errorId) || undefined}
-      className={clsx(shared.root, styles.root, isDisabled && shared.disabled, className)}
+      isDisabled={isDisabled}
+      className={clsx(styles.root, className)}
     >
-      {label && (
-        <FieldLabel as="legend" className={shared.legend}>
-          {label}
-        </FieldLabel>
-      )}
-      <div className={clsx(shared.options, shared[orientation])}>
-        {options.map((option, index) => {
-          const isChecked = checked.includes(option.value);
-          const optionDisabled = isDisabled || Boolean(option.isDisabled);
-          // Blocked, not disabled: stays focusable so keyboard users don't lose their place
-          const isBlocked = !optionDisabled && (isChecked ? atMin : atMax);
-          const descriptionId = option.description ? `${rootId}-${index}-description` : undefined;
+      {({ rootId, hasError }) => (
+        <div className={clsx(shared.options, shared[orientation])}>
+          {options.map((option, index) => {
+            const isChecked = checked.includes(option.value);
+            const optionDisabled = isDisabled || Boolean(option.isDisabled);
+            // Blocked, not disabled: stays focusable so keyboard users don't lose their place
+            const isBlocked = !optionDisabled && (isChecked ? atMin : atMax);
+            const descriptionId = option.description ? `${rootId}-${index}-description` : undefined;
 
-          return (
-            <label key={option.value} className={shared.option}>
-              <span className={shared.control}>
-                <input
-                  type="checkbox"
-                  className={clsx(shared.input, styles.input)}
-                  name={name}
-                  value={option.value}
-                  checked={isChecked}
-                  disabled={optionDisabled}
-                  aria-disabled={isBlocked || undefined}
-                  aria-invalid={hasError || undefined}
-                  aria-describedby={descriptionId}
-                  onChange={() => {
-                    if (!isBlocked && !optionDisabled) toggle(option.value);
-                  }}
+            return (
+              <label key={option.value} className={shared.option}>
+                <span className={shared.control}>
+                  <input
+                    type="checkbox"
+                    className={clsx(shared.input, styles.input)}
+                    name={name}
+                    value={option.value}
+                    checked={isChecked}
+                    disabled={optionDisabled}
+                    aria-disabled={isBlocked || undefined}
+                    aria-invalid={hasError || undefined}
+                    aria-describedby={descriptionId}
+                    onChange={() => {
+                      if (!isBlocked && !optionDisabled) toggle(option.value);
+                    }}
+                  />
+                  <CheckIcon className={clsx(shared.mark, styles.check)} />
+                </span>
+                <OptionText
+                  label={option.label}
+                  description={option.description}
+                  descriptionId={descriptionId}
                 />
-                <CheckIcon className={clsx(shared.mark, styles.check)} />
-              </span>
-              <OptionText
-                label={option.label}
-                description={option.description}
-                descriptionId={descriptionId}
-              />
-            </label>
-          );
-        })}
-      </div>
-      {hasError && (
-        <FieldError id={errorId} className={shared.error}>
-          {error}
-        </FieldError>
+              </label>
+            );
+          })}
+        </div>
       )}
-    </fieldset>
+    </OptionGroupFrame>
   );
 });

@@ -15,6 +15,9 @@
  * Unavailable options, native `disabled` and `aria-disabled` (blocked by Checkbox's minChecked /
  * maxChecked), are dimmed and don't react to the pointer.
  *
+ * `.root`, `.legend`, `.disabled` and `.error` are the group frame (OptionGroupFrame), which
+ * SegmentedControl uses too; it has its own track and segments in place of the rows below.
+ *
  * The control inside an option (`.control` > `.input` + a `.mark` sibling) is shaped by the component.
  * Toggle draws its control from the same three classes and the text from `.text` / `.description`,
  * but not the `.option` row.

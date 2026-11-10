@@ -5,8 +5,8 @@
  * The tray is an overlay's surface: it takes `floatingClass` (_shared/Overlay) for the frosted finish
  * (blur, squircle, no border), and `--color-tabs-background` aliases the overlay's background. It is
  * not placed or animated as an overlay is: it has no `data-state`. Behind the selected tab sits one
- * thumb, a raised page-colored block that slides to the tab that is chosen (Tabs.tsx measures the tab
- * and sets its size and place). Each tab stacks its icon over its label.
+ * thumb, a raised page-colored block that slides to the tab that is chosen (_shared/SlidingThumb
+ * measures the tab and sets its size and place). Each tab stacks its icon over its label.
  *
  * The tray and the thumb have fixed shapes, not props. The thumb's radius is the tray's less its
  * padding, so the two curves are concentric. corner-shape: squircle, as in Card.
@@ -51,22 +51,12 @@
   flex-direction: column;
 }
 
-/* The thumb. Its size and place are set inline, in pixels, from the measured tab, so it is placed
-   from the physical top-left corner whatever the writing direction: offsets are physical too. */
+/* The thumb (_shared/SlidingThumb): this is its fill, radius and shadow */
 .thumb {
-  position: absolute;
-  top: 0;
-  left: 0;
   border-radius: var(--tabs-radius);
-  corner-shape: squircle;
   background: var(--color-tabs-thumb);
   /* Raised off a translucent tray, so it needs more than the least shadow */
   box-shadow: var(--elevation-normal);
-  pointer-events: none;
-  transition:
-    transform 400ms var(--ease-pop),
-    width 400ms var(--ease-pop),
-    height 400ms var(--ease-pop);
 }
 
 .tab {
@@ -130,8 +120,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tab,
-  .thumb {
+  .tab {
     transition: none;
   }
 }

@@ -77,4 +77,11 @@ describe('theme/themes.css', () => {
     expect(css.includes('--color-pagination-background-current:')).toBe(true);
     expect(css.includes('--color-pagination-text-current:')).toBe(true);
   });
+
+  it('overrides the SegmentedControl selected text whenever it overrides its thumb', () => {
+    // Same reason as Pagination's: --color-segmented-text-selected follows --color-primary, not the thumb
+    const css = readFileSync(resolve(process.cwd(), 'src/theme/themes.css'), 'utf8');
+    expect(css.includes('--color-segmented-thumb:')).toBe(true);
+    expect(css.includes('--color-segmented-text-selected:')).toBe(true);
+  });
 });

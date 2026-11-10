@@ -1,27 +1,14 @@
-import {
-  forwardRef,
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type HTMLAttributes,
-  type KeyboardEvent,
-  type ReactNode,
-} from 'react';
+import { forwardRef, useId, type HTMLAttributes, type KeyboardEvent, type ReactNode } from 'react';
 import { clsx } from '@/utils/clsx';
 import { resolveScaleProps } from '@/utils/scale';
 import type { ScaleProp } from '@/types/scale';
 import { floatingClass } from '../_shared/Overlay';
 import { OptionIcon } from '../_shared/OptionIcon';
+import { SlidingThumb, useSlidingThumb } from '../_shared/SlidingThumb';
 import { stepEnabled } from '../_shared/optionNavigation';
 import sizes from '../_shared/Size.module.css';
 import type { OptionBase } from '../_shared/types';
 import styles from './Tabs.module.css';
-
-// Measuring has to happen before paint, or the thumb would be seen jumping; on a server there is
-// nothing to measure and useLayoutEffect only warns
-const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
 export const TABS_DEFAULTS = {
@@ -37,10 +24,6 @@ const SCALE_SPEC = {
   compound: { size: ['fontSize'] },
   defaults: TABS_DEFAULTS,
 } as const;
-
-type Box = { x: number; y: number; width: number; height: number };
-const sameBox = (a: Box, b: Box) =>
-  a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
 
 export type TabItem = Omit<OptionBase, 'description'> & {
   /** A glyph before the label. Decorative: `label` stays the name. */
@@ -125,33 +108,9 @@ export const Tabs = forwardRef<HTMLDivElement, TabsProps>(function Tabs(
   // The one tab Tab reaches. A selected tab that is disabled can't take focus.
   const tabStop = selected && !selected.isDisabled ? selected : firstEnabled;
 
-  const tabRefs = useRef(new Map<string, HTMLElement>());
-
-  // The thumb behind the selected tab: its box, measured from the tab so that it follows any size,
-  // font or icon. It is one element that moves, so it can slide.
-  const [thumb, setThumb] = useState<Box | null>(null);
-  const selectedValue = selected?.value;
-  useIsomorphicLayoutEffect(() => {
-    const tab = selectedValue === undefined ? undefined : tabRefs.current.get(selectedValue);
-    if (!tab) return setThumb(null);
-    const measure = () => {
-      const next = {
-        x: tab.offsetLeft,
-        y: tab.offsetTop,
-        width: tab.offsetWidth,
-        height: tab.offsetHeight,
-      };
-      // The same box is the same state, so a resize that moved nothing renders nothing
-      setThumb((prev) => (prev && sameBox(prev, next) ? prev : next));
-    };
-    measure();
-    if (typeof ResizeObserver === 'undefined') return;
-    // The tab itself changing size (a longer label, a bigger font) and the list around it
-    const observer = new ResizeObserver(measure);
-    observer.observe(tab);
-    if (tab.parentElement) observer.observe(tab.parentElement);
-    return () => observer.disconnect();
-  }, [selectedValue, orientation]);
+  // The thumb behind the selected tab (_shared/SlidingThumb), which also keeps each tab's element
+  const thumb = useSlidingThumb(selected?.value, orientation);
+  const tabRefs = thumb.elements;
 
   const choose = (item: TabItem) => {
     if (item.isDisabled || item.value === selected?.value) return;
@@ -214,26 +173,13 @@ export const Tabs = forwardRef<HTMLDivElement, TabsProps>(function Tabs(
         className={clsx(floatingClass, styles.list)}
         onKeyDown={onKeyDown}
       >
-        {thumb && (
-          <span
-            aria-hidden="true"
-            className={styles.thumb}
-            style={{
-              width: thumb.width,
-              height: thumb.height,
-              transform: `translate(${thumb.x}px, ${thumb.y}px)`,
-            }}
-          />
-        )}
+        <SlidingThumb box={thumb.box} className={styles.thumb} />
         {items.map((item) => {
           const isSelected = item === selected;
           return (
             <button
               key={item.value}
-              ref={(node) => {
-                if (node) tabRefs.current.set(item.value, node);
-                else tabRefs.current.delete(item.value);
-              }}
+              ref={thumb.ref(item.value)}
               id={tabId(item)}
               type="button"
               role="tab"

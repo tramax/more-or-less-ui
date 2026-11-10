@@ -1,0 +1,165 @@
+/*
+ * SegmentedControl: one value out of a few, drawn as a track with a thumb that slides to the chosen
+ * segment. The fieldset, legend and error message are _shared/OptionGroupFrame (as Radio's); the
+ * thumb is _shared/SlidingThumb (as Tabs'); `size` is _shared/Size.module.css, and everything here is
+ * in em, so the control follows the font-size it gets.
+ *
+ * It is an input, so it looks like one and not like Tabs: the track is the field fill (brand-tinted,
+ * pressed in, no shadow) and the thumb is the brand color, as a selected Chip or the current page of
+ * Pagination. Tabs is a frosted tray with a page-colored thumb, which reads as navigation.
+ *
+ * The inputs are native radios with no appearance: each is stretched over its segment and invisible,
+ * so a click lands on the input and the browser keeps the arrow keys, the group and the form value.
+ * The thumb's radius is the track's less its padding, so the two curves are concentric.
+ *
+ * Motion is the system's: a segment springs larger under the pointer (Button's and Pagination's
+ * --ease-enter overshoot) and shrinks quickly when pressed, and the thumb does the same when it is
+ * the chosen segment that is under the pointer.
+ */
+
+.root {
+  --segmented-padding: 0.25em;
+  --segmented-radius: var(--radius-normal);
+}
+
+.track {
+  position: relative;
+  display: inline-flex;
+  gap: 0.125em;
+  padding: var(--segmented-padding);
+  border-radius: var(--segmented-radius);
+  corner-shape: squircle;
+  background: var(--color-segmented-background);
+  transition: background-color 150ms ease;
+}
+/* The same fill in the error color. The message and its icon carry the state too, not color alone. */
+.invalid {
+  background: var(--color-segmented-background-error);
+}
+
+/* The thumb (_shared/SlidingThumb): this is its fill and radius. Flat, like the other inputs. */
+.thumb {
+  border-radius: calc(var(--segmented-radius) - var(--segmented-padding));
+  background: var(--color-segmented-thumb);
+}
+
+.segment {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  padding: 0.5em 1em;
+  border-radius: calc(var(--segmented-radius) - var(--segmented-padding));
+  corner-shape: squircle;
+  line-height: 1.25;
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+  /* The segments that are not selected speak more quietly */
+  color: var(--color-text-less);
+  /* Hover motion, as Button's and Pagination's: entering overshoots (--ease-enter) and settles; leaving is
+     the plain ease-out, so the segment doesn't dip below its size and wobble once the pointer has gone.
+     This is the leaving one, which is also what the segment returns on. Fixed, not a prop. */
+  --segmented-hover-scale: 1.06;
+  transform: scale(1);
+  transition:
+    transform 400ms var(--ease-leave),
+    color 150ms ease,
+    background-color 150ms ease,
+    opacity 150ms ease;
+}
+
+/* The input fills its segment and is not drawn: the segment is the control the eye sees */
+.input {
+  appearance: none;
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: inherit;
+}
+
+/* The option's icon (OptionIcon) */
+.icon {
+  --option-icon-size: 1.25em;
+}
+
+/* Gated on hover-capable pointers: touch would leave the segment stuck grown and lit after a tap. It
+   grows, and the chosen segment's thumb grows with it (the same scale, from the same middle, so the
+   label stays inside it). The tint is only for a segment with no thumb behind it. */
+@media (hover: hover) {
+  .segment:hover:not(:has(input:disabled)) {
+    transform: scale(var(--segmented-hover-scale));
+    transition:
+      transform 500ms var(--ease-enter),
+      color 150ms ease,
+      background-color 150ms ease,
+      opacity 150ms ease;
+  }
+  .segment:hover:not(:has(input:checked, input:disabled)) {
+    background: var(--color-segmented-background-hover);
+    color: CanvasText;
+  }
+  .track:has(input:checked:hover:not(:disabled)) {
+    --thumb-scale: var(--segmented-hover-scale);
+    --thumb-scale-time: 500ms;
+    --thumb-scale-ease: var(--ease-enter);
+  }
+}
+
+/* Pressed: it settles below its size, quickly and without overshoot, so a press reads as one where there
+   is no hover (touch). After the hover rules, which it outranks by order; releasing springs back. */
+.segment:active:not(:has(input:disabled)) {
+  transform: scale(0.95);
+  transition:
+    transform 120ms var(--ease-leave),
+    color 150ms ease,
+    background-color 150ms ease,
+    opacity 150ms ease;
+}
+.track:has(input:checked:active:not(:disabled)) {
+  --thumb-scale: 0.95;
+  --thumb-scale-time: 120ms;
+  --thumb-scale-ease: var(--ease-leave);
+}
+
+.segment:has(input:checked) {
+  /* The base color is unreadable on a dark brand fill */
+  color: var(--color-segmented-text-selected);
+}
+
+.segment:has(input:focus-visible) {
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
+}
+
+/* Unavailable. The group's own dimming (the frame's disabled class) already covers a disabled group,
+   so only a lone disabled segment dims itself. */
+.segment:has(input:disabled) {
+  cursor: not-allowed;
+}
+.root:not(:disabled) .segment:has(input:disabled) {
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track,
+  .segment {
+    transition: none;
+  }
+  /* No scaling (the thumb's own is off in SlidingThumb): the tint remains as the hover cue */
+  .segment:hover:not(:has(input:disabled)),
+  .segment:active:not(:has(input:disabled)) {
+    transform: none;
+  }
+}
+
+/* A background is replaced by a system color in forced-colors mode, which would hide the thumb: mark
+   the selected segment with an outline instead */
+@media (forced-colors: active) {
+  .segment:has(input:checked) {
+    outline: 2px solid Highlight;
+  }
+}

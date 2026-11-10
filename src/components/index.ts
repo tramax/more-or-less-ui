@@ -38,6 +38,8 @@ export { Progress } from './Progress';
 export type { ProgressProps } from './Progress';
 export { Radio } from './Radio';
 export type { RadioProps, RadioOption } from './Radio';
+export { SegmentedControl } from './SegmentedControl';
+export type { SegmentedControlProps, SegmentOption } from './SegmentedControl';
 export { Select } from './Select';
 export type { SelectProps, SelectOption } from './Select';
 export { Spinner } from './Spinner';

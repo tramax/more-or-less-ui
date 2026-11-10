@@ -1,0 +1,31 @@
+/*
+ * The thumb behind the selected option of Tabs and SegmentedControl (SlidingThumb.tsx measures the
+ * option and sets the size and place inline, in pixels). This is only how it sits and moves; the
+ * component's own class gives it a fill, a radius and a shadow, since those differ.
+ *
+ * It can also swell and shrink with the option under the pointer (SegmentedControl, whose options do),
+ * through hooks the component sets on a parent: --thumb-scale, and the --thumb-scale-time and
+ * --thumb-scale-ease it moves with. At rest it is 1, so Tabs is unaffected.
+ */
+
+.thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  corner-shape: squircle;
+  pointer-events: none;
+  /* `scale` is its own property, so it doesn't clash with the `transform` that places the thumb */
+  scale: var(--thumb-scale, 1);
+  transition:
+    transform 400ms var(--ease-pop),
+    width 400ms var(--ease-pop),
+    height 400ms var(--ease-pop),
+    scale var(--thumb-scale-time, 400ms) var(--thumb-scale-ease, var(--ease-leave));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb {
+    scale: none;
+    transition: none;
+  }
+}

@@ -720,6 +720,71 @@ circle with a visible border (WCAG 1.4.11) that fills with the brand color when 
 that scales in. The dot is black or white, whichever contrasts more with `--color-primary`
 (`--color-radio-dot`, an alias of `--color-on-primary` like Checkbox's tick).
 
+### SegmentedControl
+
+```tsx
+type SegmentOption = Omit<OptionBase, 'description'> & {
+  icon?: ReactNode; // value, label, isDisabled? and: a glyph before the label (decorative)
+};
+
+type SegmentedControlProps = Omit<
+  FieldsetHTMLAttributes<HTMLFieldSetElement>,
+  'onChange' | 'disabled' | 'name' | 'defaultValue' | 'color' | 'role' | 'children'
+> & {
+  options: SegmentOption[];
+  value?: string | null; // controlled; null = controlled with nothing selected
+  defaultValue?: string; // uncontrolled
+  onChange?: (value: string) => void; // not called for the segment that is already selected
+  name?: string; // shared by the inputs, and submitted with the form; generated when left out
+  label?: string; // the <legend>; without it aria-label/aria-labelledby is required
+  error?: string; // invalid state + message below the control; the caller decides when
+  isDisabled?: boolean;
+  isRequired?: boolean; // native `required` on the inputs + an aria-hidden asterisk after the label
+  size?: ScaleProp; // font-size; default 'normal'
+};
+```
+
+One value out of a few, always in view: a quick filter (All / Unread / Starred), a view (List / Grid), a
+period. It changes a **value**; it is not navigation. When choosing shows a different panel of content,
+that is [Tabs](#tabs); when the choices are a form's list with descriptions, [Radio](#radio); with more
+than about five, [Select](#select); for several at once, selectable Chips.
+
+Closest sibling is Radio, and it is the same thing drawn differently: a `<fieldset role="radiogroup">` with
+one native `<input type="radio">` per option, so the browser does the keyboard (arrows move and select
+together, wrapping; Tab treats the group as one stop), the form value and `required`. **Shared with
+Radio:** `_shared/OptionGroupFrame` (the fieldset, legend, error message and the `aria-describedby`
+wiring; it was copied between Checkbox and Radio until this third group component made it worth
+extracting), `_shared/useChoice` (controlled by `value` / uncontrolled from `defaultValue`, `null` for
+controlled and empty), `NameProps`, `OptionBase`, `name` generated from the id, `OptionIcon`. **Shared with
+Tabs:** `_shared/SlidingThumb` (measures the selected segment and slides one thumb to it; Tabs' thumb
+code was moved there) and `size` from `_shared/Size.module.css` (the only scale prop). **What differs:**
+the options are not rows with a control and a description but segments in one track, and there is a
+thumb.
+
+**State.** Both controlled and uncontrolled, as Radio: it is an input with a form value, and a page that
+filters by it keeps `value` itself. (Tabs is controlled-only because what it shows follows the selection;
+here the control only holds a value and the page decides what to do with it.) A `value` that names no
+segment selects none and has no thumb.
+
+**Look.** An input, so it does not look like Tabs. The track is the field fill (`--color-segmented-background*`
+alias `--color-field-background*`, with the error fill), pressed in with no shadow, and the thumb is the brand
+color (`--color-segmented-thumb`, an alias of `--color-primary`) with `--color-segmented-text-selected` on it
+(an alias of `--color-on-primary`), as a selected Chip and the current page of Pagination are. Tabs is a
+frosted tray with a page-colored thumb, which reads as navigation. Unselected segments are
+`--color-text-less`; under the pointer one takes the field's stronger tint (hover-capable pointers only).
+**Motion** is the system's, as Pagination's and Button's: a segment springs to 1.06 on `--ease-enter` (500 ms, overshoots and
+settles) and returns on `--ease-leave`; pressed, it shrinks to 0.95 in 120 ms with no overshoot. The thumb does the
+same when the chosen segment is the one under the pointer or pressed (the same scale from the same middle, so the label stays
+inside it), through `--thumb-scale` and its time and ease on `_shared/SlidingThumb`; at rest it is 1, so Tabs is
+unaffected. With `prefers-reduced-motion` nothing scales and the thumb jumps. The
+thumb's radius is the track's less its padding, so the curves are concentric, and it slides with the overlay's
+springy `--ease-pop` curve. In `forced-colors` the selected segment gets a `Highlight` outline.
+The dark theme sets the thumb and its text in `themes.css` (`tokens.test.ts` checks the two go together).
+
+**Not yet:** a `vertical` orientation, a `fullWidth` control that spreads the segments across its box,
+icon-only segments (a label that is visually hidden), a list wider than its box (it does not wrap or
+scroll; keep to a few short labels), `description`, and a multiple-selection mode (use selectable Chips).
+
 ### Toggle
 
 ```tsx
@@ -2081,7 +2146,7 @@ frosted blur, the squircle at `--radius-normal`, no border), `--color-tabs-backg
 which is brand-tinted: tabs often sit right above a form, and a tray in the field color would read as one
 more field. Behind the selected tab sits **one thumb**, a raised block in the page color
 (`--color-tabs-thumb`, an opaque `Canvas`, so it stands out of the translucent tray; `--elevation-normal`) with a
-radius of the tray's less its padding, so the curves are concentric. `Tabs.tsx` measures the selected tab
+radius of the tray's less its padding, so the curves are concentric. `_shared/SlidingThumb` (also SegmentedControl's) measures the selected tab
 (`offsetLeft` / `offsetTop` / size, in a layout effect, and again from a `ResizeObserver` on the tab and its
 list) and sets the thumb's size and `translate`; it is one element that moves, so it slides, with the
 overlay's springy `--ease-pop` curve. It is placed from the physical top-left, which is what the offsets
@@ -2581,12 +2646,13 @@ more-or-less-ui/
 │   │   ├── Popover/
 │   │   ├── Toast/
 │   │   ├── Tabs/
+│   │   ├── SegmentedControl/
 │   │   ├── Collapsible/
 │   │   ├── Link/           # Link + LinkProvider
 │   │   ├── Breadcrumb/
 │   │   ├── Pagination/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio, and Toggle's control; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio + SegmentedControl's frame, and Toggle's control; OptionGroupFrame: Checkbox + Radio + SegmentedControl (the fieldset, legend and error); useChoice: Radio + SegmentedControl (single-choice state); SlidingThumb: Tabs + SegmentedControl; TextFieldFrame: TextField + Textarea + Select; FieldError, FieldLabel, types: all fields; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame); ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -2809,7 +2875,7 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 **Inputs still missing:**
 
 - [ ] `Slider` — Sibling: Toggle (a custom control on `OptionGroup` classes) and TextFieldFrame for label and error
-- [ ] `SegmentedControl` / `ToggleGroup` — Sibling: Radio
+- [x] `SegmentedControl` — Sibling: Radio (native radios in a `radiogroup`, controlled or uncontrolled), Tabs for the thumb and `size`. `options` (with an optional `icon`), `value` / `defaultValue` / `onChange`, `name`, `label`, `error`, `isDisabled`, `isRequired`, `size`; one value that applies at once (a quick filter, a view), not navigation (that is Tabs). Adds `--color-segmented-*` aliases of the field fill and the brand color, and extracted `_shared/OptionGroupFrame` (the third option group), `_shared/useChoice` and `_shared/SlidingThumb` (Tabs' thumb). See [SegmentedControl](#segmentedcontrol)
 - [ ] `NumberInput`, password reveal — variants of TextField, not new components (add to `TextFieldFrame` only what they share)
 - [ ] `FileUpload`, `DatePicker` (and Calendar) — the largest; last
 

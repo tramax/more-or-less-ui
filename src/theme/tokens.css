@@ -197,6 +197,16 @@
   --color-tabs-thumb: Canvas;
   --color-tabs-accent: var(--color-primary-strong);
 
+  /* SegmentedControl is an input, so its track is the field fill (and the error fill), and not Tabs'
+     frosted tray, which reads as navigation. A segment under the pointer takes the stronger tint. The
+     thumb is the brand color, as a selected Chip and the current page of Pagination are. */
+  --color-segmented-background: var(--color-field-background);
+  --color-segmented-background-hover: var(--color-field-background-hover);
+  --color-segmented-background-error: var(--color-field-background-error);
+  --color-segmented-thumb: var(--color-primary);
+  /* Text on the thumb; set with it, as Chip's (themes.css does) */
+  --color-segmented-text-selected: var(--color-on-primary);
+
   /* Collapsible's header while it is collapsed: the field fill, since a fill says "pressable" (as
      Chip's) and tells a folded section from an empty one; a step stronger under the pointer. Open, it has
      none (and takes the first of these under the pointer). */
