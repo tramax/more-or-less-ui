@@ -1,19 +1,11 @@
 /*
- * Select: the frame, the `size` scale and the look of the control are shared with TextField and
- * Textarea (_shared/TextFieldFrame). What is here is the Select's colors, set as the hooks that module
- * reads from this class, and what only a Select has: the chevron, the multiple field's box and chips,
- * and the popup with its options.
+ * Select: the frame, the `size` scale, the colors and the look of the control are shared with TextField and
+ * Textarea (_shared/TextFieldFrame). What is here is what only a Select has: the chevron, the multiple
+ * field's box and chips, and the popup with its options.
  *
  * Everything is in em, so `size` (font-size on the root) reaches the popup too: it is a DOM child of
  * the root, even though the Popover API shows it in the top layer.
  */
-
-.root {
-  --field-background: var(--color-select-background);
-  --field-background-hover: var(--color-select-background-hover);
-  --field-background-error: var(--color-select-background-error);
-  --field-background-error-hover: var(--color-select-background-error-hover);
-}
 
 /* The containing block of the chevron; also the popup's anchor (named by useOverlay) */
 .field {

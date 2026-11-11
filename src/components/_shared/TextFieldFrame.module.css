@@ -2,10 +2,10 @@
  * Shared by TextField, Textarea and Select: the frame (a column of label, control and error message)
  * and the look of the control itself, and the room for buttons at the end of it.
  *
- * The component sets its colors on its own root class (from its own --color-<component>-* tokens in
- * theme/tokens.css), so each can be customised on its own:
+ * The colors are set here, on the root, from the shared --color-field-background* tokens (theme/tokens.css):
  *   --field-background, --field-background-hover,
  *   --field-background-error, --field-background-error-hover
+ * A component does not set them. Change them for every field through the shared tokens.
  * `size` sets font-size on the root and nothing else: everything here is in em, so the padding, the
  * gaps and the error icon follow it, and so does an escape-hatch size such as size="1.5rem".
  *
@@ -19,6 +19,11 @@
   flex-direction: column;
   gap: 0.375em;
   align-items: stretch;
+  /* The fills, from the shared recipe: every field looks the same, so no component aliases or sets them */
+  --field-background: var(--color-field-background);
+  --field-background-hover: var(--color-field-background-hover);
+  --field-background-error: var(--color-field-background-error);
+  --field-background-error-hover: var(--color-field-background-error-hover);
 }
 
 .control {

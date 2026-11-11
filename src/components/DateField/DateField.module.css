@@ -1,20 +1,11 @@
 /*
  * DateField: the frame, the `size` scale and the look of the field are shared with TextField, Select and
  * the rest (_shared/TextFieldFrame). The control is a group, a box that holds the segments and the focused
- * one among them, as Select's multiple field does. What is here is the colors, set as the hooks that
- * module reads from this class, and what only a date field has: the segments.
+ * one among them, as Select's multiple field does. What is here is what only a date field has: the
+ * segments.
  *
  * Everything is in em, so `size` follows into the segments.
  */
-
-.root {
-  /* The shared field fills, with no DateField alias: every field looks the same, so there is nothing for
-     this one to customise on its own */
-  --field-background: var(--color-field-background);
-  --field-background-hover: var(--color-field-background-hover);
-  --field-background-error: var(--color-field-background-error);
-  --field-background-error-hover: var(--color-field-background-error-hover);
-}
 
 /* The segments in a row, as text would be. Clicking the padding enters the first (DateField.tsx). */
 .box {

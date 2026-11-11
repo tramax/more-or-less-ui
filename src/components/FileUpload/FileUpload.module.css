@@ -4,20 +4,10 @@
  * border, error fill) are _shared/TextFieldFrame, whose `.control` class is on the zone: like Select's
  * box of chips, the box holds the focused element (the input) rather than being it.
  *
- * The colors are set on the root class from the --color-fileupload-* tokens (theme/tokens.css), so
- * each can be customised on its own:
- *   --field-background, --field-background-hover,
- *   --field-background-error, --field-background-error-hover
+ * The colors are the frame's, like every field's.
  *
  * Everything is in em, so `size` (font-size on the root) scales the zone and the rows.
  */
-
-.root {
-  --field-background: var(--color-fileupload-background);
-  --field-background-hover: var(--color-fileupload-background-hover);
-  --field-background-error: var(--color-fileupload-background-error);
-  --field-background-error-hover: var(--color-fileupload-background-error-hover);
-}
 
 /*
  * The zone is pressable (it opens the picker), so it moves like an option row: a gentle grow on hover

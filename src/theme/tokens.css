@@ -135,16 +135,9 @@
 
   /* Per-component tokens. Each aliases the shared value above, so a component can be customised on
      its own while the default stays defined once. Only set one to something else when the component
-     really differs; a new input component adds its aliases here rather than a new recipe. */
-  --color-textfield-background: var(--color-field-background);
-  --color-textfield-background-hover: var(--color-field-background-hover);
-  --color-textfield-background-error: var(--color-field-background-error);
-  --color-textfield-background-error-hover: var(--color-field-background-error-hover);
-
-  --color-textarea-background: var(--color-field-background);
-  --color-textarea-background-hover: var(--color-field-background-hover);
-  --color-textarea-background-error: var(--color-field-background-error);
-  --color-textarea-background-error-hover: var(--color-field-background-error-hover);
+     really differs. The text fields (TextField, Textarea, Select, FileUpload, DateField) have none for
+     their fills: every field looks the same, so _shared/TextFieldFrame reads --color-field-background*
+     directly, and changing those changes them all. */
 
   --color-checkbox-background: var(--color-field-background);
   --color-checkbox-background-hover: var(--color-field-background-hover);
@@ -175,17 +168,6 @@
   --color-slider-thumb: var(--color-primary-strong);
   --color-slider-error: var(--color-danger);
 
-  /* The drop zone: the field fill, a step stronger on hover, with the error pair. A file dragged over
-     it takes the hover fill, so there is no color of its own for that. */
-  --color-fileupload-background: var(--color-field-background);
-  --color-fileupload-background-hover: var(--color-field-background-hover);
-  --color-fileupload-background-error: var(--color-field-background-error);
-  --color-fileupload-background-error-hover: var(--color-field-background-error-hover);
-
-  --color-select-background: var(--color-field-background);
-  --color-select-background-hover: var(--color-field-background-hover);
-  --color-select-background-error: var(--color-field-background-error);
-  --color-select-background-error-hover: var(--color-field-background-error-hover);
   /* The option the keyboard or pointer is on */
   --color-select-option-active: var(--color-field-background-hover);
   --color-select-popup: var(--color-overlay-background);

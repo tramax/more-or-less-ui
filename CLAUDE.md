@@ -29,8 +29,10 @@ Don't leave "same as X" comments as the plan.
 `src/theme/tokens.css` defines a color recipe once, as a shared token (`--color-field-background*`,
 `--color-on-primary`). A component token aliases it: `--color-radio-background: var(--color-field-background)`.
 That keeps each component customisable without repeating the `color-mix()` / `oklch()` expression.
-A new input component adds its aliases, not a new recipe. `src/theme/tokens.test.ts` fails if the
-same recipe is defined under two names.
+A new component adds its aliases, not a new recipe. `src/theme/tokens.test.ts` fails if the
+same recipe is defined under two names. Add an alias only for something that could differ from the shared
+value: the fields (TextField, Textarea, Select, FileUpload, DateField) all look the same, so they have no
+fill tokens of their own and `_shared/TextFieldFrame` reads `--color-field-background*` directly.
 
 ### Shared code
 
@@ -39,7 +41,7 @@ same recipe is defined under two names.
 - `_shared/TextFieldFrame` is the frame of a single-control field (TextField, Textarea, Select, Slider, FileUpload, DateField): root, `size`,
   label, error message, and the id / `aria-invalid` / `aria-describedby` wiring. A component passes it
   its props and renders only its control (`<input>`, `<textarea>`) from what the frame hands back; it
-  sets the `--field-*` color hooks from its own tokens on its root class.
+  gets the `--field-*` color hooks from the frame itself (the shared field fills); it sets none.
   Slider ignores the `className` it hands back (a text field's filled box) and draws its own control;
   FileUpload puts it on its drop zone, a box that holds the focused input, as Select's box of chips does.
   Its `end` slot (with `endCount`) puts `IconButton`s inside the field at the inline end and leaves the control

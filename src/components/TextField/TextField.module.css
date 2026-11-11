@@ -1,15 +1,7 @@
 /*
- * TextField: the frame, the `size` scale and the look of the field are shared with Textarea
- * (_shared/TextFieldFrame). What is here is the TextField's colors, set as the hooks that module
- * reads from this class.
+ * TextField: the frame, the `size` scale, the colors and the look of the field are shared with Textarea
+ * (_shared/TextFieldFrame). What is here is only what an <input> needs.
  */
-
-.root {
-  --field-background: var(--color-textfield-background);
-  --field-background-hover: var(--color-textfield-background-hover);
-  --field-background-error: var(--color-textfield-background-error);
-  --field-background-error-hover: var(--color-textfield-background-error-hover);
-}
 
 /*
  * type="number": the native spin buttons are hidden everywhere (they cannot be themed, and differ

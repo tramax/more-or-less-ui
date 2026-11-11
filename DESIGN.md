@@ -101,7 +101,7 @@ Checkbox / Radio options (`_shared/OptionGroup.module.css`) and the Select popup
 
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Card, Button, Banner), one opaque brand tint (`--color-primary-tint`) that Button's `normal` and Banner's `normal` alias, the opposite of the current text color (`--color-text-inverse`, which Banner's glow aliases), one faint field fill (`--color-field-background*`) that TextField, Textarea, Checkbox, Radio, Toggle, Slider and Select alias** (Banner's `less` aliases it too), **and secondary text (`--color-text-less`, 70% of the text color) that the option descriptions and Select's empty message share with Text's `color` scale**. That scale is `--color-text-less` / `-normal` / `-more` (the last is the brand color toward the text color, for contrast). No palettes, no
+Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Card, Button, Banner), one opaque brand tint (`--color-primary-tint`) that Button's `normal` and Banner's `normal` alias, the opposite of the current text color (`--color-text-inverse`, which Banner's glow aliases), one faint field fill (`--color-field-background*`) that TextField, Textarea, Select, FileUpload and DateField use directly through `_shared/TextFieldFrame`, and Checkbox, Radio, Toggle and Slider alias** (Banner's `less` aliases it too), **and secondary text (`--color-text-less`, 70% of the text color) that the option descriptions and Select's empty message share with Text's `color` scale**. That scale is `--color-text-less` / `-normal` / `-more` (the last is the brand color toward the text color, for contrast). No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -135,7 +135,9 @@ actually needs one.
 A recipe is defined once, as a shared token (`--color-field-background*`, and `--color-on-primary` for a
 mark drawn on the brand color), and each component's own token aliases it
 (`--color-radio-background: var(--color-field-background)`). Components stay customisable on their
-own without repeating the expression; `src/theme/tokens.test.ts` enforces it.
+own without repeating the expression; `src/theme/tokens.test.ts` enforces it. The exception is what all
+fields share: TextField, Textarea, Select, FileUpload and DateField look the same, so they have no fill
+tokens of their own, and `_shared/TextFieldFrame` sets the `--field-*` hooks from `--color-field-background*`.
 
 Page text and background use the browser's system colors (`CanvasText` / `Canvas`), so dark mode
 needs no text/background variables of its own.
@@ -602,7 +604,7 @@ type TextFieldProps = Omit<
 ```
 
 `size` is the only scale prop: no `background`, no `borderRadius`. The field is a block of faint
-color rather than a bordered box (easier to scan): `--color-textfield-background` is the brand
+color rather than a bordered box (easier to scan): `--color-field-background` is the brand
 color at low alpha, so it lays over any surface in both themes. Hover steps the alpha up, focus
 fades in a 2px inset-shadow border in the brand color (a transparent outline stays for forced-colors
 mode), and the error state is the same fill in `--color-danger`, with a `--color-danger` focus border.
@@ -648,7 +650,7 @@ press-and-hold to repeat a stepper, prefix / suffix text (a unit). Multiline is 
 
 TextField renders only the `<input>`. The frame around it (root, `size`, label, error message, id and
 `aria-describedby` wiring) and the look of the field are `_shared/TextFieldFrame`, shared with Textarea and Select;
-`--color-textfield-*` are set as the `--field-*` hooks that module reads.
+its colors are the frame's (`--field-*`, from the shared `--color-field-background*`).
 **Open:** a borderless faint fill may not meet WCAG 1.4.11 (3:1 for the control's boundary); check it
 in Storybook, and add a stronger bottom edge if it needs one.
 
@@ -975,7 +977,7 @@ interface TextareaProps extends Omit<
 A separate component from TextField because the element, its `ref` type and its props differ (`rows`,
 `resize`, no `type`). Everything else is the same, and shared through `_shared/TextFieldFrame`: the
 look (fill, hover, focus border, read-only, disabled, error), the label and error wiring, `size`, and
-`className`/`style` on the root. Its tokens, `--color-textarea-*`, alias the shared field fill.
+`className`/`style` on the root. Its colors are the frame's, from the shared field fill.
 
 **Not yet:** auto-grow (`field-sizing: content`), character counter.
 
@@ -2656,8 +2658,7 @@ other. Uploads run in parallel. Files from `defaultValue` or a controlled `value
 was removed), or to the input when the list is empty. A polite `VisuallyHidden` live region (`role="status"`)
 says "2 files added", "report.pdf removed", "report.pdf uploaded" and "report.pdf failed".
 
-**Tokens.** `--color-fileupload-background`, `-hover`, `-error`, `-error-hover`: aliases of the
-`--color-field-background*` recipe, and no other token. Progress, danger and the check use theirs; the ✓ is
+**Tokens.** None for the zone's fill: it is the frame's, from `--color-field-background*`. Progress, danger and the check use theirs; the ✓ is
 `--color-primary-strong` in the CSS module, a fixed finish.
 
 **Not yet:** blocking form submit while an upload is in flight or failed (`setCustomValidity` on the
