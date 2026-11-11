@@ -1,7 +1,7 @@
 import { forwardRef, useState, type FieldsetHTMLAttributes } from 'react';
 import { clsx } from '@/utils/clsx';
 import shared from '../_shared/OptionGroup.module.css';
-import { CheckIcon } from '../_shared/CheckIcon';
+import { CheckControl } from '../_shared/CheckControl';
 import { OptionGroupFrame } from '../_shared/OptionGroupFrame';
 import { OptionText } from '../_shared/OptionText';
 import type { NameProps, OptionBase } from '../_shared/types';
@@ -93,23 +93,18 @@ export const Checkbox = forwardRef<HTMLFieldSetElement, CheckboxProps>(function 
 
             return (
               <label key={option.value} className={shared.option}>
-                <span className={shared.control}>
-                  <input
-                    type="checkbox"
-                    className={clsx(shared.input, styles.input)}
-                    name={name}
-                    value={option.value}
-                    checked={isChecked}
-                    disabled={optionDisabled}
-                    aria-disabled={isBlocked || undefined}
-                    aria-invalid={hasError || undefined}
-                    aria-describedby={descriptionId}
-                    onChange={() => {
-                      if (!isBlocked && !optionDisabled) toggle(option.value);
-                    }}
-                  />
-                  <CheckIcon className={clsx(shared.mark, styles.check)} />
-                </span>
+                <CheckControl
+                  name={name}
+                  value={option.value}
+                  checked={isChecked}
+                  disabled={optionDisabled}
+                  aria-disabled={isBlocked || undefined}
+                  aria-invalid={hasError || undefined}
+                  aria-describedby={descriptionId}
+                  onChange={() => {
+                    if (!isBlocked && !optionDisabled) toggle(option.value);
+                  }}
+                />
                 <OptionText
                   label={option.label}
                   description={option.description}

@@ -1,0 +1,196 @@
+/*
+ * Table: a native <table> with a hairline under every row. `size` is _shared/Size.module.css, as
+ * Breadcrumb's and Pagination's: it sets font-size, and everything here is in em. It has no surface of
+ * its own (no fill, radius or shadow): put it in a Card for one. Colors are --color-table-* (theme/tokens.css).
+ *
+ * What moves: the sort button under a header and the checkbox in a row, the two things that can be
+ * pressed. They have the system's motion (Pagination's): a spring on hover (--ease-enter), a quick
+ * settle when pressed (--ease-leave), and neither under prefers-reduced-motion. A row itself is not
+ * pressable, so it only changes fill.
+ */
+
+.root {
+  /* Separate, not collapsed: the rules are on the cells, and a row's fill is not cut by a shared border */
+  border-collapse: separate;
+  border-spacing: 0;
+  inline-size: 100%;
+}
+
+.caption {
+  caption-side: top;
+  padding-block-end: 0.75em;
+  text-align: start;
+  font-weight: var(--weight-more);
+}
+
+.root th,
+.root td {
+  padding: 0.75em 1em;
+  border-block-end: 1px solid var(--color-table-line);
+  vertical-align: middle;
+  /* Digits of one width, so a column of numbers lines up */
+  font-variant-numeric: tabular-nums;
+}
+
+/* A column header: heavier than the cells, which keep the weight of the page. A row header (th in a
+   row) is the cell that names the row, so it is heavy too. */
+.root th {
+  font-weight: var(--weight-more);
+  text-align: start;
+}
+
+.alignStart {
+  text-align: start;
+}
+.alignCenter {
+  text-align: center;
+}
+.alignEnd {
+  text-align: end;
+}
+
+/* A header is a short name: it doesn't wrap, so "Order number" is never broken in two. The cells under
+   it still wrap, so the column is as wide as its header at least. */
+.root thead th {
+  white-space: nowrap;
+}
+
+.root tbody tr {
+  transition: background-color 150ms ease;
+}
+@media (hover: hover) {
+  .root tbody tr:hover {
+    background: var(--color-table-row-hover);
+  }
+}
+.root tbody tr.selected,
+.root tbody tr.selected:hover {
+  background: var(--color-table-row-selected);
+}
+
+.empty {
+  padding-block: 2em;
+  text-align: center;
+  color: var(--color-text-less);
+}
+
+/* The sort button. A header's name, pressable, with an arrow that shows the order. Its padding is
+   taken back with a negative margin, so the name lines up with the cells under it. */
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375em;
+  margin-inline: -0.5em;
+  padding: 0.25em 0.5em;
+  border: 0;
+  border-radius: 0.5em;
+  corner-shape: squircle;
+  background: transparent;
+  color: inherit;
+  /* A button doesn't inherit the font, and the em sizes here follow the `size` on the root */
+  font: inherit;
+  cursor: pointer;
+  user-select: none;
+  /* Hover motion, as Pagination's: entering overshoots (--ease-enter) and settles; leaving is the plain
+     ease-out. This is the leaving one, which is also what the button returns on. */
+  --table-sort-hover-scale: 1.06;
+  transform: scale(1);
+  transition:
+    transform 400ms var(--ease-leave),
+    background-color 150ms ease;
+}
+@media (hover: hover) {
+  .sort:hover {
+    transform: scale(var(--table-sort-hover-scale));
+    background: var(--color-table-sort-hover);
+    transition:
+      transform 500ms var(--ease-enter),
+      background-color 150ms ease;
+  }
+}
+/* Pressed: it settles below its size, quickly and without overshoot, so a press reads as one where
+   there is no hover (touch). After the hover rule, which it outranks by order; releasing springs back. */
+.sort:active {
+  transform: scale(0.95);
+  transition:
+    transform 120ms var(--ease-leave),
+    background-color 150ms ease;
+}
+.sort:focus-visible {
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
+}
+
+/* The ⌄ points down for descending and is turned up for ascending. Hidden until the column is sorted
+   (but the room for it is kept, so a header doesn't change width when sorted), and a hint of it on hover. */
+.arrow {
+  flex: none;
+  width: 1em;
+  height: 1em;
+  opacity: 0;
+  transform: rotate(0deg);
+  transition:
+    transform 300ms var(--ease-pop),
+    opacity 150ms ease;
+}
+.sort:hover .arrow,
+.sort:focus-visible .arrow {
+  opacity: 0.5;
+}
+.arrow.sorted {
+  opacity: 1;
+}
+.arrow.ascending {
+  transform: rotate(180deg);
+}
+
+/* The checkbox column: as narrow as the box, and the same in the header and the rows */
+.selectCell {
+  inline-size: 1px;
+  white-space: nowrap;
+}
+
+/* The row's box is pressable, so it has the system's motion on its own: the option row it would sit in
+   (Checkbox) does not exist here. Hover grows it, with the spring; pressed, it settles below its size. */
+.select {
+  --table-select-hover-scale: 1.15;
+  border-radius: 0.375em;
+  transform: scale(1);
+  transition: transform 400ms var(--ease-leave);
+  /* The input takes its cursor from the box around it (`cursor: inherit` in OptionGroup); Checkbox's
+     option row sets the pointer there, and this is the only box Table has */
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .select:hover:has(input:not(:disabled)) {
+    transform: scale(var(--table-select-hover-scale));
+    transition: transform 500ms var(--ease-enter);
+  }
+}
+.select:active:has(input:not(:disabled)) {
+  transform: scale(0.9);
+  transition: transform 120ms var(--ease-leave);
+}
+.select:has(input:focus-visible) {
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
+}
+.select:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sort,
+  .arrow,
+  .select {
+    transition: none;
+  }
+  /* The fill and the arrow stay as the cues; nothing scales or springs */
+  .sort:hover,
+  .sort:active,
+  .select:hover:has(input:not(:disabled)),
+  .select:active:has(input:not(:disabled)) {
+    transform: none;
+  }
+}

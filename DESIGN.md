@@ -701,6 +701,10 @@ state that settles back. The box keeps a visible border
 black or white, whichever contrasts more with `--color-primary` (`--color-checkbox-check`, an alias of
 `--color-on-primary`, derived with `contrast-color()` and an OKLCH fallback, so a different primary adapts on its own). The error state is the same fill in `--color-danger` plus an icon.
 
+The control itself (the rounded square, the brand fill and the tick that draws itself in) is
+`_shared/CheckControl`, which Table's row selection uses too; it draws the tick in `--color-checkbox-check`
+for both, so a checkbox looks the same wherever it is (a caller passes no color).
+
 The group, option row, raised hover and error state are shared with Radio in
 `components/_shared/OptionGroup.module.css`. A component sets `--option-background*` on its root from
 its own `--color-<component>-*` tokens, and shapes the control itself.
@@ -1537,9 +1541,11 @@ type DividerProps = Omit<HTMLAttributes<HTMLHRElement>, 'children' | 'color'> & 
 ```
 
 A hairline between two groups. It is meant to be felt more than seen: one pixel, in `--color-divider`,
-the brand color at 35% over transparent (more than Progress's 20% track only because a one-pixel line
-needs more alpha than a filled bar to show). That is the one new color recipe; there was no faint line to alias
-(`--color-text-less` is 70% of the text color, `--color-chip-border` the full brand color).
+an alias of the shared `--color-line`: the brand color at 35% over transparent (more than Progress's 20%
+track only because a one-pixel line needs more alpha than a filled bar to show). That is the one new color
+recipe; there was no faint line to alias (`--color-text-less` is 70% of the text color,
+`--color-chip-border` the full brand color). It was first defined under Divider's own name; Table's row
+rules were the second consumer, so the recipe got a neutral name and both alias it.
 
 Closest sibling is Card, for the rule that it has **no margin**: the space on either side is the
 layout's (a Stack's `gap`, or a wrapping Box), so it is not a Box and takes none of Box's props. It is
@@ -2660,6 +2666,113 @@ the zone, the rows and the drag state were written from the CSS and tested in js
 `DataTransfer`, no drag-and-drop and no layout, so look at them in Storybook (and drop a real file) before
 relying on them.
 
+### Table
+
+```tsx
+type TableColumn<Row> = {
+  header: ReactNode;
+  cell: (row: Row) => ReactNode; // the only way a column gets its data: the table never reads the row itself
+  align?: 'start' | 'center' | 'end'; // logical; default start
+  width?: string | number; // a CSS length (a number is pixels)
+  isRowHeader?: boolean; // its cells are <th scope="row">: they name the row
+} & (
+  | { isSortable: true; key: string } // only has an effect when the table has `sort` and `onSortChange`
+  | { isSortable?: false; key?: string }
+); // `key` is an id for the column, not a field of the row: `sort.key` is the `key` of the sorted column
+
+type TableSort = { key: string; direction: 'ascending' | 'descending' };
+type TableLabels = { selectAll?: string; selectRow?: string }; // 'Select all rows', 'Select row'
+
+type TableProps<Row> = Omit<TableHTMLAttributes<HTMLTableElement>, 'children' | 'color'> & {
+  columns: TableColumn<Row>[];
+  rows: Row[]; // the rows to show, in the order to show them: this page, already sorted
+  getRowKey: (row: Row) => string; // stable across reorder, reload and paging (an id)
+  emptyMessage?: ReactNode; // a row of its own when there are no rows; left out: only the header
+  size?: ScaleProp; // font-size; default 'normal'
+  labels?: TableLabels; // another language
+} & (
+    | { caption: string } // the visible name, above the table
+    | { caption?: undefined; 'aria-label': string }
+    | { caption?: undefined; 'aria-labelledby': string }
+  ) &
+  // sorting: both or neither, and the parent owns it
+  (
+    | { sort?: undefined; onSortChange?: undefined }
+    | { sort: TableSort | null; onSortChange: (sort: TableSort) => void }
+  ) &
+  // selection: both or neither, and the parent owns it
+  (
+    | { selectedKeys?: undefined; onSelectedKeysChange?: undefined }
+    | { selectedKeys: string[]; onSelectedKeysChange: (keys: string[]) => void }
+  );
+```
+
+Rows of data in columns, to compare and look things up. It is generic over the row (`Row` is inferred from
+`rows`). Not for layout, for a few label-and-value pairs (a list), or for cards of unlike content (Grid). A
+native `<table>`, so a screen reader announces the row and column of every cell.
+
+Closest sibling is **Pagination**, its partner: the table does not page, and the parent passes one page of
+`rows` with a Pagination under it. **Tabs** is the sibling for the state (see below) and for the `items`-style
+array (`columns` here, as Tabs' `items` and Select's `options`: no component in the library is built from
+composable parts, and a data-driven shape is what lets the table wire sorting, selection, the empty state and
+loading). **Breadcrumb and Pagination** give the `size` handling (`_shared/Size.module.css`, everything in
+`em`). **Shared:** those, `_shared/Placeholder` (the cells), `_shared/ChevronIcon` (the sort arrow),
+and the
+new `_shared/CheckControl`, extracted from Checkbox in the same change because row selection is its second
+consumer (see [Checkbox](#checkbox)). **New:** the table's markup, the sort button and its wiring, the
+selection logic.
+
+- **No state of its own.** Sorting and selection decide what the rest of the screen shows (a server query, a
+  toolbar of actions), so both are controlled, with no `default*` and no `useState`, as Tabs' and
+  Pagination's. The table does not sort or page: it draws the arrow and reports the press, and the parent sorts
+  `rows` (or asks the server to). Each pair is typed so that one half alone does not compile.
+- **Sorting** (APG sortable table). A column with `isSortable` has a button in its header, named by the
+  header (the direction is `aria-sort` on the `<th>`, not a second name). The first press on a column asks for
+  `ascending`, then it goes back and forth; there is no third "unsorted" press (the parent can still set `sort`
+  to `null`), as the APG example. `aria-sort="none"` is on a sortable header that is not the sorted one. The
+  arrow is `ChevronIcon`: down for descending, turned up for ascending; hidden until the column is sorted but
+  its room kept, so a header does not change width when it is, with a hint of it on hover and focus.
+  `isSortable` without `sort` and `onSortChange` does nothing. A column's `key` is only an id: `cell` is what
+  reads the row, and what a `sort.key` means for the rows is the parent's. A sortable column must have one
+  (the type requires it); any other may leave it out and is named by its position.
+- **Selection.** `selectedKeys` adds a checkbox to every row and one in the header. The header's selects every
+  row **shown** (not every row there is: the table does not know them), is checked when all are, and is
+  indeterminate (a dash: `CheckControl`'s `isIndeterminate`) when some are. A key that is not in `rows` (a row
+  picked on another page) is kept, and `onSelectedKeysChange` gets the whole selection: the keys not shown, in
+  their order, then the shown selected rows in the order of `rows`. A row's checkbox is named by its row header
+  (`aria-labelledby`: "Grace Hopper, checkbox, checked"); without a row header column it is
+  `labels.selectRow`. No `aria-selected` (not valid on a row of a plain table): the checkbox is the state.
+- **Headers and cells.** Column headers are `<th scope="col">`; a column with `isRowHeader` has `<th
+scope="row">` cells, usually one (the name). Both are heavier than a plain cell.
+- **Name.** `caption` (visible, above the table) or `aria-label` / `aria-labelledby`; the type requires one,
+  since a table with no name is a fault. A name only a screen reader needs is `aria-label`; there is no
+  hidden-caption prop.
+- **Loading** is `aria-busy="true"` on the table or on something around it, not a prop. Each cell's content is
+  wrapped in a `placeholder.placeholder` span, so it becomes a block as long as it is; the headers stay as they
+  are (they are known). Render a few rows of neutral text of about the right length: the table cannot know how
+  many rows are coming (see [Loading](#loading)).
+- **Look.** No surface (no fill, radius or shadow): put it in a Card for one. A hairline under every cell
+  (`--color-table-line`); a row takes `--color-table-row-hover` under the pointer and
+  `--color-table-row-selected` when selected; cells are `0.75em 1em`; digits are tabular so a column of
+  numbers lines up; a header does not wrap. `border-collapse: separate`, so a row's fill is not cut by a
+  shared border.
+- **Motion** is on what can be pressed, with the system's: the sort button and a row's checkbox grow on hover
+  on `--ease-enter` (1.06 and 1.15; the button also takes `--color-table-sort-hover`), settle to 0.95 and 0.9
+  when pressed on `--ease-leave`, and under `prefers-reduced-motion` nothing scales (the fill and the arrow
+  are the cues). A row is not pressable, so it changes only fill. The arrow turns on `--ease-pop`.
+- **Tokens**, all aliases: `--color-table-line` (of the new neutral `--color-line`, which `--color-divider`
+  now aliases too), `--color-table-row-hover` and `--color-table-row-selected` (the field's two tints),
+  `--color-table-sort-hover` (the field's stronger tint). A row's checkbox has no token of its own: it is
+  `CheckControl`, tick color `--color-checkbox-check` included.
+
+**Not yet:** a scroll region for a table wider than its container (it needs a focusable, named region), a
+sticky header, sticky columns, column resizing and reordering, a clickable or linked row, expandable rows, a
+disabled row (`isRowDisabled`), multi-column sort, an unsorted press, a density prop, a built-in pager,
+virtualization. Not yet checked by eye: the hover and press motion and the focus rings (written from the
+CSS), dark mode and a right-to-left layout. Looked at in headless Edge against Storybook: the Selection,
+Sorting and Loading stories at rest (the ✓ and the indeterminate dash, the selected-row tint, the sorted
+arrow, the placeholder blocks).
+
 ---
 
 ## Loading
@@ -2881,8 +2994,9 @@ more-or-less-ui/
 │   │   ├── Link/           # Link + LinkProvider
 │   │   ├── Breadcrumb/
 │   │   ├── Pagination/
+│   │   ├── Table/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio + SegmentedControl's frame, and Toggle's control; OptionGroupFrame: Checkbox + Radio + SegmentedControl (the fieldset, legend and error); useChoice: Radio + SegmentedControl (single-choice state); useControlledState: useChoice + FileUpload (controlled or kept here); SlidingThumb: Tabs + SegmentedControl; TextFieldFrame: TextField + Textarea + Select + Slider + FileUpload (its end slot: TextField's buttons); FieldError, FieldLabel, types: all fields; IconButton: CloseButton + TextField's reveal and steppers; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame) + FileUpload's remove; ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, FileUpload's zone and rows, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckIcon: Checkbox + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio + SegmentedControl's frame, and Toggle's control; OptionGroupFrame: Checkbox + Radio + SegmentedControl (the fieldset, legend and error); useChoice: Radio + SegmentedControl (single-choice state); useControlledState: useChoice + FileUpload (controlled or kept here); SlidingThumb: Tabs + SegmentedControl; TextFieldFrame: TextField + Textarea + Select + Slider + FileUpload (its end slot: TextField's buttons); FieldError, FieldLabel, types: all fields; IconButton: CloseButton + TextField's reveal and steppers; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame) + FileUpload's remove; ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, FileUpload's zone and rows, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText + Table's cells, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination + Table; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckControl: Checkbox + Table's row selection (the box and tick); CheckIcon: Checkbox's control (through CheckControl) + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination + Table's sort arrow; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -3112,7 +3226,9 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 - [x] `FileUpload` — Sibling: Select and Slider (`TextFieldFrame` around a custom control), Progress / `CloseButton` / `OptionText` for the file rows. A drop zone over a native file input, and a list of the files. Form mode (files stay in the input and submit with the form) and upload mode (`uploadFile`, the consumer's function, called per picked file with a `signal` and `onProgress`; `onUploaded` gets its result; progress, done, error with Retry, removing aborts). `accept` / `maxSize` / `maxFiles` with `onReject`. Adds `--color-fileupload-*` aliases, `_shared/useControlledState` (extracted from `useChoice`) and `isDisabled` on `CloseButton`. See [FileUpload](#fileupload)
 - [ ] `DatePicker` (and Calendar) — the largest; last
 
-**Data display:** `Table` (Sibling: Grid, Card).
+**Data display:**
+
+- [x] `Table` — Sibling: Pagination (its partner: the parent passes one page of rows), Tabs (controlled state, the array shape), Placeholder for loading. Data-driven: `columns` (key, header, cell, align, width, isSortable, isRowHeader), `rows`, `getRowKey`, `caption` or an aria name, `emptyMessage`, `size`, `labels`; controlled sorting (`sort` / `onSortChange`, the parent sorts) and row selection (`selectedKeys` / `onSelectedKeysChange`, a header box for the rows shown, indeterminate). Adds `--color-table-*` aliases and a neutral `--color-line` (Divider now aliases it too), and extracted `_shared/CheckControl` from Checkbox. See [Table](#table)
 
 **Later, only if asked for:** Stepper, Rating, Tree, Command palette, Carousel.
 

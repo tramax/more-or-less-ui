@@ -65,6 +65,9 @@ same recipe is defined under two names.
 - `_shared/CheckIcon`, `_shared/CrossIcon` and `_shared/ChevronIcon` are the ✓, × and ⌄ (Select's field,
   Collapsible's header), drawn with attributes on the shell of `_shared/StrokeIcon`; a consumer's
   class sets only size, color and motion.
+- `_shared/CheckControl` is the checkbox's box and tick (a native input, the brand fill, the tick that draws in,
+  and a dash for `isIndeterminate`), used by Checkbox's options and Table's row selection. Its tick color is
+  `--color-checkbox-check` for every caller; the label and row around it are the caller's.
 - `_shared/IconButton` is the round icon button (disc on hover, shrink on press): the consumer passes `label`,
   `icon` (a component taking `className`), `onClick` and spacing through `className`. `_shared/CloseButton` is
   it with the ×, for Banner's and Toast's dismiss and Dialog's close; TextField's reveal and steppers use it.

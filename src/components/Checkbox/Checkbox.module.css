@@ -1,7 +1,8 @@
 /*
  * Checkbox: the group, the option rows, their hover and the error state are shared with Radio (see
- * _shared/OptionGroup.module.css). Only the colors and the shape of the control live here: a rounded
- * square that fills with the brand color when checked, with a tick that draws itself in.
+ * _shared/OptionGroup.module.css). The control itself, a rounded square that fills with the brand color
+ * when checked, with a tick that draws itself in, is _shared/CheckControl (Table's row selection uses
+ * it too, with the tick's color, `--color-checkbox-check`). Only the option fill lives here.
  */
 
 .root {
@@ -10,38 +11,4 @@
   --option-background-hover: var(--color-checkbox-background-hover);
   --option-background-error: var(--color-checkbox-background-error);
   --option-background-error-hover: var(--color-checkbox-background-error-hover);
-}
-
-.input {
-  border-radius: 0.375em;
-  corner-shape: squircle;
-}
-.input:checked {
-  background: var(--color-primary);
-}
-
-.check {
-  width: 1.25em;
-  height: 1.25em;
-  stroke: var(--color-checkbox-check);
-  opacity: 0;
-  transition: opacity 50ms ease;
-}
-/* pathLength="1" on the path, so a dash of 1 is the whole tick: it draws itself in */
-.check path {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  transition: stroke-dashoffset 200ms ease;
-}
-.input:checked + .check {
-  opacity: 1;
-}
-.input:checked + .check path {
-  stroke-dashoffset: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .check path {
-    transition: none;
-  }
 }

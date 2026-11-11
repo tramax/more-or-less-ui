@@ -256,6 +256,15 @@
   /* Text on the current background; set with it, as Chip's (themes.css does) */
   --color-pagination-text-current: var(--color-on-primary);
 
+  /* Table: a row has nothing behind it until the pointer is on it (the field's fill) and a selected row
+     has the stronger tint; the rules between rows are the shared hairline. The sort button under a
+     header takes the field's stronger tint on hover, as Pagination's pages. A row's checkbox is
+     Checkbox's, tick color included (--color-checkbox-check). */
+  --color-table-line: var(--color-line);
+  --color-table-row-hover: var(--color-field-background);
+  --color-table-row-selected: var(--color-field-background-hover);
+  --color-table-sort-hover: var(--color-field-background-hover);
+
   /* Banner's `background` scale: how loudly it speaks, in the brand color. A faint tint, an opaque tint,
      then the brand color itself. */
   --color-banner-background-less: var(--color-field-background);
@@ -272,10 +281,12 @@
   --color-progress-track: color-mix(in oklab, var(--color-primary) 20%, transparent);
   --color-progress-fill: var(--color-primary);
 
-  /* Divider's line: the brand color faint enough to sit behind the content, on a light or a dark page.
+  /* A hairline: the brand color faint enough to sit behind the content, on a light or a dark page.
      Stronger than the Progress track (20%) only because a one-pixel line needs more alpha than a
-     filled bar to show at all; it should still be felt more than seen. */
-  --color-divider: color-mix(in oklab, var(--color-primary) 35%, transparent);
+     filled bar to show at all; it should still be felt more than seen. Divider's line and Table's
+     row rules alias it, so neither depends on the other. */
+  --color-line: color-mix(in oklab, var(--color-primary) 35%, transparent);
+  --color-divider: var(--color-line);
 
   /* Indicator's mark: the brand color, never red. A red dot says "something is wrong" and hurries the
      reader; this one says "something is here". It is the strong primary, not the primary itself: the

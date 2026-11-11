@@ -57,6 +57,8 @@ export { Spinner } from './Spinner';
 export type { SpinnerProps } from './Spinner';
 export { Stack } from './Stack';
 export type { StackProps } from './Stack';
+export { Table } from './Table';
+export type { TableProps, TableColumn, TableSort, TableLabels } from './Table';
 export { Tabs } from './Tabs';
 export type { TabsProps, TabItem } from './Tabs';
 export { Text } from './Text';

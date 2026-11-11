@@ -1,0 +1,67 @@
+/*
+ * CheckControl: the box and tick of a checkbox, shared by Checkbox's options and Table's row selection.
+ * The input, its mark and the grid they sit in are _shared/OptionGroup.module.css's `.control`, `.input`
+ * and `.mark` (Toggle draws its control from the same three); this file is only what makes it a
+ * checkbox: a rounded square that fills with the brand color when checked, with a tick that draws
+ * itself in, and a dash for the indeterminate state.
+ *
+ * The tick (and the dash) is drawn in `--color-checkbox-check`. It is the checkbox's one color, for
+ * Checkbox and for Table's row selection alike: a checkbox looks the same wherever it is, so there is no
+ * per-caller hook.
+ */
+
+.input {
+  border-radius: 0.375em;
+  corner-shape: squircle;
+}
+.input:checked,
+.input:indeterminate {
+  background: var(--color-primary);
+}
+
+.check {
+  width: 1.25em;
+  height: 1.25em;
+  stroke: var(--color-checkbox-check);
+  opacity: 0;
+  transition: opacity 50ms ease;
+}
+/* pathLength="1" on the path, so a dash of 1 is the whole tick: it draws itself in */
+.check path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 200ms ease;
+}
+.input:checked + .check {
+  opacity: 1;
+}
+.input:checked + .check path {
+  stroke-dashoffset: 0;
+}
+
+/* Indeterminate: the dash replaces the tick. A bar in the control's grid cell, over the input; after
+   the rules above, which it outranks by order, since an indeterminate box can also be checked. */
+.control::after {
+  content: '';
+  grid-area: 1 / 1;
+  place-self: center;
+  width: 0.625em;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--color-checkbox-check);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 50ms ease;
+}
+.control:has(.input:indeterminate)::after {
+  opacity: 1;
+}
+.input:indeterminate + .check {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .check path {
+    transition: none;
+  }
+}
