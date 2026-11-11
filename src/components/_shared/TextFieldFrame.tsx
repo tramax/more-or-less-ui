@@ -34,6 +34,12 @@ export interface TextFieldControlProps {
   'aria-describedby': string | undefined;
 }
 
+/** What else the frame knows, for a control that is not an input (see `children`). */
+export interface TextFieldFrameInfo {
+  /** The label's id, or `undefined` without a label. A group of segments (DateField) names itself with it. */
+  labelId: string | undefined;
+}
+
 /** The props the frame takes out of a field's props; the rest belong to the control. */
 interface TextFieldFrameOwnProps {
   size?: ScaleProp;
@@ -59,10 +65,14 @@ type TextFieldFrameProps<P> = P & {
    */
   end?: ReactNode;
   endCount?: number;
-  /** Renders the control from what the frame gives it and the field props the frame didn't use. */
+  /**
+   * Renders the control from what the frame gives it and the field props the frame didn't use. The third
+   * argument is for a control that is not a labelable element, and most ignore it.
+   */
   children: (
     control: TextFieldControlProps,
     rest: Omit<P, keyof TextFieldFrameOwnProps | 'rootClassName' | 'children'>,
+    info: TextFieldFrameInfo,
   ) => ReactNode;
 };
 
@@ -97,6 +107,7 @@ export function TextFieldFrame<P extends TextFieldFrameOwnProps>({
   const autoId = useId();
   const controlId = id ?? autoId;
   const errorId = `${controlId}-error`;
+  const labelId = label ? `${controlId}-label` : undefined;
   const hasError = Boolean(error);
 
   const {
@@ -117,6 +128,7 @@ export function TextFieldFrame<P extends TextFieldFrameOwnProps>({
       'aria-describedby': clsx(describedBy, hasError && errorId) || undefined,
     },
     rest as Omit<P, keyof TextFieldFrameOwnProps | 'rootClassName' | 'children'>,
+    { labelId },
   );
 
   return (
@@ -134,7 +146,7 @@ export function TextFieldFrame<P extends TextFieldFrameOwnProps>({
       style={{ ...scaleStyle, ...style }}
     >
       {label && (
-        <FieldLabel as="label" htmlFor={controlId} isRequired={isRequired}>
+        <FieldLabel as="label" id={labelId} htmlFor={controlId} isRequired={isRequired}>
           {label}
         </FieldLabel>
       )}

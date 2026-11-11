@@ -1,0 +1,141 @@
+/*
+ * Calendar: a header (previous, the name, next) over a grid of round cells. `size` is
+ * _shared/Size.module.css, as Pagination's: it sets font-size, and everything here is in em. The cells
+ * (a day, a month, a year) are _shared/RoundControl.module.css, with the three color hooks from
+ * Calendar's tokens below; this file is the layout, and what a calendar adds to a round cell.
+ */
+
+.root {
+  display: block;
+  /* Seven cells and the gaps between them, no wider: the calendar is a thing of one size */
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  color: CanvasText;
+  --control-background-hover: var(--color-calendar-background-hover);
+  --control-background-current: var(--color-calendar-background-current);
+  --control-text-current: var(--color-calendar-text-current);
+}
+
+.header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.25em;
+  margin-block-end: 0.5em;
+}
+
+.titleSlot {
+  display: grid;
+  justify-items: center;
+}
+
+/* The name is a pill: it is pressable (it opens the months), and a pill is what a long label of a round
+   cell looks like. The hover growth is gentler than a day's, since it is a wide thing. */
+/* `.root .title`, not `.title`: it sets padding that RoundControl's cell sets too, at the same
+   specificity, and the order the files load in must not decide which wins. Likewise `.outside`. */
+.root .title {
+  --control-hover-scale: 1.04;
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  padding-inline: 0.75em;
+  font-weight: var(--weight-more);
+  white-space: nowrap;
+}
+/* The ⌄ that says the name opens something (Select's and Collapsible's). Not on the years page, whose
+   name is static. */
+.titleChevron {
+  flex: none;
+  width: 1em;
+  height: 1em;
+}
+/* The years page has nothing to open: the same type, no pill */
+.titleStatic {
+  display: grid;
+  place-items: center;
+  block-size: 2.25em;
+  padding-inline: 0.75em;
+  font-weight: var(--weight-more);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.nav {
+  color: inherit;
+}
+
+/* The previous / next arrows point the way the text reads, so a right-to-left page flips them */
+.arrow {
+  display: grid;
+  place-items: center;
+}
+.root:dir(rtl) .arrow {
+  transform: scaleX(-1);
+}
+
+/* --- days --- */
+
+.days {
+  border-collapse: separate;
+  /* Cells touch; the gap between days is the space inside the cell's round fill */
+  border-spacing: 0;
+  table-layout: fixed;
+  /* Seven columns of 2.5em: the months and years grids are this wide too */
+  inline-size: 17.5em;
+}
+.days th,
+.days td {
+  padding: 0;
+  text-align: center;
+}
+
+.weekday {
+  block-size: 2em;
+  font-size: 0.8em;
+  font-weight: var(--weight-more);
+  color: var(--color-text-less);
+  /* Short names are 2 to 3 letters in most locales; don't let a long one widen the column */
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+/* A cell fills its column, so the round fill is the column's width */
+.cell {
+  inline-size: 100%;
+}
+
+/* The days of the months either side: there to fill the weeks, so quieter than the month's own */
+.root .outside {
+  color: var(--color-text-less);
+}
+
+/* Today: a ring in the strong brand color (the plain primary is too pale to read as a line). The fill of
+   the chosen date covers the ring, so today chosen is just filled (the cell says which, as the fill's
+   class belongs to RoundControl). A fixed finish, not a token. */
+.today {
+  box-shadow: inset 0 0 0 0.09em var(--color-primary-strong);
+  font-weight: var(--weight-more);
+}
+.dayCell[aria-selected='true'] .today {
+  box-shadow: none;
+}
+
+/* --- months and years --- */
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* The width of the days grid (7 × 2.5em), split by three */
+  inline-size: 17.5em;
+  gap: 0.25em 0.5em;
+  /* As tall as the days grid, so opening the months doesn't move what is under the calendar: the 2em
+     weekday row and six rows of 2.25em */
+  min-block-size: 15.5em;
+  align-content: space-between;
+}
+
+@media (forced-colors: active) {
+  .today {
+    outline: 1px solid CanvasText;
+  }
+}

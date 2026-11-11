@@ -25,6 +25,11 @@ afterEach(() => {
 });
 
 describe('Popover', () => {
+  it('puts a className on the panel, after its own', () => {
+    renderPopover({ className: 'mine', defaultIsOpen: true });
+    expect(panel()?.classList.contains('mine')).toBe(true);
+  });
+
   describe('opening and closing', () => {
     it('is closed until the trigger is pressed, and then pressing it again closes it', () => {
       renderPopover();

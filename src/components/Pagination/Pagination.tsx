@@ -3,6 +3,7 @@ import { clsx } from '@/utils/clsx';
 import { resolveScaleProps } from '@/utils/scale';
 import type { ScaleProp } from '@/types/scale';
 import { ChevronIcon } from '../_shared/ChevronIcon';
+import round from '../_shared/RoundControl.module.css';
 import sizes from '../_shared/Size.module.css';
 import { useLinkProps } from '../_shared/useLinkProps';
 import { getPageSlots } from './pageSlots';
@@ -231,7 +232,7 @@ export const Pagination = forwardRef<HTMLElement, PaginationProps>(function Pagi
             {...control}
             page={current - 1}
             label={previous}
-            className={clsx(styles.control, styles.previous)}
+            className={clsx(round.control, styles.control, styles.previous)}
             isEdge={current === 1}
           >
             <ChevronIcon className={styles.chevron} />
@@ -244,7 +245,7 @@ export const Pagination = forwardRef<HTMLElement, PaginationProps>(function Pagi
                 {...control}
                 page={slot}
                 label={pageLabel(slot)}
-                className={clsx(styles.control, slot === current && styles.current)}
+                className={clsx(round.control, styles.control, slot === current && round.current)}
                 isCurrent={slot === current}
               >
                 {slot}
@@ -262,7 +263,7 @@ export const Pagination = forwardRef<HTMLElement, PaginationProps>(function Pagi
             {...control}
             page={current + 1}
             label={next}
-            className={clsx(styles.control, styles.next)}
+            className={clsx(round.control, styles.control, styles.next)}
             isEdge={current === count}
           >
             <ChevronIcon className={styles.chevron} />

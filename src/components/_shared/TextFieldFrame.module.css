@@ -95,7 +95,10 @@
 .field > .control[readonly] {
   padding-inline-end: var(--field-end-room);
 }
-.control[readonly]:focus-visible {
+.control[readonly]:focus-visible,
+/* A box that holds the focused element (DateField's segments): the rule above can't match it, and
+   the one that draws the border outranks it unless this has the same weight */
+.control[readonly]:has(:focus-visible) {
   box-shadow: inset 0 0 0 2px transparent;
 }
 

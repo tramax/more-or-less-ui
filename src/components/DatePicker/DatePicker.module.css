@@ -1,0 +1,21 @@
+/*
+ * DatePicker: the field is DateField's (and through it TextFieldFrame's), the popup is Popover's, and the
+ * calendar is Calendar. What is here is the room the popup needs and the row of presets under the calendar.
+ * Everything is in em, so `size` follows into the popup, which is a DOM child of the field's root even
+ * though the Popover API shows it in the top layer.
+ */
+
+/* A calendar and a row of presets are taller than a Popover's usual 24em before it scrolls. A hook of
+   Popover's, not a rule against its `max-height`: the two classes are the same specificity. */
+.popup {
+  --popover-max-height: none;
+}
+
+/* Shortcuts, centred under the days, wrapping if there are many */
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5em;
+  margin-block-start: 0.75em;
+}

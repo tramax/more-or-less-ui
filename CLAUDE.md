@@ -36,14 +36,16 @@ same recipe is defined under two names.
 
 - `components/_shared/` holds CSS shared by several components (`OptionGroup`: Checkbox + Radio).
 - Components set `--option-*` style hooks on their root from their own tokens, and shape only their control.
-- `_shared/TextFieldFrame` is the frame of a single-control field (TextField, Textarea, Select, Slider, FileUpload): root, `size`,
+- `_shared/TextFieldFrame` is the frame of a single-control field (TextField, Textarea, Select, Slider, FileUpload, DateField): root, `size`,
   label, error message, and the id / `aria-invalid` / `aria-describedby` wiring. A component passes it
   its props and renders only its control (`<input>`, `<textarea>`) from what the frame hands back; it
   sets the `--field-*` color hooks from its own tokens on its root class.
   Slider ignores the `className` it hands back (a text field's filled box) and draws its own control;
   FileUpload puts it on its drop zone, a box that holds the focused input, as Select's box of chips does.
   Its `end` slot (with `endCount`) puts `IconButton`s inside the field at the inline end and leaves the control
-  room for them; TextField's password reveal and number steppers use it.
+  room for them; TextField's password reveal and number steppers, and DatePicker's calendar button, use it.
+  A control that is not a labelable element (DateField's group of segments) takes the label's id from the
+  frame's third argument, `{ labelId }`, and names itself with `aria-labelledby`.
 - `_shared/FieldError` is the error message + icon for every field and group. Pass spacing through
   `className`; a new input component renders it rather than its own `<p>` and `<svg>`.
 - `_shared/FieldLabel` is the visible name (a `<label>` for TextField, a `<legend>` for groups) with
@@ -69,8 +71,10 @@ same recipe is defined under two names.
   and a dash for `isIndeterminate`), used by Checkbox's options and Table's row selection. Its tick color is
   `--color-checkbox-check` for every caller; the label and row around it are the caller's.
 - `_shared/IconButton` is the round icon button (disc on hover, shrink on press): the consumer passes `label`,
-  `icon` (a component taking `className`), `onClick` and spacing through `className`. `_shared/CloseButton` is
-  it with the ×, for Banner's and Toast's dismiss and Dialog's close; TextField's reveal and steppers use it.
+  `icon` (a component taking `className`), `onClick` and spacing through `className`; it takes a `ref` and the other
+  button attributes, so an overlay can clone it as its trigger (DatePicker's calendar button in a `Popover`).
+  `_shared/CloseButton` is it with the ×, for Banner's and Toast's dismiss and Dialog's close; TextField's reveal
+  and steppers use it.
 - `_shared/Gap` is the `gap` scale (classes + `resolveGap`) for Stack and Grid, which both render a Box
   for padding and margin. A new layout component takes `gap` from it rather than its own classes.
 - `_shared/OptionGroupFrame` is the frame of a group of options (Checkbox, Radio, SegmentedControl): the
@@ -88,6 +92,19 @@ same recipe is defined under two names.
   `size` (Spinner, Progress, Toast, Tabs) passes it to `resolveScaleProps` instead of copying the classes.
 - `_shared/Ring` is the ring's drawing (viewBox, radius, stroke width, `pathLength` 100) for Spinner's
   arc and Progress's track and arc. A new circular mark takes it rather than its own SVG numbers.
+- `_shared/RoundControl.module.css` is the round pressable cell (Pagination's pages, Calendar's days, months
+  and years): size, hover spring, press shrink, the fill that pops in on the current one. The component
+  sets `--control-background-hover`, `--control-background-current` and `--control-text-current` from its
+  own tokens, and adds only what is its own (Pagination's chevron). A new row of round choices takes it.
+- `_shared/dateValue` is every date and time value (`LocalDate`, `LocalTime`, `LocalDateTime`, `LocalMonth`:
+  local strings, never a `Date` or an instant), their parsers and formatters, and `toDate` / `fromDate` /
+  `toInstant` / `fromInstant` / `today`. A date or time component takes its values from it, validates
+  with it (`warnIfNotLocal`) and does not parse dates itself. `Calendar/calendarMath` is the date
+  arithmetic (`addDays`, `addMonths`, `getMonthGrid`, ...); the next date component imports it from
+  there, and moves it to `_shared/` if a component outside the family needs it (`isUnavailable`, the
+  min / max / disabled test, is already used by DatePicker's presets). `DateField/segments` is the typed
+  date's logic (the locale's order, typing, stepping, pasting); `DateField` is the field and `DatePicker`
+  adds the calendar button and a `Popover`, so a date input takes the field rather than its own segments.
 - `_shared/Placeholder` is what text and pictures look like inside `aria-busy="true"`: the one recipe
   for loading (there is no `Skeleton` component or `isLoading` prop). A component puts
   `placeholder.placeholder` on the part that becomes a block and has nothing else to write. A new

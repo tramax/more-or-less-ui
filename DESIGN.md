@@ -1794,6 +1794,7 @@ type PopoverProps = ({ 'aria-label': string } | { 'aria-labelledby': string }) &
   isOpen?: boolean; // controlled; pair with onOpenChange
   defaultIsOpen?: boolean; // starts open, when uncontrolled
   onOpenChange?: (isOpen: boolean) => void;
+  className?: string; // on the panel; for `--popover-max-height` (default 24em, past which it scrolls)
 };
 ```
 
@@ -2530,7 +2531,7 @@ text, as Chip's selected pair; `themes.css` overrides both, and a test fails if 
   and next show only a chevron and are named by `labels`.
 - **Labels are one object**, not three flat props, so the prop list stays short; the other components
   take only `aria-label`, which this still has for the landmark.
-- **Look.** A control 2.25em high (and at least as wide, so "1000" grows it) with a radius of half that, so
+- **Look** (now `_shared/RoundControl.module.css`, shared with Calendar's cells). A control 2.25em high (and at least as wide, so "1000" grows it) with a radius of half that, so
   a single digit is a circle and "100" a pill: round arcs as a chip's ends, not the squircle of Button and
   Card. Flat, no shadow. In `forced-colors` the current page gets a `Highlight` outline, since its
   background is dropped. The row wraps on a narrow screen. Digits are tabular.
@@ -2775,6 +2776,354 @@ arrow, the placeholder blocks).
 
 ---
 
+### Calendar
+
+```tsx
+type CalendarView = 'days' | 'months' | 'years';
+
+type CalendarLabels = {
+  previous?: (view: CalendarView) => string; // default: 'Previous month' | 'Previous year' | 'Previous years'
+  next?: (view: CalendarView) => string; // default: 'Next month' | 'Next year' | 'Next years'
+};
+
+type CalendarProps = Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'onChange' | 'color' | 'children' | 'defaultValue'
+> & {
+  size?: ScaleProp; // font-size; the cells and gaps follow it; default 'normal'
+  value?: LocalDate | null; // controlled; null is none
+  defaultValue?: LocalDate | null; // uncontrolled
+  onChange?: (value: LocalDate) => void; // the date pressed, also when it is the chosen one again
+  min?: LocalDate;
+  max?: LocalDate;
+  isDateDisabled?: (date: LocalDate) => boolean;
+  isDisabled?: boolean; // nothing can be pressed
+  visibleMonth?: LocalMonth; // controlled month shown: '2026-11'
+  defaultVisibleMonth?: LocalMonth;
+  onVisibleMonthChange?: (month: LocalMonth) => void;
+  firstDayOfWeek?: Weekday; // 0 (Sunday) to 6; default: the locale's, or Monday where the browser can't say
+  locale?: string; // names of months and days; default the browser's
+  labels?: CalendarLabels; // another language for the previous / next buttons
+  'aria-label'?: string; // default 'Calendar'; aria-labelledby replaces it
+};
+```
+
+A month of days to choose one from, drawn in place (on a page, or in a Popover). It holds a date; it is not a
+field, and does not type (that is `DateField`). It is the shared core of the date and time family (see
+Phase 3b), built first because `DatePicker`, `DateTimePicker` and `DateRangePicker` all put one in a popup.
+
+Closest sibling is **Pagination**, on the cell: a round pressable thing in em, with nothing behind it until
+the pointer is on it and the brand color behind the current one. That recipe was Pagination's own CSS; with
+Calendar as its second consumer it moved to `_shared/RoundControl.module.css`, which both use. A consumer
+sets three hooks on its own class from its own tokens (`--control-background-hover`, `-current`,
+`--control-text-current`) and adds what is its own (Pagination's chevron). **Shared:** that;
+`_shared/Size.module.css` for `size`; `_shared/useControlledState` for `value`; `_shared/IconButton` for
+the previous and next buttons, with arrows drawn on `StrokeIcon`'s shell (flipped under `:dir(rtl)`);
+`_shared/dateValue` for every value. **New:** the date grid and its keyboard, the date math
+(`Calendar/calendarMath.ts`: whole days counted on UTC dates, so no daylight saving shift makes a day 23 or
+25 hours), and the three views. It adds three alias tokens, as Pagination's: `--color-calendar-background-hover`
+(the field's stronger tint), and `--color-calendar-background-current` with `--color-calendar-text-current`
+(the brand color and its text; `themes.css` overrides both).
+
+- **Values are local strings.** `value`, `min`, `max` and what `onChange` gives are `LocalDate`
+  (`'2026-11-11'`), never a `Date` and never an instant (see
+  [Date and time values](#date-and-time-values)). A value that is not one (a string with `Z`, `'2026-02-30'`)
+  shows as none and logs an error in development that names the fix. A bad `value` is still controlled:
+  it is not "uncontrolled", so a press cannot type over it.
+- **`value` / `defaultValue` / `onChange`**, as Slider, and `null` for none. A chosen date set from outside
+  (a field beside the calendar) brings the calendar to its month, unless the parent owns the month.
+- **The month shown** is widget-local state, so it has `visibleMonth` / `defaultVisibleMonth` /
+  `onVisibleMonthChange` (as Popover's `isOpen` / `defaultIsOpen` / `onOpenChange`), not a required
+  controlled prop. Uncontrolled it is the month of the date the keyboard is on. Controlled, a press of the
+  buttons only reports: nothing moves until the parent passes the new month. That is what lets two calendars
+  one month apart move together (the `TwoMonths` story, and the heart of `DateRangePicker`).
+- **Six weeks, always,** so the calendar is one height. The days of the months either side fill the first
+  and last rows, dimmed; pressing one chooses it and turns the page. One date is in the tab order (roving
+  tabindex): the chosen one, else today, else the first of the month.
+- **Three views.** The name in the header ("November 2026") opens the months of that year; the year in
+  that opens a page of twelve years; picking a year goes to its months, picking a month to its days. A
+  birthday decades back is three presses, where the days alone are a hundred and fifty. The month and year
+  grids browse with their own cursor and do not move the month shown until one is picked, so
+  `onVisibleMonthChange` is not called for every arrow. The previous and next buttons mean a month, a year
+  or twelve years, by view (`labels` names each). The grid keeps the days grid's height, so opening it moves
+  nothing below.
+- **Keyboard** (the APG date picker grid). Days: arrows move a day or a week (and turn the page at the
+  edge; reversed in a right-to-left layout), Home and End the start and end of the week, Page Up and Down a
+  month (a year with Shift; the 31st lands on the last day of a shorter month), Enter and Space choose.
+  Months and years: arrows move 1 and 3 (the grid is three wide), Page Up and Down a year or a page,
+  Home and End the first and last. Escape goes back a view and is spent there (it does not reach a
+  Popover around the calendar), so a second Escape closes the popup. Moving by key does not choose.
+- **Limits.** `min`, `max` and `isDateDisabled` dim a date (`aria-disabled`, not `disabled`) and a press
+  does nothing, but the keyboard still passes over it, as the pattern asks. The keyboard cannot leave
+  `min`..`max`. The previous and next buttons stop at the limit, and a month or year with no choosable
+  date is dimmed in its grid.
+- **Accessibility.** A `role="group"` named by `aria-label` (default `Calendar`). The days are a
+  `role="grid"` named by the header; weekday column headers carry the full name in `abbr`; each cell is a
+  `gridcell` with `aria-selected` holding a button named with the full date ("Wednesday, November 11,
+  2026"), `aria-current="date"` for today. The header is an `aria-live="polite"` region, so turning the page
+  says which month it turned to. Month and year cells are a `role="group"` of buttons with
+  `aria-current="true"` on the one in view.
+- **Look.** The cells are RoundControl's (2.25em high, round, the spring on hover and the shrink on press,
+  the fill that pops in on the chosen one). Today is a ring in `--color-primary-strong` (the plain primary is
+  too pale to read as a line), gone under the fill when it is chosen; in `forced-colors` it is an
+  outline. The header name is a pill that grows less on hover (1.04) than a day, since it is wide, and it
+  ends in a ⌄ (`_shared/ChevronIcon`) because it is pressable and nothing else would say so; the years page's
+  name is static and has none. The
+  weekday row is quiet (`--color-text-less`). All em, so `size` scales it. The text is `Intl`'s, from `locale`.
+- **`firstDayOfWeek`** defaults to the locale's, from `Intl.Locale`'s `getWeekInfo()` (`weekInfo` in older
+  Chrome and Safari). Where the browser has neither (Firefox, for now), Monday.
+
+**Not yet:** a range highlight and per-day rendering (needed by `DateRangePicker`: it will take a `range`
+and the hover preview), week numbers, showing several months in one calendar, animating the page turn, a
+Today shortcut, a `disabledMonths` shorthand, non-Gregorian calendars. The previous and next buttons use
+native `disabled` at a limit, so a keyboard user pressing one to its end loses focus to the body (Pagination
+avoids it with `aria-disabled`; `IconButton` has no such mode yet). **Not yet checked by eye:** the
+layout and motion were written from the CSS and tested in jsdom, which has no layout, no hover and no
+`Intl` week data beyond Node's; look at it in Storybook (all three sizes, dark, a right-to-left `locale`
+page) before relying on it.
+
+### DateField
+
+```tsx
+type DateFieldLabels = {
+  day?: string; // what a screen reader says on the segment; default 'Day'
+  month?: string; // 'Month'
+  year?: string; // 'Year'
+  empty?: string; // for a segment with nothing in it; default 'empty'
+};
+
+type DateFieldPlaceholders = { day?: string; month?: string; year?: string }; // default 'dd' 'mm' 'yyyy'
+
+type DateFieldProps = Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'onChange' | 'defaultValue' | 'color' | 'role' | 'children' | 'placeholder'
+> &
+  NameProps & {
+    size?: ScaleProp; // default 'normal'
+    label?: string;
+    error?: string; // marks it invalid and shows this message
+    name?: string; // a hidden input submits the date, '1988-03-14', or '' for none
+    value?: LocalDate | null; // controlled; null is none
+    defaultValue?: LocalDate | null; // uncontrolled
+    onChange?: (value: LocalDate | null) => void; // a date once the three segments spell one; null when they stop
+    locale?: string; // the order of the segments and the separators; default the browser's
+    labels?: DateFieldLabels;
+    placeholders?: DateFieldPlaceholders;
+    isDisabled?: boolean;
+    isReadOnly?: boolean;
+    isRequired?: boolean;
+  };
+```
+
+A date typed into three segments (day, month, year, in the order the locale writes them) in one field. It
+is the birthday case: a date you know by heart and that is decades back, where a calendar is a hundred and
+fifty clicks and three dropdowns are three opens. There is no popup; `DatePicker` adds one. Forwards its ref
+to the first segment, the one the label points at.
+
+Closest sibling is **TextField**, through `_shared/TextFieldFrame`: root, `size`, label, error message, and
+the id / `aria-invalid` / `aria-describedby` wiring. The control is a `role="group"` box (the frame's
+`.control` class on a `<div>`, as Select's multiple field and FileUpload's zone), so the fill, the hover
+and the focus border are the frame's; the frame shows focus on the box when a segment inside has it
+(`:has(:focus-visible)`). **Shared:** the frame, `_shared/useControlledState` for `value`,
+`_shared/dateValue` for every value (a `LocalDate`, validated with `warnIfNotLocal`; a string with a zone
+shows as none and logs an error that names `fromInstant`). **New:** the segments (`DateField/segments.ts`
+is their logic: the locale's layout, typing, stepping, pasting, with its own tests) and
+the look of a segment. The field's fill is the shared `--color-field-background*` with no DateField alias (every
+field looks the same, so there is nothing to customise on its own). It adds only
+`--color-datefield-segment-background-active` with `--color-datefield-segment-text-active` (the brand color
+and its text, as Calendar's chosen day; `themes.css` overrides both). The frame gave the label an id and a
+third argument to its `children` (`{ labelId }`), because a group is named by `aria-labelledby` where an
+input is named by a `<label for>`; the first segment also carries the frame's `id`, so a press on the label
+enters it.
+
+- **Segments are inputs, not spans.** Three real `<input inputMode="numeric">`: the numeric keyboard on a
+  phone, a caret and selection that the platform draws, autofill, IME. Each is `role="spinbutton"` with
+  `aria-valuemin` / `-max` / `-now` / `-text` and a name from `labels` ("Day"), so a screen reader says "Day,
+  spin button, 14". The separators between them are `aria-hidden` text. `aria-invalid` and
+  `aria-describedby` are on every segment, since a group is not announced again as focus moves inside it.
+- **Order and separators are the locale's**, from `Intl.DateTimeFormat(locale).formatToParts` (month, day,
+  year in the US; year, month, day in Japan; `.` in Germany; `. ` in Korea, space kept). A locale the
+  browser doesn't know gets day / month / year with `/`. The digits are Latin, in every locale.
+- **Typing.** A digit goes into the segment and, when nothing more could follow, focus moves on by itself:
+  a day typed `4` is `04` at once (there is no `4x`), `3` waits for a second digit, `35` is no day so the 5
+  starts again as `05`, `00` is ignored; a year takes four digits. Entering a segment starts it afresh, so
+  there is nothing to select first. `14031988` types a whole date. A one-digit segment is padded when it
+  loses focus (`3` becomes `03`). Letters are ignored; a separator (`/`, `.`, `-`, space) finishes the
+  segment as it would on paper. A phone's keyboard, which sends no keys, goes through `onChange` and ends up
+  in the same place.
+- **Keys.** Up and Down step a segment: a day and a month wrap (31 → 1, 12 → 1), a year stops at 1 and
+  9999, and a day stops at the end of the month once month and year are known; an empty segment takes
+  today's, whichever key, as the native input does. Left and Right move between segments (reversed in a
+  right-to-left layout, and not past the ends). Backspace and Delete clear the segment, and Backspace in an
+  empty one goes back to the one before. Anything with Ctrl, Meta or Alt is left to the browser (paste,
+  and Alt+Down, which `DatePicker` uses to open).
+- **Paste** takes a date in one go: ISO (`1988-03-14`) or three numbers in the locale's order
+  (`14.03.1988`). Two-digit years are refused, not guessed; anything else is ignored.
+- **What `onChange` gives** is a `LocalDate` the moment the three segments spell one, and `null` when they
+  stop (cleared, unfinished, or a day that doesn't exist: 31 February). It does not say which; the caller
+  validates when the user leaves the field and says so with `error`, as for TextField. The one thing the
+  field marks itself is a complete but impossible date: every segment gets `aria-invalid`.
+- **Controlled** means what it does elsewhere, and it is strict: the segments are what is typed, and when
+  `value` and the typed date disagree, `value` wins, so a parent that does not take a change gets the old
+  date back. A parent that sets `value` to `null` empties the segments; a half-typed date in a field whose
+  `value` is already `null` is kept.
+- **Focus events** are the field's, not each segment's: `onFocus` and `onBlur` are called when focus enters
+  and leaves the group, not when it moves from day to month. A press on the field's padding enters the first
+  segment.
+- **Look.** The field is TextField's (same height, fill and hover). The segments are bare, in tabular
+  figures, as wide as their placeholder ("yyyy"); the one with the keys has the brand color behind its text
+  (the native date input's way), since the box's focus border can't say which of three. The placeholder is
+  the dimmed text of the others. In `forced-colors` the focused segment is an outline. Read-only is the
+  frame's plain text, no mark of focus, out of the tab order; disabled is the frame's.
+- **`DateFieldBase`** is the same component with an `end` slot (buttons inside the field, as the password
+  reveal), which `DatePicker` fills with its calendar button. It is not exported from the package:
+  `DateField` is it without the slot.
+
+**Not yet:** `min` / `max` (what is typed is the caller's to check; `DatePicker` limits only its
+calendar), a message the field writes itself ("Not a real date"), month names as a segment (`14 March 1988`),
+two-digit years, Home / End and Page Up / Down on a segment, non-Latin digits, non-Gregorian calendars.
+**Not yet checked by eye:** the look was written from the CSS and tested in jsdom; look at it in Storybook
+(all three sizes, dark, the locales, read-only) before relying on it.
+
+### DatePicker
+
+```tsx
+type DatePreset = { label: string; value: LocalDate };
+
+type DatePickerLabels = DateFieldLabels &
+  CalendarLabels & {
+    calendar?: string; // the button that opens the calendar, and its popup; default 'Choose date'
+  };
+
+type DatePickerProps = Omit<DateFieldProps, 'labels'> & {
+  min?: LocalDate; // the calendar's and the presets' limits, not the typing's
+  max?: LocalDate;
+  isDateDisabled?: (date: LocalDate) => boolean;
+  firstDayOfWeek?: Weekday; // default: the locale's
+  presets?: DatePreset[]; // shortcuts under the calendar
+  labels?: DatePickerLabels;
+  isOpen?: boolean; // controlled; pair with onOpenChange
+  defaultIsOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
+};
+```
+
+A `DateField` with a calendar button at its end that opens a `Calendar` in a popup: the date near today
+(a booking, a due date), where seeing the month helps and typing is the shortcut. Either way sets the same
+value, and the open calendar follows what is typed. Choosing a day, or a preset, closes it. Props are
+`DateField`'s plus the calendar's (`min`, `max`, `isDateDisabled`, `firstDayOfWeek`; `locale` and `size` go
+to both) and `presets`.
+
+Closest sibling is **DateField** (it renders `DateFieldBase`), then **Popover**, which it uses as it is,
+and **TextField** for the button in the field. **Shared:** the field, the label, the error and the value
+handling are DateField's; the button is `_shared/IconButton` in the frame's `end` slot, as the password
+reveal; the popup, its focus return, Escape and outside press, and its placement are Popover's
+(`align="end"`, anchored on the button, which is the Popover's trigger); the days are Calendar; the presets
+are selectable `Chip`s. **New:** the calendar icon (`DatePicker/CalendarIcon.tsx`, on `StrokeIcon`'s
+shell) and the wiring. It adds no token: the field's are `--color-datefield-*`, the popup's is Popover's,
+the calendar's are Calendar's. What changed elsewhere for it: `IconButton` takes a `ref` and the other button
+attributes (Popover clones its trigger with `aria-expanded`, `aria-haspopup` and a ref; `onClick` now gets
+the event), `Popover` takes a `className` and its `max-height` is the hook `--popover-max-height` (a
+calendar and a row of presets are taller than 24em), and Calendar's "is this date unavailable" moved to
+`calendarMath` (`isUnavailable`) for the presets to use.
+
+- **The value lives in DatePicker**, not in the field: the calendar shows it too. The field below it is
+  always controlled by it. `value` / `defaultValue` / `onChange` are DateField's, with `null` for none.
+- **Opening.** The button, or Alt+Down in any segment (the date picker pattern), opens it; Escape (the
+  first one goes back a calendar view, as Calendar says, and the second closes), a press or focus outside,
+  and the button again close it. Opened by the person, focus goes to the day the calendar's keyboard
+  starts on (the chosen one, else today), so the next key walks the days. One that starts open
+  (`defaultIsOpen`) or is opened by the caller (`isOpen`) takes no focus from where the person is.
+  Closing with focus inside returns it to the button.
+- **`min`, `max` and `isDateDisabled` are the calendar's.** They dim days, months and years there and
+  disable a preset that is outside them. They do not stop typing: the field takes whatever date is typed,
+  as a text field takes text, and the caller checks it (`value < min` compares as dates do) and says so with
+  `error`. A date typed outside the limits shows as the chosen one, dimmed, in the calendar.
+- **Presets** are `{ label, value }` with a `LocalDate`, computed when you render (`today()`, never a
+  constant, or "Today" is the day the module loaded). A preset that is the value is pressed (`aria-pressed`).
+- **Size.** The calendar and the chips take the field's `size`, so the popup is the field's em; the popup is a
+  DOM child of the field's root though it is shown in the top layer.
+- **Labels.** `labels` is DateField's names, Calendar's `previous` / `next`, and `calendar`, the name of the
+  button and of the popup.
+- **Read-only and disabled** switch the button off, and Alt+Down does nothing.
+
+**Not yet:** a Today / Clear row of fixed buttons, closing on a press of the chosen day, limits on typing
+(see above), a time (that is `DateTimePicker`). **Not yet checked by eye:** the popup's placement and size,
+and the button in the field, were written from the CSS and tested in jsdom, which has no layout or anchor
+positioning; look at it in Storybook (all sizes, dark, near the bottom of the viewport, right-to-left)
+before relying on it.
+
+### Date and time values
+
+Not a component: the value types and helpers that the date and time family shares (`Calendar`,
+`DateField`, `DatePicker`, `TimeField`, `DateTimePicker`, `DateRangePicker`; see Phase 3b). Written first,
+because the mistake they invite is the same in all of them.
+
+```tsx
+type LocalDate = `${number}-${number}-${number}`; // '1988-03-14'
+type LocalTime = `${number}:${number}`; // '14:30'  (24 hours, minute resolution)
+type LocalDateTime = `${LocalDate}T${LocalTime}`; // '2026-11-11T14:30'
+```
+
+**A value is what the user read off a calendar or a clock. It is not a moment in time.** It has no time
+zone and never an offset or `Z`. The components take and give these strings, never a `Date`, and the
+names say "local" so that a prop reads wrong when it is fed an instant.
+
+**Instant vs local value.** An _instant_ is one exact moment on the world's timeline, the same for
+everyone: `'2026-11-11T13:30:00.000Z'` (the `Z` means UTC; `'2026-11-11T14:30:00+01:00'` is the same moment
+written with an offset). A _local value_ is only a reading of a clock, which is a different moment in each
+place: `'2026-11-11T14:30'` is 13:30 UTC if it is 2:30 pm in Paris and 19:30 UTC if it is 2:30 pm in New
+York, and the string is the same in both. Servers and databases usually store instants, because they are
+unambiguous; the pickers deal in local values, because that is all the user chose. The helpers below turn
+one into the other, and only a date **with** a time ever needs it.
+
+- **`LocalDate`** is a calendar date: a birthday, a due date. It is not an instant at all, so there is
+  nothing to convert; send it as it is (a `DATE` column, a `YYYY-MM-DD` field).
+- **`LocalTime`** is a reading of a wall clock (opening hours, an alarm). Send it as it is.
+- **`LocalDateTime`** is a wall-clock reading in some zone. A server that wants an instant needs that zone
+  from you, so the conversion is the developer's call, and the library offers it rather than hides it.
+
+**Helpers** (`_shared/dateValue.ts`, exported; no dependency, `Intl` only):
+
+| Helper                                            | Does                                                                                                               |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `toDate(value)`                                   | `LocalDate` (midnight) or `LocalDateTime` → a `Date` in the browser's zone, built from the parts                   |
+| `fromDate(date, kind?)`                           | a `Date` → `LocalDate` (default), or `'time'` → `LocalTime`, `'dateTime'` → `LocalDateTime`, in the browser's zone |
+| `toInstant(value, timeZone?)`                     | `LocalDateTime` → UTC ISO string with `Z`, in `timeZone` (default: the browser's)                                  |
+| `fromInstant(iso, timeZone?)`                     | an ISO instant (with `Z` or an offset), or a `Date` → `LocalDateTime`, the reverse; no zone in the string throws   |
+| `today(timeZone?)`                                | today's `LocalDate`; use it for `min` / `max` and the Today preset                                                 |
+| `isLocalDate` / `isLocalTime` / `isLocalDateTime` | type guards: the shape, and a day that exists                                                                      |
+
+They throw a `RangeError` for a value that is not valid (a day that doesn't exist, a string with a zone
+given to `toInstant`, a time zone that doesn't exist): a wrong date is worse than a loud one. The
+components, which take values from forms and servers, do not throw: they show none and log in
+development. The module also has the parsers and formatters the components use (`parseLocalDate`,
+`formatLocalDate`, `daysInMonth`, ...), which are not exported from the package.
+
+**What to tell developers** (Storybook "Sending to a server" story, one case per rule):
+
+1. **Sending a `LocalDateTime`:** `toInstant(value)` when the user meant their own zone. When the event
+   is somewhere else (a table at a restaurant in another city), the value is that place's wall clock:
+   `toInstant(value, 'Europe/Paris')`. The browser's zone is the wrong one then.
+2. **Receiving one:** `value={fromInstant(booking.startsAt, zone)}`, never `value={booking.startsAt}`. A
+   string with `Z` or an offset is not a `LocalDateTime`. The field shows empty and logs an error in
+   development that names `fromInstant` (it never guesses a conversion, which would show a wrong time).
+3. **Never `new Date('1988-03-14')`.** A date-only string is read as UTC midnight, so west of Greenwich it
+   is the 13th; `'1988-03-14T00:00'` is read as local time. Use `toDate`, which builds from the parts.
+4. **Never `date.toISOString().slice(0, 10)`** to get a `LocalDate` (it is the UTC date, so it is a day off
+   for a few hours each day). Use `fromDate`.
+5. **A time that does not exist** (02:30 on the day the clocks go forward) or happens twice (the day they
+   go back) is resolved as `Date` and Temporal's "compatible" mode do: forward over the gap, the earlier
+   of the two. A booking form can check with `fromInstant(toInstant(value, zone), zone) === value`.
+6. **Forms:** the hidden input behind `name` submits the same local string. A plain HTML form post therefore
+   sends a local value; convert on the server only if the zone is also sent.
+7. **Comparing:** two values of the same type compare correctly as strings. `min`, `max` and a range's
+   `start` / `end` are `LocalDate` (a range's `end` is the last day, inclusive).
+
+**Not yet:** seconds, a `Temporal` adapter, a `Date`-typed overload (left out on purpose: it would put the
+zone question back). Time zone conversion uses `Intl.DateTimeFormat`, so it is as good as the browser's
+zone database.
+
 ## Loading
 
 There is no `Skeleton` component and no `isLoading` prop. Loading is the **state of a region**: set
@@ -2994,9 +3343,12 @@ more-or-less-ui/
 │   │   ├── Link/           # Link + LinkProvider
 │   │   ├── Breadcrumb/
 │   │   ├── Pagination/
+│   │   ├── Calendar/       # + calendarMath (the grid and date arithmetic), DayGrid, ChoiceGrid (months and years)
+│   │   ├── DateField/      # + segments (the locale's layout, typing, stepping, pasting)
+│   │   ├── DatePicker/     # + CalendarIcon
 │   │   ├── Table/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio + SegmentedControl's frame, and Toggle's control; OptionGroupFrame: Checkbox + Radio + SegmentedControl (the fieldset, legend and error); useChoice: Radio + SegmentedControl (single-choice state); useControlledState: useChoice + FileUpload (controlled or kept here); SlidingThumb: Tabs + SegmentedControl; TextFieldFrame: TextField + Textarea + Select + Slider + FileUpload (its end slot: TextField's buttons); FieldError, FieldLabel, types: all fields; IconButton: CloseButton + TextField's reveal and steppers; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame) + FileUpload's remove; ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, FileUpload's zone and rows, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText + Table's cells, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination + Table; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckControl: Checkbox + Table's row selection (the box and tick); CheckIcon: Checkbox's control (through CheckControl) + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination + Table's sort arrow; useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio + SegmentedControl's frame, and Toggle's control; OptionGroupFrame: Checkbox + Radio + SegmentedControl (the fieldset, legend and error); useChoice: Radio + SegmentedControl (single-choice state); useControlledState: useChoice + FileUpload (controlled or kept here); SlidingThumb: Tabs + SegmentedControl; TextFieldFrame: TextField + Textarea + Select + Slider + FileUpload + DateField (its end slot: TextField's buttons, DatePicker's calendar button; `labelId` for DateField's group); FieldError, FieldLabel, types: all fields; IconButton: CloseButton + TextField's reveal and steppers + DatePicker's calendar button; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame) + FileUpload's remove; ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, FileUpload's zone and rows, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText + Table's cells, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination + Table; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckControl: Checkbox + Table's row selection (the box and tick); CheckIcon: Checkbox's control (through CheckControl) + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination + Table's sort arrow; RoundControl.module.css: Pagination + Calendar (the round pressable cell); dateValue: Calendar + DateField + DatePicker, and the date and time family after it (local value types, and the helpers to and from instants); useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx
@@ -3028,6 +3380,11 @@ export { Textarea } from './components/Textarea';
 export { Slider } from './components/Slider';
 export { FileUpload } from './components/FileUpload';
 export { Select } from './components/Select';
+export { Calendar } from './components/Calendar';
+export { DateField } from './components/DateField';
+export { DatePicker } from './components/DatePicker';
+// Date and time values (local strings, not instants) and the helpers to and from a server's
+export { toDate, fromDate, toInstant, fromInstant, today } from './components/_shared/dateValue';
 
 // Patterns
 export { createCompoundComponent } from './patterns/CompoundComponent';
@@ -3224,7 +3581,27 @@ item names its closest existing sibling, as CLAUDE.md asks, so the plan starts f
 - [x] `SegmentedControl` — Sibling: Radio (native radios in a `radiogroup`, controlled or uncontrolled), Tabs for the thumb and `size`. `options` (with an optional `icon`), `value` / `defaultValue` / `onChange`, `name`, `label`, `error`, `isDisabled`, `isRequired`, `size`; one value that applies at once (a quick filter, a view), not navigation (that is Tabs). Adds `--color-segmented-*` aliases of the field fill and the brand color, and extracted `_shared/OptionGroupFrame` (the third option group), `_shared/useChoice` and `_shared/SlidingThumb` (Tabs' thumb). See [SegmentedControl](#segmentedcontrol)
 - [x] `NumberInput`, password reveal — variants of TextField, not new components: `type="number"` with `hasSteppers`, and `type="password"` with `isRevealable`. Sibling: Select (buttons inside a field). Adds `TextFieldFrame`'s `end` slot, extracts `_shared/IconButton` from `CloseButton`, and no token. See [TextField](#textfield). Still to do: a `labels` prop, press-and-hold repeat, a unit suffix
 - [x] `FileUpload` — Sibling: Select and Slider (`TextFieldFrame` around a custom control), Progress / `CloseButton` / `OptionText` for the file rows. A drop zone over a native file input, and a list of the files. Form mode (files stay in the input and submit with the form) and upload mode (`uploadFile`, the consumer's function, called per picked file with a `signal` and `onProgress`; `onUploaded` gets its result; progress, done, error with Retry, removing aborts). `accept` / `maxSize` / `maxFiles` with `onReject`. Adds `--color-fileupload-*` aliases, `_shared/useControlledState` (extracted from `useChoice`) and `isDisabled` on `CloseButton`. See [FileUpload](#fileupload)
-- [ ] `DatePicker` (and Calendar) — the largest; last
+- [ ] The date and time family — the largest; last. Not one `DatePicker` with a `mode` prop: the four uses
+      (a birthday, a date near today, a date and time, a range) want different interactions and value types, so
+      they are small components over one `Calendar`. Values are local strings, never instants (see
+      [Date and time values](#date-and-time-values)). Order:
+  1. [x] `Calendar` — month grid, grid keyboard navigation, `min` / `max` / `isDateDisabled`, a header that jumps
+         to a month or year grid; usable inline. New: the grid and the date math. Sibling: Pagination, whose cell
+         recipe became `_shared/RoundControl.module.css` with this second consumer. Adds `--color-calendar-*`
+         aliases, `_shared/dateValue` and `_shared/RoundControl`. See [Calendar](#calendar)
+  2. [x] `DateField` — typed day / month / year segments in one field (locale order, auto-advance); the
+         birthday case, with no popup. Sibling: TextField through `TextFieldFrame`. New: the segmented input
+         (`DateField/segments.ts`). Adds two `--color-datefield-segment-*` tokens, and `labelId` from the frame. See [DateField](#datefield)
+  3. [x] `DatePicker` — `DateField` + a calendar button in the frame's `end` slot (as the password reveal) +
+         `Popover` and `Calendar`, with presets (Today, Tomorrow). Adds no token; `IconButton` takes a ref and the
+         other button attributes, `Popover` a `className` and a `--popover-max-height` hook. See [DatePicker](#datepicker)
+  4. `TimeField`, then `DateTimePicker` — typed `hh:mm`, and `step` adds a list of intervals (Select's
+     `OptionList` and `useTypeahead`); the popup is the calendar with the time list beside it
+  5. `DateRangePicker` — two `DateField`s in `OptionGroupFrame` + one `Calendar` + presets. The active
+     endpoint is explicit and shown (focusing a field makes it active; a calendar click sets that endpoint
+     only; with none set, start then end). A value that makes the range invalid sets the active endpoint,
+     clears the other and moves to it, never swapping silently. Hover previews the range. Later: dragging
+     the endpoints on the calendar
 
 **Data display:**
 

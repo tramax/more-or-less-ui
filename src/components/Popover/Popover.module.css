@@ -9,7 +9,8 @@
   --overlay-offset: 0.5em;
   width: max-content;
   max-width: min(24em, calc(100vw - 2em));
-  max-height: 24em;
+  /* A hook for a popover that holds something taller (DatePicker's calendar) */
+  max-height: var(--popover-max-height, 24em);
   overflow: auto;
   padding: 1em;
   background: var(--color-popover-background);

@@ -42,6 +42,11 @@ export type PopoverProps = PopoverName & {
   defaultIsOpen?: boolean;
   /** Called with the new state when the trigger, Escape or a press or focus outside changes it. */
   onOpenChange?: (isOpen: boolean) => void;
+  /**
+   * On the panel, for what a consumer may set on it: `--popover-max-height` (default `24em`, past which
+   * it scrolls). The look is the Popover's.
+   */
+  className?: string;
 };
 
 /**
@@ -62,6 +67,7 @@ export function Popover({
   isOpen,
   defaultIsOpen,
   onOpenChange,
+  className,
   ...name
 }: PopoverProps) {
   const overlay = useOverlay({
@@ -112,7 +118,7 @@ export function Popover({
           role="dialog"
           // Focusable by script, not by Tab: it is where focus lands, then Tab goes on into the content
           tabIndex={-1}
-          className={clsx(overlayClass(placement, align), styles.popover)}
+          className={clsx(overlayClass(placement, align), styles.popover, className)}
         >
           {children}
         </div>

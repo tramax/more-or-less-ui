@@ -1,0 +1,123 @@
+/*
+ * DateField: the frame, the `size` scale and the look of the field are shared with TextField, Select and
+ * the rest (_shared/TextFieldFrame). The control is a group, a box that holds the segments and the focused
+ * one among them, as Select's multiple field does. What is here is the colors, set as the hooks that
+ * module reads from this class, and what only a date field has: the segments.
+ *
+ * Everything is in em, so `size` follows into the segments.
+ */
+
+.root {
+  /* The shared field fills, with no DateField alias: every field looks the same, so there is nothing for
+     this one to customise on its own */
+  --field-background: var(--color-field-background);
+  --field-background-hover: var(--color-field-background-hover);
+  --field-background-error: var(--color-field-background-error);
+  --field-background-error-hover: var(--color-field-background-error-hover);
+}
+
+/* The segments in a row, as text would be. Clicking the padding enters the first (DateField.tsx). */
+.box {
+  display: flex;
+  align-items: center;
+  cursor: text;
+}
+
+.cell {
+  position: relative;
+  display: inline-grid;
+}
+/*
+ * Two hidden copies of text in the cell's one grid area, which the input fills: the placeholder ("mm", wider
+ * than two digits) and the digits it will hold ("00"). The cell is as wide as the wider, so an empty
+ * segment's placeholder is not cut off, and a segment does not change size as it is typed in. Both are
+ * set from the component (`data-hint`, `data-digits`), in the input's own font.
+ */
+.cell::before,
+.cell::after {
+  grid-area: 1 / 1;
+  padding: 0 0.125em;
+  font-variant-numeric: tabular-nums;
+  visibility: hidden;
+  white-space: pre;
+}
+.cell::before {
+  content: attr(data-hint);
+}
+.cell::after {
+  content: attr(data-digits);
+}
+
+/*
+ * A segment is a bare input. The frame's `.control` has no say over it: the fill and the focus border
+ * belong to the box, and the focused segment is marked inside it by the brand color behind its text
+ * (the native date input's way), since the border alone doesn't say which of three has the keys.
+ */
+.segment {
+  /* Out of flow, over the cell: the input's own width (twenty characters by default) must not size it */
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: 100%;
+  margin: 0;
+  padding: 0 0.125em;
+  border: 0;
+  border-radius: 0.25em;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  /* Digits of one width, so "11" is no wider than "88" */
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  /* A keystroke replaces the segment's text, so there is no place in it for a caret */
+  caret-color: transparent;
+  outline: 2px solid transparent;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+.segment::placeholder {
+  color: color-mix(in oklab, CanvasText 55%, transparent);
+}
+.segment:focus {
+  background: var(--color-datefield-segment-background-active);
+  color: var(--color-datefield-segment-text-active);
+}
+/* A placeholder on the brand color: the same text color, so it doesn't vanish */
+.segment:focus::placeholder {
+  color: inherit;
+  opacity: 0.7;
+}
+.segment:disabled {
+  cursor: not-allowed;
+}
+/* Read-only: plain text, with no mark of where the keys are (Tab skips it) */
+.segment[readonly] {
+  cursor: default;
+}
+.segment[readonly]:focus {
+  background: transparent;
+  color: inherit;
+}
+
+/* Text between the segments. Pre, so a locale's ". " keeps its space. */
+.literal {
+  color: var(--color-text-less);
+  white-space: pre;
+  user-select: none;
+}
+
+/* The brand color is dropped in forced colors, so the focused segment would not show */
+@media (forced-colors: active) {
+  .segment:focus {
+    outline-color: Highlight;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment {
+    transition: none;
+  }
+}

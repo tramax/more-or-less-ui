@@ -1,0 +1,141 @@
+/*
+ * A round pressable cell in em: Pagination's pages and Calendar's days, months and years. `size` is the
+ * consumer's font-size, so everything here follows it.
+ *
+ * The look is Chip's selectable pair in a quieter form: nothing behind the cell until it is under the
+ * pointer (the field's hover fill), and the brand color behind the current one. A cell is flat, no
+ * shadow, as a chip is. The motion is the system's: Button's spring on hover, Chip's shrinking press,
+ * and the thumb of Tabs and Toggle that pops in (here the current cell's fill).
+ *
+ * The consumer sets three hooks on its own class (from its own tokens), and adds whatever else is its
+ * own (Pagination's chevron):
+ *   --control-background-hover    the fill under the pointer
+ *   --control-background-current the fill of the current cell
+ *   --control-text-current        text on that fill
+ * and may set `--control-hover-scale` (default 1.1) for a cell that is wide.
+ * A cell is a <button> or an <a>; `current` goes on the one that is selected.
+ */
+
+.control {
+  /* The fill of the current cell is the ::before below, which sits behind the label: the cell is its
+     own stacking context so the fill stays inside it */
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  min-inline-size: 2.25em;
+  block-size: 2.25em;
+  margin: 0;
+  padding-block: 0;
+  padding-inline: 0.5em;
+  border: 0;
+  /* Half the height, so a single digit is a circle and "100" a pill: round arcs, as a chip's ends, and
+     not the squircle of Button and Card. Fixed, not a prop. */
+  border-radius: 1.125em;
+  background: transparent;
+  color: CanvasText;
+  /* A button doesn't inherit the font, and the em sizes here follow the `size` on the root */
+  font: inherit;
+  line-height: 1;
+  text-decoration: none;
+  /* Digits of one width, so "11" is no wider than "88" */
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  user-select: none;
+  /* Hover motion, as Button's: entering overshoots (--ease-enter) and settles; leaving is the plain
+     ease-out, so the cell doesn't dip below its size and wobble once the pointer has gone. This is
+     the leaving one, which is also what the cell returns on. */
+  transform: scale(1);
+  transition:
+    transform 400ms var(--ease-leave),
+    background-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+}
+
+/* The fill of the current cell. It grows from the middle of the cell with the pop curve, and the cell
+   that stops being current shrinks away on the same curve, so the brand color seems to move along the
+   row. A layer behind the label rather than the cell's own background, because a background can't
+   scale on its own. */
+.control::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--control-background-current);
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    transform 400ms var(--ease-pop),
+    opacity 150ms ease;
+}
+.control.current::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.control.current {
+  /* The base CanvasText is unreadable on a dark brand fill */
+  color: var(--control-text-current);
+  font-weight: var(--weight-more);
+}
+
+/* Gated on hover-capable pointers (touch would leave a cell stuck grown after a tap), and off for a
+   disabled one. The fill is a background, so the current cell, which has its own, takes none. */
+@media (hover: hover) {
+  .control:hover:not(:disabled, [aria-disabled='true']) {
+    transform: scale(var(--control-hover-scale, 1.1));
+    transition:
+      transform 500ms var(--ease-enter),
+      background-color 150ms ease,
+      color 150ms ease,
+      opacity 150ms ease;
+  }
+  .control:hover:not(.current, :disabled, [aria-disabled='true']) {
+    background: var(--control-background-hover);
+  }
+}
+
+/* Pressed: it settles below its size, quickly and without overshoot, so a press reads as one where
+   there is no hover (touch). After the hover rule, which it outranks by order; releasing springs back. */
+.control:active:not(:disabled, [aria-disabled='true']) {
+  transform: scale(0.95);
+  transition:
+    transform 120ms var(--ease-leave),
+    background-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+}
+
+.control:focus-visible {
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
+}
+
+.control:disabled,
+.control[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* In forced colors a background is dropped, so the current cell would look like the rest */
+@media (forced-colors: active) {
+  .control.current {
+    outline: 2px solid Highlight;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control,
+  .control::before {
+    transition: none;
+  }
+  /* The fill and the hover tint stay as the cues; nothing scales or springs */
+  .control:hover:not(:disabled, [aria-disabled='true']),
+  .control:active:not(:disabled, [aria-disabled='true']),
+  .control::before {
+    transform: none;
+  }
+}

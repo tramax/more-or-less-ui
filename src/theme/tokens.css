@@ -256,6 +256,19 @@
   /* Text on the current background; set with it, as Chip's (themes.css does) */
   --color-pagination-text-current: var(--color-on-primary);
 
+  /* Calendar: the same pair as Pagination's pages. A day, month or year has nothing behind it until the
+     pointer is on it (the field's stronger tint), and the chosen one is the brand color. */
+  --color-calendar-background-hover: var(--color-field-background-hover);
+  --color-calendar-background-current: var(--color-primary);
+  /* Text on the current background; set with it, as Pagination's (themes.css does) */
+  --color-calendar-text-current: var(--color-on-primary);
+
+  /* DateField (and DatePicker, which is one): the segment that has the keys, in the brand color as a
+     chosen day in Calendar. The field's own fill is the shared --color-field-background*, with no alias. */
+  --color-datefield-segment-background-active: var(--color-primary);
+  /* Text on the active segment; set with it, as Calendar's (themes.css does) */
+  --color-datefield-segment-text-active: var(--color-on-primary);
+
   /* Table: a row has nothing behind it until the pointer is on it (the field's fill) and a selected row
      has the stronger tint; the rules between rows are the shared hairline. The sort button under a
      header takes the field's stronger tint on hover, as Pagination's pages. A row's checkbox is
