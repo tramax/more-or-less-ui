@@ -1,7 +1,7 @@
 import { forwardRef, useState, type CSSProperties, type InputHTMLAttributes } from 'react';
 import type { ScaleProp } from '@/types/scale';
 import { TextFieldFrame } from '../_shared/TextFieldFrame';
-import type { NameProps } from '../_shared/types';
+import type { FieldNameProps } from '../_shared/types';
 import styles from './Slider.module.css';
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
@@ -24,7 +24,7 @@ export type SliderProps = Omit<
   | 'list'
   | 'children'
 > &
-  NameProps & {
+  FieldNameProps & {
     size?: ScaleProp;
     /** The value at the start of the track. */
     min?: number;

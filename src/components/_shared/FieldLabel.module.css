@@ -13,3 +13,31 @@
 .asterisk {
   color: var(--color-danger);
 }
+
+/* With a tooltip: the label and its ⓘ button side by side. The row is at the field's font-size, not the
+   label's 0.875em, because the tooltip is rendered inside it and follows it. */
+.row {
+  display: flex;
+  align-items: center;
+}
+
+/* The button is sized for the label beside it: a 1.5em hit area (24px at the default `size`, the WCAG 2.5.8
+   minimum) round a 0.75em icon. The negative block margin keeps the row the height of the text line
+   (about 1.1em), so a label with a tooltip doesn't push the field down. The hit area has about 0.375em of
+   empty space each side of the icon, so there is no row gap and a small negative inline margin: the icon
+   then sits a few pixels from the text. */
+.row > .help {
+  --icon-button-size: 1.5em;
+  --icon-button-icon-size: 0.75em;
+  margin-block: -0.2em;
+  margin-inline-start: -0.08em;
+  /* Quieter than the label, like a description, but well above the 3:1 a control needs (WCAG 1.4.11);
+     the field's own fill was tried and is too faint. Transparent text color, so it sits on any
+     surface in both themes. The hover disc is currentColor-based, so it follows. */
+  color: var(--color-text-less);
+}
+@media (hover: hover) {
+  .row > .help:hover {
+    color: var(--color-text-normal);
+  }
+}

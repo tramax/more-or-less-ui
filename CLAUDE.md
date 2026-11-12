@@ -51,7 +51,9 @@ fill tokens of their own and `_shared/TextFieldFrame` reads `--color-field-backg
 - `_shared/FieldError` is the error message + icon for every field and group. Pass spacing through
   `className`; a new input component renders it rather than its own `<p>` and `<svg>`.
 - `_shared/FieldLabel` is the visible name (a `<label>` for TextField, a `<legend>` for groups) with
-  its required asterisk. Spacing goes through `className`.
+  its required asterisk. Spacing goes through `className`. `tooltip` adds an ⓘ button (`IconButton` + `Tooltip`)
+  beside it; the frames pass it through, and a labelled input takes `FieldNameProps` (`_shared/types.ts`),
+  not `NameProps`, to have the prop.
 - `_shared/OptionList.module.css` is the surface and rows of a list of options in an overlay (Select's
   popup, Menu's panel); the component sets `--list-background` and `--list-active` from its own tokens.
   `_shared/optionNavigation` is `stepEnabled`, `findByPrefix` and `useTypeahead` for the keyboard.

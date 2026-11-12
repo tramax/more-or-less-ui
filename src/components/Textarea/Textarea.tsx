@@ -2,7 +2,7 @@ import { forwardRef, type TextareaHTMLAttributes } from 'react';
 import { clsx } from '@/utils/clsx';
 import type { ScaleProp } from '@/types/scale';
 import { TextFieldFrame } from '../_shared/TextFieldFrame';
-import type { NameProps } from '../_shared/types';
+import type { FieldNameProps } from '../_shared/types';
 import styles from './Textarea.module.css';
 
 // Exported for Storybook, which can't see defaults that aren't destructuring defaults
@@ -12,7 +12,7 @@ export type TextareaProps = Omit<
   TextareaHTMLAttributes<HTMLTextAreaElement>,
   'color' | 'disabled' | 'readOnly' | 'required'
 > &
-  NameProps & {
+  FieldNameProps & {
     size?: ScaleProp;
     /** Visible rows of text. The user can still resize it unless `resize` is `none`. */
     rows?: number;

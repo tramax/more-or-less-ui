@@ -61,6 +61,10 @@ type Story = StoryObj<typeof SegmentedControl>;
 
 export const Default: Story = {};
 
+export const WithTooltip: Story = {
+  args: { tooltip: 'Changes which items the list below shows.' },
+};
+
 /** With nothing selected there is no thumb; the first arrow key or click chooses. */
 export const NothingSelected: Story = {
   args: { defaultValue: undefined },

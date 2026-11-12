@@ -12,7 +12,7 @@ import { clsx } from '@/utils/clsx';
 import type { ScaleProp } from '@/types/scale';
 import { IconButton } from '../_shared/IconButton';
 import { TextFieldFrame } from '../_shared/TextFieldFrame';
-import type { NameProps } from '../_shared/types';
+import type { FieldNameProps } from '../_shared/types';
 import { EyeIcon, EyeOffIcon, MinusIcon, PlusIcon } from './FieldIcons';
 import styles from './TextField.module.css';
 
@@ -24,7 +24,7 @@ type TextFieldBaseProps = Omit<
   // `size` is the native character width, replaced by the scale prop
   'size' | 'color' | 'disabled' | 'readOnly' | 'required' | 'type'
 > &
-  NameProps & {
+  FieldNameProps & {
     size?: ScaleProp;
     /** Visible label above the field. Without it, pass `aria-label` or `aria-labelledby`. */
     label?: string;

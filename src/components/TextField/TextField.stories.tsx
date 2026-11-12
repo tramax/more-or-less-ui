@@ -78,6 +78,13 @@ export const Required: Story = {
   args: { isRequired: true },
 };
 
+export const WithTooltip: Story = {
+  args: {
+    label: 'Display name',
+    tooltip: 'Shown on your public profile. You can change it later.',
+  },
+};
+
 export const Invalid: Story = {
   args: { defaultValue: 'x', error: 'Name must be 2 characters or more' },
 };

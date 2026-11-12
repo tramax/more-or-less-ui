@@ -3,7 +3,7 @@ import { clsx } from '@/utils/clsx';
 import shared from '../_shared/OptionGroup.module.css';
 import { OptionGroupFrame } from '../_shared/OptionGroupFrame';
 import { OptionText } from '../_shared/OptionText';
-import type { NameProps, OptionBase } from '../_shared/types';
+import type { FieldNameProps, OptionBase } from '../_shared/types';
 import { useChoice } from '../_shared/useChoice';
 import styles from './Radio.module.css';
 
@@ -13,7 +13,7 @@ export type RadioProps = Omit<
   FieldsetHTMLAttributes<HTMLFieldSetElement>,
   'onChange' | 'disabled' | 'name' | 'defaultValue' | 'color' | 'role'
 > &
-  NameProps & {
+  FieldNameProps & {
     options: RadioOption[];
     /** Selected value (controlled). `null` is controlled with nothing selected. */
     value?: string | null;

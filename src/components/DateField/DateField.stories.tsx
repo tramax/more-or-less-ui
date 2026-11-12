@@ -70,6 +70,10 @@ type Story = StoryObj<typeof DateField>;
  */
 export const Default: Story = {};
 
+export const WithTooltip: Story = {
+  args: { tooltip: 'We use it to check your age, and never show it.' },
+};
+
 export const Size: Story = {
   parameters: showCode(
     VARIANTS.map(

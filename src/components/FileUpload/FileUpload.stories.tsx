@@ -64,6 +64,10 @@ type Story = StoryObj<typeof FileUpload>;
 /** Form mode: the files stay in the input and go with the form. Nothing is sent. */
 export const Default: Story = {};
 
+export const WithTooltip: Story = {
+  args: { tooltip: 'PDF or images, up to 5 MB each.' },
+};
+
 export const Size: Story = {
   parameters: comparison,
   render: () => (

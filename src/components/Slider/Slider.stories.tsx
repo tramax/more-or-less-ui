@@ -56,6 +56,10 @@ type Story = StoryObj<typeof Slider>;
 
 export const Default: Story = {};
 
+export const WithTooltip: Story = {
+  args: { tooltip: 'Applies to this device only.' },
+};
+
 export const Size: Story = {
   parameters: comparison,
   render: () => (

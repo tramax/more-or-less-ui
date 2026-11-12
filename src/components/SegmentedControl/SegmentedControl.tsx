@@ -6,7 +6,7 @@ import { OptionGroupFrame } from '../_shared/OptionGroupFrame';
 import { OptionIcon } from '../_shared/OptionIcon';
 import { SlidingThumb, useSlidingThumb } from '../_shared/SlidingThumb';
 import sizes from '../_shared/Size.module.css';
-import type { NameProps, OptionBase } from '../_shared/types';
+import type { FieldNameProps, OptionBase } from '../_shared/types';
 import { useChoice } from '../_shared/useChoice';
 import styles from './SegmentedControl.module.css';
 
@@ -34,7 +34,7 @@ export type SegmentedControlProps = Omit<
   FieldsetHTMLAttributes<HTMLFieldSetElement>,
   'onChange' | 'disabled' | 'name' | 'defaultValue' | 'color' | 'role' | 'children'
 > &
-  NameProps & {
+  FieldNameProps & {
     /** The segments, in order. Two to five fit; for more use Select. */
     options: SegmentOption[];
     /** Selected value (controlled). `null` is controlled with nothing selected. */

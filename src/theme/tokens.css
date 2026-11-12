@@ -124,7 +124,7 @@
      descriptions under an option and Select's empty message use it too, and this is the one place
      the recipe lives. The brand color itself is too pale to read on white (2.1:1), so `more` is the
      strong primary (see --color-primary-strong). */
-  --color-text-less: color-mix(in oklab, CanvasText 70%, transparent);
+  --color-text-less: color-mix(in oklab, CanvasText 50%, transparent);
   --color-text-normal: CanvasText;
   --color-text-more: var(--color-primary-strong);
 

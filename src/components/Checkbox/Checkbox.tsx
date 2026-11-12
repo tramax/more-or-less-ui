@@ -4,7 +4,7 @@ import shared from '../_shared/OptionGroup.module.css';
 import { CheckControl } from '../_shared/CheckControl';
 import { OptionGroupFrame } from '../_shared/OptionGroupFrame';
 import { OptionText } from '../_shared/OptionText';
-import type { NameProps, OptionBase } from '../_shared/types';
+import type { FieldNameProps, OptionBase } from '../_shared/types';
 import styles from './Checkbox.module.css';
 
 export type CheckboxOption = OptionBase;
@@ -13,7 +13,7 @@ export type CheckboxProps = Omit<
   FieldsetHTMLAttributes<HTMLFieldSetElement>,
   'onChange' | 'disabled' | 'name' | 'defaultValue' | 'color'
 > &
-  NameProps & {
+  FieldNameProps & {
     options: CheckboxOption[];
     /** Checked values (controlled). */
     value?: string[];

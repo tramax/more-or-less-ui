@@ -44,6 +44,8 @@ export interface TextFieldFrameInfo {
 interface TextFieldFrameOwnProps {
   size?: ScaleProp;
   label?: string;
+  /** Beside the label, in a tooltip from an ⓘ button (FieldLabel). */
+  tooltip?: ReactNode;
   error?: string;
   isDisabled?: boolean;
   isReadOnly?: boolean;
@@ -93,6 +95,7 @@ export function TextFieldFrame<P extends TextFieldFrameOwnProps>({
 }: TextFieldFrameProps<P>) {
   const {
     label,
+    tooltip,
     error,
     isDisabled = false,
     isReadOnly = false,
@@ -146,7 +149,13 @@ export function TextFieldFrame<P extends TextFieldFrameOwnProps>({
       style={{ ...scaleStyle, ...style }}
     >
       {label && (
-        <FieldLabel as="label" id={labelId} htmlFor={controlId} isRequired={isRequired}>
+        <FieldLabel
+          as="label"
+          id={labelId}
+          htmlFor={controlId}
+          isRequired={isRequired}
+          tooltip={tooltip}
+        >
           {label}
         </FieldLabel>
       )}

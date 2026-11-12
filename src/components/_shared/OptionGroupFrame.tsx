@@ -10,6 +10,8 @@ export type OptionGroupFrameProps = Omit<
 > & {
   /** Visible legend above the group. Without it, the caller passes `aria-label` or `aria-labelledby`. */
   label?: string;
+  /** Beside the legend, in a tooltip from an ⓘ button (FieldLabel). */
+  tooltip?: ReactNode;
   /** Marks the group invalid and shows this message below it. */
   error?: string;
   /** Disables the fieldset (so every control in it) and dims the group. */
@@ -32,6 +34,7 @@ export const OptionGroupFrame = forwardRef<HTMLFieldSetElement, OptionGroupFrame
   function OptionGroupFrame(
     {
       label,
+      tooltip,
       error,
       isDisabled = false,
       isRequired = false,
@@ -47,6 +50,9 @@ export const OptionGroupFrame = forwardRef<HTMLFieldSetElement, OptionGroupFrame
     const rootId = id ?? autoId;
     const errorId = `${rootId}-error`;
     const hasError = Boolean(error);
+    // With a tooltip the legend holds a button, whose name would join the group's. The fieldset is
+    // named by the legend's text alone instead (unless the caller names it themselves).
+    const labelId = label && tooltip && !props['aria-labelledby'] ? `${rootId}-label` : undefined;
 
     return (
       <fieldset
@@ -54,11 +60,18 @@ export const OptionGroupFrame = forwardRef<HTMLFieldSetElement, OptionGroupFrame
         ref={ref}
         id={id}
         disabled={isDisabled}
+        aria-labelledby={labelId ?? props['aria-labelledby']}
         aria-describedby={clsx(describedBy, hasError && errorId) || undefined}
         className={clsx(shared.root, isDisabled && shared.disabled, className)}
       >
         {label && (
-          <FieldLabel as="legend" isRequired={isRequired} className={shared.legend}>
+          <FieldLabel
+            as="legend"
+            id={labelId}
+            isRequired={isRequired}
+            tooltip={tooltip}
+            className={shared.legend}
+          >
             {label}
           </FieldLabel>
         )}

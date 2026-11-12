@@ -64,6 +64,12 @@ export const Default: Story = {
   args: { placeholder: 'Anything we should know?' },
 };
 
+export const WithTooltip: Story = {
+  args: {
+    tooltip: 'Only our support team can see this. Include anything that helps us reply faster.',
+  },
+};
+
 export const Size: Story = {
   parameters: comparison,
   render: () => (

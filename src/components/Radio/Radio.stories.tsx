@@ -43,6 +43,10 @@ type Story = StoryObj<typeof Radio>;
 
 export const Default: Story = {};
 
+export const WithTooltip: Story = {
+  args: { tooltip: 'We only use this to tell you about your orders.' },
+};
+
 export const Horizontal: Story = {
   args: { orientation: 'horizontal' },
 };

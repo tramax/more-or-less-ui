@@ -140,6 +140,10 @@ export const Default: Story = {
   args: { placeholder: 'Choose a fruit' },
 };
 
+export const WithTooltip: Story = {
+  args: { tooltip: 'Pick the one you would eat first. You can change it later.' },
+};
+
 export const WithDescriptions: Story = {
   args: { label: 'Plan', options: WITH_DESCRIPTIONS, defaultValue: 'team' },
 };

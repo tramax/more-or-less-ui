@@ -16,7 +16,7 @@ import { TextFieldFrame } from '../_shared/TextFieldFrame';
 import { OptionIcon } from '../_shared/OptionIcon';
 import { OptionText } from '../_shared/OptionText';
 import { Spinner } from '../Spinner';
-import type { NameProps, OptionBase } from '../_shared/types';
+import type { FieldNameProps, OptionBase } from '../_shared/types';
 import { CheckIcon } from '../_shared/CheckIcon';
 import { ChevronIcon } from '../_shared/ChevronIcon';
 import { CrossIcon } from '../_shared/CrossIcon';
@@ -97,7 +97,7 @@ type SearchProps =
 
 export type SelectProps = SelectFieldProps &
   SearchProps &
-  NameProps &
+  FieldNameProps &
   (
     | {
         isMultiple?: false;

@@ -23,7 +23,7 @@ import {
   type LocalDate,
 } from '../_shared/dateValue';
 import { TextFieldFrame } from '../_shared/TextFieldFrame';
-import type { NameProps } from '../_shared/types';
+import type { FieldNameProps } from '../_shared/types';
 import { useControlledState } from '../_shared/useControlledState';
 import {
   SEGMENT_LIMITS,
@@ -110,7 +110,7 @@ export type DateFieldOwnProps = Omit<
   isRequired?: boolean;
 };
 
-export type DateFieldProps = DateFieldOwnProps & NameProps;
+export type DateFieldProps = DateFieldOwnProps & FieldNameProps;
 
 /**
  * What `DatePicker` adds: buttons in the field at the inline end. Not part of `DateField`'s own API;

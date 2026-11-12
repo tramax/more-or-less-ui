@@ -52,6 +52,10 @@ export const WithDescriptions: Story = {
 };
 
 // The limits are enforced, not announced: the label says what they are
+export const WithTooltip: Story = {
+  args: { tooltip: 'We only use these to tell you about your orders.' },
+};
+
 export const MaxChecked: Story = {
   args: { label: 'Pick up to 2', maxChecked: 2, defaultValue: ['email'] },
 };

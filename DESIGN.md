@@ -592,6 +592,7 @@ type TextFieldProps = Omit<
 > & {
   size?: ScaleProp; // font-size on the root; padding and gaps are in em, so they follow
   label?: string; // visible, above the field; without it aria-label/aria-labelledby is required
+  tooltip?: ReactNode; // explains the field: an ⓘ button beside the label shows it (needs `label`)
   error?: string; // invalid state + message below the field; the caller decides when
   isDisabled?: boolean; // native `disabled`, dimmed
   isReadOnly?: boolean; // not editable, plain text: no fill, padding or focus border; tabIndex -1
@@ -617,6 +618,31 @@ other native prop go to the `<input>`.
 Based on NN/g and GOV.UK guidance: visible label above the field, no placeholder as label or hint,
 required fields marked, error specific and below the field, validated when the user leaves the field
 rather than on every keystroke (the component doesn't validate; see the `ValidateOnBlur` story).
+
+**A `tooltip` on any labelled field or group** (TextField, Textarea, Select, Slider, FileUpload, DateField,
+DatePicker, Checkbox, Radio, SegmentedControl) explains what it is for. Closest sibling for the build is
+`_shared/FieldLabel`, which already draws every field's name; the two frames (`TextFieldFrame`,
+`OptionGroupFrame`) pass `tooltip` to it, so a component adds nothing but the type, `FieldNameProps` in
+place of `NameProps` (`_shared/types.ts`: `tooltip` exists only with a visible `label`). Toggle keeps
+`NameProps`: its label is text beside the switch, not a `FieldLabel`.
+
+- **The trigger is an ⓘ `IconButton` beside the label**, wrapped in the existing `Tooltip`; not the label
+  itself, which is no tab stop, so the keyboard could not reach it. The button is a sibling of the
+  `<label>`, never inside it, so the field's name stays "Name" and does not become "Name About Name". It is
+  named `About <label>` (English, fixed, like "Show password"); the tooltip describes it, so the text is
+  read after the name. Pressing it does nothing; hover and keyboard focus show the text.
+- **A group's legend** then holds the label's text in a `<span>` and the button, and the `<fieldset>` gets
+  `aria-labelledby` pointing at the span (the legend would otherwise name the group by the button too).
+  A caller's own `aria-labelledby` wins. The button stays enabled in a disabled group: the browser does
+  not disable controls inside a fieldset's first `<legend>`, and reading what a field is for is no edit.
+- **Look.** The button's hit area is 1.5em round a 0.75em icon (`--icon-button-size` and
+  `--icon-button-icon-size`, the hooks IconButton gives), pulled in with a negative block margin so the label's
+  line keeps its height. The label's type stays on the text; the row is at the field's font-size, because the
+  tooltip renders inside it and follows it. No new token.
+- **Touch.** A tap does not show a tooltip (Tooltip's own limit: no hover, and a tap's focus is not
+  `:focus-visible`), so on a touch screen the text is out of reach. Say what a person must know to fill the
+  field in `label` or `error`, and use the tooltip for more. If that is not enough, a `Popover` trigger
+  in `FieldLabel` is the change: the same button, opened by press.
 
 **Password reveal and number** are variants of this component, not new ones: `type` unlocks the extra
 prop, so `isRevealable` exists only on `type="password"` and `hasSteppers` only on `type="number"`. Both
@@ -644,7 +670,7 @@ exists only when there are buttons, and `padding-inline-end` sized from `endCoun
   shown when read-only or with `step="any"` (`stepUp` throws there).
 - Labels are English and fixed, like Select's "Clear".
 
-**Not yet:** hint text (probably alongside a Tooltip), a clear button, a `labels` prop for the buttons,
+**Not yet:** hint text under the field (a `tooltip` is behind a button; text that must always show is not), a clear button, a `labels` prop for the buttons,
 press-and-hold to repeat a stepper, prefix / suffix text (a unit). Multiline is a separate component,
 `Textarea`, not a mode of this one.
 
@@ -3349,7 +3375,7 @@ more-or-less-ui/
 │   │   ├── DatePicker/     # + CalendarIcon
 │   │   ├── Table/
 │   │   ├── Tooltip/
-│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio + SegmentedControl's frame, and Toggle's control; OptionGroupFrame: Checkbox + Radio + SegmentedControl (the fieldset, legend and error); useChoice: Radio + SegmentedControl (single-choice state); useControlledState: useChoice + FileUpload (controlled or kept here); SlidingThumb: Tabs + SegmentedControl; TextFieldFrame: TextField + Textarea + Select + Slider + FileUpload + DateField (its end slot: TextField's buttons, DatePicker's calendar button; `labelId` for DateField's group); FieldError, FieldLabel, types: all fields; IconButton: CloseButton + TextField's reveal and steppers + DatePicker's calendar button; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame) + FileUpload's remove; ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, FileUpload's zone and rows, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText + Table's cells, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination + Table; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckControl: Checkbox + Table's row selection (the box and tick); CheckIcon: Checkbox's control (through CheckControl) + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination + Table's sort arrow; RoundControl.module.css: Pagination + Calendar (the round pressable cell); dateValue: Calendar + DateField + DatePicker, and the date and time family after it (local value types, and the helpers to and from instants); useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
+│   │   ├── _shared/        # Shared by several components (Gap: Stack + Grid; OptionGroup: Checkbox + Radio + SegmentedControl's frame, and Toggle's control; OptionGroupFrame: Checkbox + Radio + SegmentedControl (the fieldset, legend and error); useChoice: Radio + SegmentedControl (single-choice state); useControlledState: useChoice + FileUpload (controlled or kept here); SlidingThumb: Tabs + SegmentedControl; TextFieldFrame: TextField + Textarea + Select + Slider + FileUpload + DateField (its end slot: TextField's buttons, DatePicker's calendar button; `labelId` for DateField's group); FieldError, FieldLabel (and its ⓘ tooltip button, InfoIcon), types: all fields; IconButton: CloseButton + TextField's reveal and steppers + DatePicker's calendar button; CloseButton: Banner + Toast + Dialog + Drawer (through ModalFrame) + FileUpload's remove; ModalFrame: Dialog + Drawer; usePresence: useOverlay + Toast; ToastHost: ModalFrame + ToastProvider; VisuallyHidden: Toast's announcer; OptionText + OptionIcon: options, FileUpload's zone and rows, Button's icon, Chip's and Tabs' (OptionText also: Avatar's name and description); Placeholder: Text + Avatar + OptionText + Table's cells, the block they become inside aria-busy; Size.module.css: Spinner + Progress + Toast + Tabs + Collapsible + Link + Breadcrumb + Pagination + Table; Ring: Spinner + Progress's circle; StrokeIcon: the shell of the three icons below; CrossIcon: Select + Banner + Chip; CheckControl: Checkbox + Table's row selection (the box and tick); CheckIcon: Checkbox's control (through CheckControl) + Toggle + Select + Chip; ChevronIcon: Select + Collapsible + Breadcrumb + Pagination + Table's sort arrow; RoundControl.module.css: Pagination + Calendar (the round pressable cell); dateValue: Calendar + DateField + DatePicker, and the date and time family after it (local value types, and the helpers to and from instants); useOverlay + Overlay.module.css: Select's popup + Tooltip + Popover + Menu (Toast takes only the CSS, through floatingClass); OptionList.module.css: Select's popup + Menu; optionNavigation: Select + Menu + Tabs (stepEnabled); useTriggerRef: Tooltip + Popover + Menu; useLinkProps: Link, and so Breadcrumb's items, and Pagination's links)
 │   │   └── index.ts
 │   ├── patterns/
 │   │   ├── CompoundComponent.tsx

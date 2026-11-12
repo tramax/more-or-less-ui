@@ -1,6 +1,6 @@
 import { createRef, useState, type ComponentProps } from 'react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { render, fireEvent, cleanup, screen } from '@testing-library/react';
+import { act, render, fireEvent, cleanup, screen } from '@testing-library/react';
 import { TextField, type TextFieldProps } from './TextField';
 import styles from './TextField.module.css';
 import frameStyles from '../_shared/TextFieldFrame.module.css';
@@ -85,6 +85,27 @@ describe('TextField', () => {
       const { container } = render(<TextField aria-label="Search" />);
       expect(container.querySelector('label')).toBeNull();
       expect(container.querySelector('input')?.getAttribute('aria-label')).toBe('Search');
+    });
+  });
+
+  describe('tooltip', () => {
+    it('adds a button beside the label that explains the field, and leaves the field named by the label', () => {
+      renderField({ tooltip: 'As on your passport' });
+      expect(screen.getByRole('textbox', { name: 'Name' })).toBeTruthy();
+      act(() => {
+        screen.getByRole('button', { name: 'About Name' }).focus();
+      });
+      expect(screen.getByRole('tooltip', { hidden: true }).textContent).toBe('As on your passport');
+    });
+
+    it('has no button without one', () => {
+      renderField();
+      expect(screen.queryByRole('button')).toBeNull();
+    });
+
+    it('does not leak to the DOM', () => {
+      const { input } = renderField({ tooltip: 'x' });
+      expect(input.hasAttribute('tooltip')).toBe(false);
     });
   });
 

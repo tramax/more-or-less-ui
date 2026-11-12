@@ -1,6 +1,6 @@
 import { createRef, useState, type ComponentProps } from 'react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { render, fireEvent, cleanup } from '@testing-library/react';
+import { act, render, fireEvent, cleanup, screen } from '@testing-library/react';
 import { Checkbox, type CheckboxOption } from './Checkbox';
 import shared from '../_shared/OptionGroup.module.css';
 
@@ -63,6 +63,27 @@ describe('Checkbox', () => {
       const { root } = renderGroup({ isDisabled: true, minChecked: 1, maxChecked: 2, error: 'x' });
       for (const attr of ['isdisabled', 'minchecked', 'maxchecked', 'error', 'options'])
         expect(root.hasAttribute(attr)).toBe(false);
+    });
+  });
+
+  describe('tooltip', () => {
+    it('explains the group from a button beside the legend, without adding to the group name', () => {
+      renderGroup({ tooltip: 'Pick any' });
+      // Named by the legend's text alone, not "Fruit About Fruit"
+      expect(screen.getByRole('group', { name: 'Fruit' })).toBeTruthy();
+      act(() => {
+        screen.getByRole('button', { name: 'About Fruit' }).focus();
+      });
+      expect(screen.getByRole('tooltip', { hidden: true }).textContent).toBe('Pick any');
+    });
+
+    it("leaves a caller's own aria-labelledby alone", () => {
+      const { root } = renderGroup({ tooltip: 'Pick any', 'aria-labelledby': 'mine' });
+      expect(root.getAttribute('aria-labelledby')).toBe('mine');
+    });
+
+    it('sets no aria-labelledby without one', () => {
+      expect(renderGroup().root.hasAttribute('aria-labelledby')).toBe(false);
     });
   });
 

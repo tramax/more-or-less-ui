@@ -73,6 +73,10 @@ type Story = StoryObj<typeof DatePicker>;
  */
 export const Default: Story = {};
 
+export const WithTooltip: Story = {
+  args: { tooltip: 'The day the work is due. Weekends are allowed.' },
+};
+
 export const Size: Story = {
   decorators: [
     (Story) => (

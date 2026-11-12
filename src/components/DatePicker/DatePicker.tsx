@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useRef, type KeyboardEvent } from 'react';
 import { isLocalDate, warnIfNotLocal, type LocalDate } from '../_shared/dateValue';
 import { IconButton } from '../_shared/IconButton';
-import type { NameProps } from '../_shared/types';
+import type { FieldNameProps } from '../_shared/types';
 import { useControlledState } from '../_shared/useControlledState';
 import { Calendar, type CalendarLabels, type CalendarProps } from '../Calendar/Calendar';
 import { isUnavailable } from '../Calendar/calendarMath';
@@ -33,7 +33,7 @@ export type DatePickerLabels = DateFieldLabels &
   };
 
 export type DatePickerProps = Omit<DateFieldOwnProps, 'labels'> &
-  NameProps &
+  FieldNameProps &
   Pick<CalendarProps, 'min' | 'max' | 'isDateDisabled' | 'firstDayOfWeek'> & {
     /** Shortcuts under the calendar. One that is outside `min`..`max`, or disabled, can't be pressed. */
     presets?: DatePreset[];

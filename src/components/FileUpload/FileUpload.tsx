@@ -14,7 +14,7 @@ import { FieldError } from '../_shared/FieldError';
 import { IconButton } from '../_shared/IconButton';
 import { OptionText } from '../_shared/OptionText';
 import { TextFieldFrame } from '../_shared/TextFieldFrame';
-import type { NameProps } from '../_shared/types';
+import type { FieldNameProps } from '../_shared/types';
 import { useControlledState } from '../_shared/useControlledState';
 import { VisuallyHidden } from '../_shared/VisuallyHidden';
 import { Progress } from '../Progress';
@@ -45,7 +45,7 @@ type FileUploadBaseProps = Omit<
   | 'multiple'
   | 'children'
 > &
-  NameProps & {
+  FieldNameProps & {
     /** Sets the font size; the zone's padding and the rows' gaps follow it. */
     size?: ScaleProp;
     /** Visible label above the zone. Without it, pass `aria-label` or `aria-labelledby`. */
