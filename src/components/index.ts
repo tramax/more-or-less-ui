@@ -73,6 +73,8 @@ export { TextField } from './TextField';
 export type { TextFieldProps } from './TextField';
 export { Textarea } from './Textarea';
 export type { TextareaProps } from './Textarea';
+export { Title } from './Title';
+export type { TitleProps, TitleElement } from './Title';
 export { ToastProvider, useToast } from './Toast';
 export type { ToastProviderProps, ToastApi, ToastOptions, ToastChanges } from './Toast';
 export { Toggle } from './Toggle';

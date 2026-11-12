@@ -34,6 +34,13 @@ same recipe is defined under two names. Add an alias only for something that cou
 value: the fields (TextField, Textarea, Select, FileUpload, DateField) all look the same, so they have no
 fill tokens of their own and `_shared/TextFieldFrame` reads `--color-field-background*` directly.
 
+### Fonts
+
+A component never sets a font: its text inherits the body font (`--font-family-body`, applied once on
+`body`), and a `button` / `input` / `textarea` / `select` gets `font: inherit`. The one exception is Title,
+which reads `--font-family-title`. `tokens.test.ts` fails on any other `font` or `font-family` in a
+component's CSS.
+
 ### Shared code
 
 - `components/_shared/` holds CSS shared by several components (`OptionGroup`: Checkbox + Radio).
@@ -109,6 +116,11 @@ fill tokens of their own and `_shared/TextFieldFrame` reads `--color-field-backg
   min / max / disabled test, is already used by DatePicker's presets). `DateField/segments` is the typed
   date's logic (the locale's order, typing, stepping, pasting); `DateField` is the field and `DatePicker`
   adds the calendar button and a `Popover`, so a date input takes the field rather than its own segments.
+- `_shared/TypeFrame` is a run of type (Text, Title): the element, `size` / `fontWeight` / `color` with their
+  `normal` defaults, the unitless weight, the placeholder and the ref. `_shared/Type.module.css` is the margin
+  reset and the `color` classes. A component passes its own `size*` / `fontWeight*` classes (`classes`, read
+  from its own tokens), its default `as` and a `rootClassName`, and writes nothing else. The class map is
+  built key by key, not by spreading modules: under Vitest a CSS module is a Proxy with no keys to spread.
 - `_shared/Placeholder` is what text and pictures look like inside `aria-busy="true"`: the one recipe
   for loading (there is no `Skeleton` component or `isLoading` prop). A component puts
   `placeholder.placeholder` on the part that becomes a block and has nothing else to write. A new
@@ -120,7 +132,8 @@ fill tokens of their own and `_shared/TextFieldFrame` reads `--color-field-backg
     use the row, so only two components would use it. Until then, keep the two in step.
   - The `size*` classes in Button, Banner, Avatar, Chip, Text and `_shared/TextFieldFrame`, which `resolveScaleProps` looks up in
     each component's own CSS module. They could take `size` from `_shared/Size.module.css` by passing
-    `{ ...sizes, ...styles }` to it; that is not done yet.
+    it a map built from both, key by key as `_shared/TypeFrame` does (a `{ ...sizes, ...styles }` spread is
+    empty under Vitest); that is not done yet. Title's `size*` classes are not copies: they read the title tokens.
 
 ## Before you finish
 

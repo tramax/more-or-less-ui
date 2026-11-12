@@ -74,8 +74,16 @@ function App() {
   --radius-less: 0;
   --radius-normal: 0.5rem;
   --radius-more: 1rem;
+
+  /* Fonts: one for all text, and optionally another for headings (Title) */
+  --font-family-body: 'Inter', system-ui, sans-serif;
+  --font-family-title: 'Fraunces', Georgia, serif;
 }
 ```
+
+The library loads no font files: load your fonts as usual (`@font-face`, a `<link>`), then name them
+here. Set `--font-family-body` on `:root`; everything inherits it, titles included unless
+`--font-family-title` is set.
 
 ### 2. Light/Dark Mode
 
@@ -159,6 +167,7 @@ To switch a default off, pass an escape-hatch value: `padding={0}`, or `backgrou
 - `Stack` — Flex layout: a column by default, `direction="row"` for a row; `gap`, `align`, `justify`, `wrap`
 - `Grid` — Grid layout helper
 - `Text` — Typography with size/weight/color
+- `Title` — A heading (`h1`-`h6`) with its own size, weight and font tokens
 
 ### Components (Composed)
 

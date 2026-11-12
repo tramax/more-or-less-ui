@@ -4,6 +4,7 @@ import { omitDefaults, showCode } from '../../../.storybook/snippet';
 import { Avatar } from '../Avatar';
 import { Button } from '../Button';
 import { Stack } from '../Stack';
+import { Title } from '../Title';
 import { Text, TEXT_DEFAULTS } from './Text';
 
 // Storybook only reads defaults from destructuring, so state them for the Default column
@@ -86,33 +87,30 @@ export const Color: Story = {
   ),
 };
 
-// Text has no margin: spacing comes from the layout. A heading sits close to its own paragraph (an
-// inner Stack with a small gap), and the sections are far apart (the outer Stack's bigger gap).
+// Text has no margin, and nor has Title: spacing comes from the layout. A heading sits close to its own
+// paragraph (an inner Stack with a small gap), and the sections are far apart (the outer Stack's bigger
+// gap). The headings are Titles: the heading type scale and font, from the title tokens.
 export const Headings: Story = {
   parameters: showCode(`<Stack gap="more">
   <Stack gap="less">
-    <Text as="h2" size="more" fontWeight="more">First heading</Text>
+    <Title>First heading</Title>
     <Text as="p" color="less">The element says what it is; size, weight and color say how it looks.</Text>
   </Stack>
   <Stack gap="less">
-    <Text as="h2" size="more" fontWeight="more">Second heading</Text>
+    <Title>Second heading</Title>
     <Text as="p" color="less">Space comes from Stack and Box, not from Text.</Text>
   </Stack>
 </Stack>`),
   render: () => (
     <Stack gap="more">
       <Stack gap="less">
-        <Text as="h2" size="more" fontWeight="more">
-          First heading
-        </Text>
+        <Title>First heading</Title>
         <Text as="p" color="less">
           The element says what it is; size, weight and color say how it looks.
         </Text>
       </Stack>
       <Stack gap="less">
-        <Text as="h2" size="more" fontWeight="more">
-          Second heading
-        </Text>
+        <Title>Second heading</Title>
         <Text as="p" color="less">
           Space comes from Stack and Box, not from Text.
         </Text>

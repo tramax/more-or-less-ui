@@ -1,0 +1,22 @@
+/*
+ * What every run of type shares (Text, Title), through _shared/TypeFrame: the margin reset and the
+ * `color` scale. Each component keeps its own `size*` and `fontWeight*` classes, which read its own
+ * tokens (`--size-*` for Text, `--size-title-*` for Title); TypeFrame merges them over these.
+ *
+ * `color` uses the --color-text-* tokens (see theme/tokens.css): the same scale for body text and titles.
+ */
+
+/* A heading or paragraph brings the browser's margin; the space around text comes from the layout */
+.root {
+  margin: 0;
+}
+
+.colorLess {
+  color: var(--color-text-less);
+}
+.colorNormal {
+  color: var(--color-text-normal);
+}
+.colorMore {
+  color: var(--color-text-more);
+}

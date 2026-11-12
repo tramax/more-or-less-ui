@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 import { clsx } from '@/utils/clsx';
-import { Text } from '../Text';
+import { Title } from '../Title';
 import { CloseButton } from './CloseButton';
 import { useToastHost } from './ToastHost';
 import { useOverlay } from './useOverlay';
@@ -160,9 +160,9 @@ export function ModalFrame({
             {(title !== undefined || isCloseButtonShown) && (
               <div className={styles.header}>
                 {title !== undefined && (
-                  <Text as="h2" id={titleId} size="more" fontWeight="more" className={styles.title}>
+                  <Title as="h2" id={titleId} className={styles.title}>
                     {title}
-                  </Text>
+                  </Title>
                 )}
                 {isCloseButtonShown && (
                   <CloseButton className={styles.close} label="Close" onClick={overlay.close} />

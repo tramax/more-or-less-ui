@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 
@@ -83,5 +83,31 @@ describe('theme/themes.css', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/theme/themes.css'), 'utf8');
     expect(css.includes('--color-segmented-thumb:')).toBe(true);
     expect(css.includes('--color-segmented-text-selected:')).toBe(true);
+  });
+});
+
+describe('fonts', () => {
+  const read = (file: string) => readFileSync(resolve(process.cwd(), file), 'utf8');
+
+  it('sets the body font from --font-family-body, which tokens.css defines', () => {
+    expect(read('src/styles.css')).toMatch(/font-family:\s*var\(--font-family-body\);/);
+    expect(read('src/theme/tokens.css')).toMatch(/--font-family-body:/);
+  });
+
+  it('has no component set a font of its own, so one token changes every text', () => {
+    // A component inherits its font (a form control with `font: inherit`); the only font it may
+    // name is a token. A font stack written into a module would ignore --font-family-body.
+    const modules = readdirSync(resolve(process.cwd(), 'src/components'), { recursive: true })
+      .map(String)
+      .filter((file) => file.endsWith('.module.css'));
+    const offenders = modules.flatMap((file) => {
+      const css = read(`src/components/${file}`).replace(/\/\*[\s\S]*?\*\//g, '');
+      return [...css.matchAll(/(?:^|[\s;{])(font-family|font)\s*:\s*([^;]+);/g)]
+        .map(([, property, value = '']) => ({ property, value: value.trim() }))
+        .filter(({ value }) => value !== 'inherit' && !/^var\(--font-family-[\w-]+\)$/.test(value))
+        .map(({ property, value }) => `${file}: ${property}: ${value}`);
+    });
+    expect(modules.length).toBeGreaterThan(0);
+    expect(offenders).toEqual([]);
   });
 });

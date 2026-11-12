@@ -2,6 +2,9 @@
  * Design tokens (light theme / defaults). Dark-mode overrides live in themes.css.
  *
  * - Scale tokens: 3 values per property (less/normal/more), 15 CSS variables (5 scales × 3)
+ * - Fonts: the body font (--font-family-body) and the titles' (--font-family-title)
+ * - Title type: Title's own size and weight scales, font family and line height, so headings can be
+ *   tuned without moving body text
  * - Color tokens: deliberately minimal. One brand color, an error color, a background scale for Card
  *   and one for Button, and one faint field fill that TextField, Textarea, Checkbox, Radio, Toggle, Slider,
  *   FileUpload and Select alias.
@@ -22,6 +25,49 @@
   --weight-less: 300; /* light */
   --weight-normal: 400; /* regular */
   --weight-more: 600; /* semibold */
+
+  /* The body font: every piece of text in the library (Text, labels, fields, buttons, ...) inherits it,
+     titles too unless --font-family-title says otherwise. styles.css sets it on `body`, which is the only
+     element that reads it, so set it on :root (or body); a different font for one part of a page is a
+     plain `font-family` on that element, and everything inside inherits it. No component sets a font of
+     its own: form controls, which browsers give a font of their own, are reset to `font: inherit`. */
+  --font-family-body:
+    system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+
+  /* Title type: what Title reads in place of the size and weight scales above, so headings have their
+     own sizes, weights and typeface, and changing the body scale doesn't move them. Plain values, not
+     aliases of --size-* / --weight-*, for the same reason.
+     A difference in size is seen as a ratio, so each size is a ratio above the one below it:
+     - `less` is a quiet heading, close to the body text (x1.125 over 16px); its weight does most of
+       the work.
+     - `normal` is the everyday title of a section, card or dialog (x1.33 over `less`: two heading
+       levels need about that much to read as two levels).
+     - `more` is the loud one, used sparingly: a different kind of type, not the next step (x1.33 on a
+       phone to x2 on a wide screen over `normal`). It grows with the window, 32px up to 480px wide and
+       48px from 1120px, because a fixed 48px fills a phone screen. It follows the window, not the
+       container: a card's title is `normal`.
+       Zoom: zooming narrows the window in CSS pixels, so on a wide screen this grows less than the
+       zoom: x1.5 at 200%, x2 at 300% (its largest is 1.5x its smallest, under the 2.5x rule of thumb
+       for fluid type, so x2 is always reachable). If your reading of WCAG 1.4.4 needs x2 at 200%,
+       set a fixed size here instead, such as 2.5rem. */
+  --size-title-less: 1.125rem; /* 18px */
+  --size-title-normal: 1.5rem; /* 24px */
+  --size-title-more: clamp(
+    2rem,
+    1.25rem + 2.5vw,
+    3rem
+  ); /* 32px on a phone, 48px on a wide screen */
+  --weight-title-less: 400; /* regular: a quiet heading */
+  --weight-title-normal: 600; /* semibold */
+  --weight-title-more: 700; /* bold */
+  /* `inherit` leaves the token without a value (there is nothing above :root to inherit), so a title
+     keeps the font around it: the body font, or whatever an element above it sets. Unlike the body
+     font, Title reads this itself, so set it here for every title, or on any element for the titles
+     inside it. */
+  --font-family-title: inherit;
+  /* Tighter than the body's 1.5: large type needs less space between its lines */
+  --line-height-title: 1.2;
 
   /* Spacing scale — affects padding, margin */
   --space-less: 0.5rem; /* 8px — dense */

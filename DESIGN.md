@@ -99,9 +99,35 @@ overshoot, so nothing dips below its resting value once the pointer has gone) an
 gentler overshoot, for small marks: Radio's dot, Toggle's thumb, Select's chevron). Button, the
 Checkbox / Radio options (`_shared/OptionGroup.module.css`) and the Select popup are on the first two. A new moving component uses these, not its own `cubic-bezier()`.
 
+### Font Tokens
+
+Two tokens, the way to set fonts:
+
+```css
+:root {
+  --font-family-body: 'Inter', system-ui, sans-serif; /* all text */
+  --font-family-title: 'Fraunces', Georgia, serif; /* headings (Title) only; optional */
+}
+```
+
+- **`--font-family-body`** is the font of all text. Its default is the system stack (`system-ui`, ...).
+  `styles.css` applies it once, on `body`, and everything inherits it from there: no component sets a
+  font of its own, and the form controls that browsers give their own font (`button`, `input`,
+  `textarea`, `select`) are reset to `font: inherit`. `tokens.test.ts` fails if a component's CSS names
+  a font other than `inherit` or a `--font-family-*` token. Because `body` is the only element that reads
+  it, set it on `:root` or `body`; for another font in one part of a page, set a plain `font-family` on
+  that element, and everything inside (Titles included, while their token is unset) inherits it.
+- **`--font-family-title`** is the font of Title. Its default, `inherit`, leaves it without a value, so a
+  title keeps the font around it, which is the body font unless something above it sets another. Title
+  reads it itself, so it works on any element: on `:root` for every title, on a section for the titles
+  inside it. See [Title](#title--headings).
+
+There is no token per component (no `--font-family-button`): a font is a choice for the whole page,
+and headings are the one place a second typeface is common.
+
 ### Color Tokens (Separate from Scale)
 
-Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Card, Button, Banner), one opaque brand tint (`--color-primary-tint`) that Button's `normal` and Banner's `normal` alias, the opposite of the current text color (`--color-text-inverse`, which Banner's glow aliases), one faint field fill (`--color-field-background*`) that TextField, Textarea, Select, FileUpload and DateField use directly through `_shared/TextFieldFrame`, and Checkbox, Radio, Toggle and Slider alias** (Banner's `less` aliases it too), **and secondary text (`--color-text-less`, 70% of the text color) that the option descriptions and Select's empty message share with Text's `color` scale**. That scale is `--color-text-less` / `-normal` / `-more` (the last is the brand color toward the text color, for contrast). No palettes, no
+Deliberately minimal for now: **one brand color, an error color (`--color-danger`), a `background` scale per component that has one (Card, Button, Banner), one opaque brand tint (`--color-primary-tint`) that Button's `normal` and Banner's `normal` alias, the opposite of the current text color (`--color-text-inverse`, which Banner's glow aliases), one faint field fill (`--color-field-background*`) that TextField, Textarea, Select, FileUpload and DateField use directly through `_shared/TextFieldFrame`, and Checkbox, Radio, Toggle and Slider alias** (Banner's `less` aliases it too), **and secondary text (`--color-text-less`, 70% of the text color) that the option descriptions and Select's empty message share with Text's and Title's `color` scale**. That scale is `--color-text-less` / `-normal` / `-more` (the last is the brand color toward the text color, for contrast). No palettes, no
 numbered shades (50-900), no primary/secondary families. More colors get added when a component
 actually needs one.
 
@@ -455,7 +481,8 @@ No `divider` prop; put a [`Divider`](#divider) between children.
 ### Text — Typography
 
 `Text` is a run of text: a `span` unless `as` says otherwise. It sets type size, weight and color and
-nothing else. There is no `Heading`, `Paragraph` or `Label`: `<Text as="h2" size="more" fontWeight="more">`.
+nothing else. A heading is a [`Title`](#title--headings), which has the same props on the title tokens.
+There is no `Paragraph` or `Label`: a paragraph is `<Text as="p">`.
 
 ```tsx
 // components/Text/Text.tsx
@@ -491,6 +518,89 @@ interface TextProps extends Omit<HTMLAttributes<HTMLElement>, 'color'> {
 - **Loading is the region's state, not a prop.** Text carries `_shared/Placeholder`: inside an element
   with `aria-busy="true"` (a Stack, a Card, or the Text itself) it becomes a quiet block as long as its
   content, with the text hidden. See Loading below.
+- **Shared with Title** through `_shared/TypeFrame`: the element, the scale props and their defaults, the
+  unitless weight, the margin reset and the `color` classes (`_shared/Type.module.css`), the placeholder
+  and the ref. Text's own module is only its `size*` and `fontWeight*` classes. `as` still takes `h1`-`h6`,
+  so existing headings keep working; a new heading is a Title.
+
+### Title — Headings
+
+`Title` is a heading: an `h2` unless `as` says otherwise. It has Text's props, read from its own tokens,
+so headings get their own sizes, weights and typeface, and changing them doesn't move body text.
+
+```tsx
+// components/Title/Title.tsx
+type TitleProps = Omit<HTMLAttributes<HTMLElement>, 'color'> & {
+  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'; // default h2
+  size?: ScaleProp; // font-size, on --size-title-*
+  fontWeight?: ScaleProp; // on --weight-title-*; a number is unitless, as Text's
+  color?: 'less' | 'normal' | 'more' | string; // Text's scale (--color-text-*)
+};
+```
+
+| Token                                       | Default               | What it is                           |
+| ------------------------------------------- | --------------------- | ------------------------------------ |
+| `--size-title-less` / `-normal` / `-more`   | 18px / 24px / 32-48px | `size`                               |
+| `--weight-title-less` / `-normal` / `-more` | 400 / 600 / 700       | `fontWeight`                         |
+| `--font-family-title`                       | `inherit` (no value)  | the typeface; unset, the font around |
+| `--line-height-title`                       | 1.2                   | tighter than the body's 1.5          |
+
+**Why a component**, when Text was meant to cover headings (`<Text as="h2" size="more" fontWeight="more">`):
+Text's size scale stops at `--size-more` (1.25rem), which is body text, and it has no typeface of its own,
+so a heading could only be made bigger or set in another font by changing the body scale, or one call at
+a time with escape hatches. Title is the place to configure headings once.
+
+Closest sibling is Text. **Shared**, through `_shared/TypeFrame`: everything in its section above
+except the tokens. **What differs** is only `Title.module.css`: its `size*` and `fontWeight*` classes read
+the title tokens, and `.title` sets the font family, the line height and `text-wrap: balance` (lines of
+about the same length, not a long one and a stray word).
+
+- **The level and the size are chosen apart.** `as` is where the section sits in the page's outline;
+  `size` is how big it looks. Every prop defaults to `normal` whatever the level, so a bare Title looks
+  the same everywhere, as a bare Text does; `h2` is the default because a page usually has one `h1`.
+- **Headings only.** A Title is always a heading to assistive technology. Display text that is not a
+  heading (a large number, a tagline) is a Text, with an escape-hatch `size`.
+- **The sizes are ratios, each a step above the one below**, because a difference in size is seen as a
+  ratio (16 to 18px shows; 40 to 42px doesn't):
+
+  | `size`   | Value                                               | Step                        | For                                                                |
+  | -------- | --------------------------------------------------- | --------------------------- | ------------------------------------------------------------------ |
+  | `less`   | `1.125rem` (18px)                                   | x1.125 over the body (16px) | a quiet heading: a group, a subsection                             |
+  | `normal` | `1.5rem` (24px)                                     | x1.33 over `less`           | most titles: a section, a card, a dialog                           |
+  | `more`   | `clamp(2rem, 1.25rem + 2.5vw, 3rem)` (32px to 48px) | x1.33 to x2 over `normal`   | the loud one, used sparingly: a page or hero title, an empty state |
+  - `less` is close to the body text on purpose, for a heading that shouldn't be loud; its weight
+    (semibold by default) does most of the work. It is not 20px: that is Text's `more` at the same
+    weight, and 20 to 24px (x1.2) is too small a step for two heading levels to read as two. 18 to 24px
+    (x1.33) is enough.
+  - `normal` is 1.5 times the body, the usual proportion for a section or dialog title, and sits well in
+    a card, a dialog and a page alike. (32px, the first value, shouted in a dialog.)
+  - `more` is a different kind of type, not the next step, so it is the one that calls attention. It
+    grows with the window: 32px up to 480px wide, 48px from 1120px, because a fixed 48px fills a phone
+    screen with two lines. It follows the window, not the container, so it is for page-level titles; a
+    card's title is `normal`.
+  - **Zoom and `more`.** Browser zoom narrows the window in CSS pixels, so a fluid size grows less than
+    the zoom: on a wide screen `more` is 1.5 times as big at 200% and twice as big at 300% (measured:
+    48, 72 and 96 device pixels). Its largest is 1.5 times its smallest, under the 2.5 rule of thumb
+    for fluid type, so twice the size is always reachable within the browsers' 500%; that is the common
+    reading of WCAG 1.4.4 for fluid type. Any size that grows with the window falls short of twice at
+    200% somewhere, so if your reading needs that, set `--size-title-more` to a fixed size (`2.5rem`).
+
+  The values are plain, not aliases of `--size-*` / `--weight-*`: the point is that the two scales can
+  move apart.
+
+- **The typeface is a token, not a prop.** `fontFamily` has no less / normal / more, so it is
+  `--font-family-title` (see [Font Tokens](#font-tokens)): on `:root` for the whole app, on any element
+  for the titles inside it, or `style` / `className` for one. Its default, `inherit`, leaves it without a
+  value (nothing above `:root` to inherit), so `font-family: var(--font-family-title)` falls back to
+  inheriting: a title keeps the font around it, the body font (`--font-family-body`) unless something
+  above it sets another. Setting only the body font changes the titles too.
+- **A Text inside a Title keeps its own size, weight and color.** The title scale is classes on the
+  heading, not custom properties it hands down, so in `<Title>Plans <Text color="more">from $5</Text></Title>`
+  the Text is `normal` body size unless given a `size`, as anywhere. It does inherit the title's typeface
+  and line height, as any inline text takes its parent's font.
+- Dialog's and Drawer's titles are Titles (`_shared/ModalFrame`, at the default `normal` size), so a title font reaches
+  them too. Banner's and Toast's headlines are not: they are a bolder first line of the message, in a
+  `<p>`, not a heading of the page.
 
 ---
 
@@ -1957,7 +2067,7 @@ another place (Drawer, below), not another word.
 Closest sibling is Popover, through [Overlay](#overlay). **Shared:** `useOverlay` (open state,
 controlled or not, the exit animation, Escape, focus return), the cloned trigger (no wrapper;
 `_shared/useTriggerRef`, whose `trigger` may now be absent), the frosted surface and motion of
-`Overlay.module.css`, and Text for the title. A modal's inside is shared with Drawer, its second consumer,
+`Overlay.module.css`, and Title for the title. A modal's inside is shared with Drawer, its second consumer,
 and lives in `_shared/ModalFrame` (below), so what follows is true of both except where Drawer says
 otherwise. **What differs:** it is modal (`isModal`: a native `<dialog>` and `showModal()`, so the browser
 makes the page inert and draws the backdrop, where a popover sits in the top layer over a live page), it
@@ -3154,7 +3264,7 @@ zone database.
 ## Loading
 
 There is no `Skeleton` component and no `isLoading` prop. Loading is the **state of a region**: set
-`aria-busy="true"` on any element (a Stack, a Card, a Text) and the Text, Avatar and option text inside
+`aria-busy="true"` on any element (a Stack, a Card, a Text) and the Text, Title, Avatar and option text inside
 become quiet blocks. The caller's only switch is one attribute.
 
 ```tsx

@@ -3,7 +3,12 @@ import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import { Text, type TextElement } from './Text';
 import placeholder from '../_shared/Placeholder.module.css';
-import styles from './Text.module.css';
+import typeStyles from '../_shared/Type.module.css';
+import textStyles from './Text.module.css';
+
+// A class where TypeFrame takes it from: the root and `color*` from the shared module, `size*` and
+// `fontWeight*` from Text's. One by one: under Vitest a CSS module is a Proxy with no keys to spread.
+const classOf = (key: string) => (/^(root|color)/.test(key) ? typeStyles : textStyles)[key];
 
 const renderText = (props: ComponentProps<typeof Text> = {}) => {
   const { container } = render(<Text {...props} />);
@@ -64,29 +69,29 @@ describe('Text', () => {
     it('adds the base class and the normal classes, and no styles, when no props are set', () => {
       const el = renderText();
       expect([...el.classList]).toEqual([
-        styles.text,
+        classOf('root'),
         placeholder.placeholder,
-        styles.fontWeightNormal,
-        styles.colorNormal,
-        styles.sizeNormal,
+        classOf('fontWeightNormal'),
+        classOf('colorNormal'),
+        classOf('sizeNormal'),
       ]);
       expect(el.getAttribute('style')).toBeFalsy();
     });
 
     it.each(SCALE_PROPS)('%s defaults to normal', (prop) => {
-      expect(renderText().classList.contains(styles[`${prop}Normal`] as string)).toBe(true);
+      expect(renderText().classList.contains(classOf(`${prop}Normal`) as string)).toBe(true);
     });
 
     it('replaces the default when a variant is given', () => {
       const el = renderText({ size: 'more' });
-      expect(el.classList.contains(styles.sizeMore as string)).toBe(true);
-      expect(el.classList.contains(styles.sizeNormal as string)).toBe(false);
+      expect(el.classList.contains(classOf('sizeMore') as string)).toBe(true);
+      expect(el.classList.contains(classOf('sizeNormal') as string)).toBe(false);
     });
 
     it('is replaced by an escape-hatch value', () => {
       const el = renderText({ size: '2rem' });
       expect(el.style.fontSize).toBe('2rem');
-      expect(el.classList.contains(styles.sizeNormal as string)).toBe(false);
+      expect(el.classList.contains(classOf('sizeNormal') as string)).toBe(false);
     });
   });
 
@@ -95,7 +100,7 @@ describe('Text', () => {
     it.each(SCALE_PROPS.flatMap((p) => VARIANTS.map((v) => [p, v] as const)))(
       '%s="%s" applies its class and no inline style',
       (prop, variant) => {
-        const className = styles[`${prop}${cap(variant)}`];
+        const className = classOf(`${prop}${cap(variant)}`);
         expect(className).toBeTruthy();
 
         const el = renderText({ [prop]: variant });
@@ -107,11 +112,11 @@ describe('Text', () => {
     it('combines several props', () => {
       const el = renderText({ size: 'more', fontWeight: 'less', color: 'more' });
       expect([...el.classList]).toEqual([
-        styles.text,
+        classOf('root'),
         placeholder.placeholder,
-        styles.fontWeightLess,
-        styles.colorMore,
-        styles.sizeMore,
+        classOf('fontWeightLess'),
+        classOf('colorMore'),
+        classOf('sizeMore'),
       ]);
     });
   });
@@ -122,7 +127,7 @@ describe('Text', () => {
       expect(el.style.fontSize).toBe('1.5rem');
       expect(el.style.fontWeight).toBe('700');
       expect(el.style.color).toBe('rebeccapurple');
-      expect([...el.classList]).toEqual([styles.text, placeholder.placeholder]);
+      expect([...el.classList]).toEqual([classOf('root'), placeholder.placeholder]);
     });
 
     it('accepts a CSS variable as a color', () => {
@@ -139,7 +144,7 @@ describe('Text', () => {
 
     it('mixes a variant on one prop with an escape hatch on another', () => {
       const el = renderText({ size: 'more', fontWeight: '800' });
-      expect(el.classList.contains(styles.sizeMore as string)).toBe(true);
+      expect(el.classList.contains(classOf('sizeMore') as string)).toBe(true);
       expect(el.style.fontWeight).toBe('800');
     });
   });
@@ -148,7 +153,7 @@ describe('Text', () => {
     it('merges className with variant classes', () => {
       const el = renderText({ className: 'mine', size: 'more' });
       expect(el.classList.contains('mine')).toBe(true);
-      expect(el.classList.contains(styles.sizeMore as string)).toBe(true);
+      expect(el.classList.contains(classOf('sizeMore') as string)).toBe(true);
     });
 
     it('lets the style prop win over escape-hatch values', () => {

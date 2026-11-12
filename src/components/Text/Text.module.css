@@ -1,15 +1,11 @@
 /*
- * Text: the scale variants for type. Each scale prop has one class per variant, named
- * <prop><Variant> (looked up by resolveScaleProps). Text has no base values in CSS: `normal` is a real
- * class too, and every prop gets it from TEXT_DEFAULTS in Text.tsx.
+ * Text: the body type scale. Each scale prop has one class per variant, named <prop><Variant> (looked
+ * up by resolveScaleProps). Text has no base values in CSS: `normal` is a real class too, and every
+ * prop gets it from TYPE_DEFAULTS in _shared/TypeFrame.
  *
- * `color` uses the --color-text-* tokens (see theme/tokens.css).
+ * The margin reset and the `color` classes are _shared/Type.module.css, shared with Title, whose
+ * `size*` and `fontWeight*` classes read the title tokens instead of these.
  */
-
-/* A heading or paragraph brings the browser's margin; the space around text comes from the layout */
-.text {
-  margin: 0;
-}
 
 /* The same three classes as Button, Banner and _shared/TextFieldFrame, copied on purpose:
    resolveScaleProps looks classes up in each component's own CSS module (see CLAUDE.md). */
@@ -31,14 +27,4 @@
 }
 .fontWeightMore {
   font-weight: var(--weight-more);
-}
-
-.colorLess {
-  color: var(--color-text-less);
-}
-.colorNormal {
-  color: var(--color-text-normal);
-}
-.colorMore {
-  color: var(--color-text-more);
 }

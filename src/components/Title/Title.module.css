@@ -1,0 +1,35 @@
+/*
+ * Title: the heading type scale. The same props as Text, read from the title tokens (--size-title-*,
+ * --weight-title-*, --font-family-title, --line-height-title in theme/tokens.css), so headings can be
+ * tuned without moving body text. Each scale prop has one class per variant, named <prop><Variant>
+ * (looked up by resolveScaleProps); `normal` is a real class too, the default of every prop.
+ *
+ * The margin reset and the `color` classes are _shared/Type.module.css, shared with Text.
+ */
+
+.title {
+  font-family: var(--font-family-title);
+  line-height: var(--line-height-title);
+  /* Lines of about the same length, not a long line and one stray word under it */
+  text-wrap: balance;
+}
+
+.sizeLess {
+  font-size: var(--size-title-less);
+}
+.sizeNormal {
+  font-size: var(--size-title-normal);
+}
+.sizeMore {
+  font-size: var(--size-title-more);
+}
+
+.fontWeightLess {
+  font-weight: var(--weight-title-less);
+}
+.fontWeightNormal {
+  font-weight: var(--weight-title-normal);
+}
+.fontWeightMore {
+  font-weight: var(--weight-title-more);
+}
