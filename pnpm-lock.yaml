@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      clsx:
+        specifier: ^2.1.0
+        version: 2.1.1
     devDependencies:
       '@changesets/cli':
         specifier: ^2.27.1
@@ -38,9 +42,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^5.0.5
         version: 5.0.5(vitest@5.0.5)
-      clsx:
-        specifier: ^2.1.0
-        version: 2.1.1
       eslint:
         specifier: ^8.56.0
         version: 8.57.1

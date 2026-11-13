@@ -69,12 +69,26 @@ const emitCss = () => {
   console.log('CSS emitted to dist/styles.css');
 };
 
+/**
+ * Nearly every component uses hooks or context, so the bundle is one client module: without a
+ * "use client" at the top, a Next.js server component can't import it. Bundling drops the directive
+ * of each source file, and tsup's `banner` is stripped by its tree-shaking pass too, so it is
+ * prepended here, after the build. In the CJS file it comes before 'use strict': both are directives.
+ */
+const markAsClientModule = () => {
+  for (const file of ['index.js', 'index.cjs']) {
+    const path = join(distDir, file);
+    writeFileSync(path, `"use client";\n${readFileSync(path, 'utf8')}`);
+  }
+};
+
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['esm', 'cjs'],
   dts: true,
   splitting: false,
-  sourcemap: true,
+  // No source maps: they would point at src/, which the package does not ship, and weigh more than the code
+  sourcemap: false,
   clean: true,
   treeshake: true,
   minify: false,
@@ -82,5 +96,6 @@ export default defineConfig({
   esbuildPlugins: [cssModules],
   onSuccess: async () => {
     emitCss();
+    markAsClientModule();
   },
 });

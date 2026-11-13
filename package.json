@@ -2,16 +2,42 @@
   "name": "more-or-less-ui",
   "version": "0.0.1",
   "description": "A React UI library built on relative scaling (more/less/normal) with CSS Variables for theming",
+  "keywords": [
+    "react",
+    "ui",
+    "components",
+    "design-system",
+    "css-variables",
+    "css-modules",
+    "theming",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "Tra Nguyen",
+  "homepage": "https://github.com/tramax/more-or-less-ui#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tramax/more-or-less-ui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tramax/more-or-less-ui/issues"
+  },
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./styles.css": "./dist/styles.css",
     "./theme/tokens.css": "./dist/theme/tokens.css",
-    "./theme/themes.css": "./dist/theme/themes.css"
+    "./theme/themes.css": "./dist/theme/themes.css",
+    "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -35,7 +61,14 @@
     "storybook:build": "storybook build",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "clsx": "^2.1.0"
   },
   "peerDependencies": {
     "react": ">=18.2.0",
@@ -52,7 +85,6 @@
     "@typescript-eslint/eslint-plugin": "^8.71.2",
     "@typescript-eslint/parser": "^8.71.2",
     "@vitest/coverage-v8": "^5.0.5",
-    "clsx": "^2.1.0",
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-storybook": "^10.6.2",

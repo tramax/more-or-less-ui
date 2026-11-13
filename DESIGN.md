@@ -3330,6 +3330,8 @@ export function ThemeProvider({
   // 3. Watch for system changes (if enableSystem)
   // 4. Persist user choice (if storageKey)
   // 5. Provide context for useTheme() hook
+  // Note: renders null until it has mounted (to avoid a hydration mismatch), so on a server-rendered
+  // page nothing inside it is in the HTML. The README tells SSR users to skip it for a <head> script.
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
@@ -3354,7 +3356,7 @@ export function useTheme() {
 
 ```tsx
 // Consumer's custom component
-import { Card, Text, ScaleProp, isVariant } from 'more-or-less-ui';
+import { Card, Stack, Text, type ScaleProp } from 'more-or-less-ui';
 
 interface StatCardProps {
   value: string;
@@ -3364,22 +3366,17 @@ interface StatCardProps {
   boxShadow?: ScaleProp;
 }
 
-export function StatCard({ value, label, size, borderRadius, boxShadow }) {
+export function StatCard({ value, label, size, borderRadius, boxShadow }: StatCardProps) {
   return (
-    <Card
-      padding="normal"
-      borderRadius={borderRadius}
-      boxShadow={boxShadow}
-      bg="bgPrimary"
-      border
-      borderColor="borderDefault"
-    >
-      <Text size={size} fontWeight="more" color="textPrimary">
-        {value}
-      </Text>
-      <Text size="less" color="textMuted">
-        {label}
-      </Text>
+    <Card borderRadius={borderRadius} boxShadow={boxShadow}>
+      <Stack gap="less">
+        <Text size={size} fontWeight="more">
+          {value}
+        </Text>
+        <Text size="less" color="less">
+          {label}
+        </Text>
+      </Stack>
     </Card>
   );
 }
@@ -3542,6 +3539,9 @@ export type { ButtonProps } from './components/Button';
 
 ## Consumer Theming Guide
 
+The README's "Customizing the look" and "Dark mode" sections are the guide users read; keep them in step
+with this one. This is the short form.
+
 ### 1. Override Design Tokens (Global)
 
 ```css
@@ -3564,14 +3564,16 @@ export type { ButtonProps } from './components/Button';
 ### 2. Light/Dark Mode (CSS)
 
 ```css
-/* globals.css */
+/* The dark overrides (themes.css) apply only under <html data-theme="dark">, which sets
+   color-scheme: dark itself. Set the attribute (ThemeProvider does, or a script in <head>). */
+
+/* A bare media query darkens the page and the form controls, but gets none of the dark fills
+   and shadows, because they are under the attribute: */
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
   }
 }
-
-/* Or attribute-based: <html data-theme="dark"> */
 ```
 
 ### 3. Programmatic Theme Switching (React)
