@@ -105,14 +105,15 @@ export const principles: Principle[] = [
     issue:
       'A custom dialog, switch or slider is a div that has to rebuild focus, keyboard, form submission and screen reader roles by hand. Each rebuild is a chance to miss one.',
     decision:
-      'dialog, fieldset, input type=range, the Popover API and role=switch, before anything custom.',
+      'dialog, fieldset, input type=range, the Popover API and role=switch, before anything custom: the browser already does the work, without our JavaScript.',
     why: [
       'A native element has them already. Toggle is a checkbox input with role=switch, so Space, form submission and the on or off announcement come free. Slider is a range input. Dialog is a dialog element opened with showModal, which makes the page behind inert so Tab stays inside it, with Escape and the backdrop built in. A fieldset and its legend name a group of options.',
       'Where a native element exists it is used, and the custom drawing goes over it (the Toggle’s thumb, the Slider’s fill), not in place of it.',
+      'It is also faster, and people feel that. The browser does the focus trap, the inert page, the top layer, Escape, the slider’s keys and touch, and (with CSS anchor positioning) where a popup sits. So the library ships no focus-trap, positioning or slider code, and its only dependency is clsx: less JavaScript to download, parse and run, on the phone and the connection of whoever is using it. We have not benchmarked it, so the claim is less code, not a number.',
     ],
     cost: 'You take what the platform gives, quirks included, and its browser floor: the styles need a 2024 browser (the Popover API, :has(), color-mix()).',
     demo: 'native',
-    evidence: 'Dialog, Toggle, Slider.',
+    evidence: 'Dialog, Toggle, Slider. The package’s only dependency is clsx.',
   },
   {
     slug: 'forms-by-research',
