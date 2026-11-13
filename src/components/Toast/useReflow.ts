@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef, type RefObject } from 'react';
+import { useRef, type RefObject } from 'react';
+import { useIsomorphicLayoutEffect } from '../_shared/useIsomorphicLayoutEffect';
 
 // How long a toast takes to glide to its new place
 export const REFLOW_MS = 250;
@@ -18,7 +19,7 @@ export function useReflow(ref: RefObject<HTMLElement | null>) {
   const gliding = useRef(new WeakMap<Element, Animation>());
 
   // Every render: the column may have changed in any of them
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const container = ref.current;
     // Not laid out yet: the viewport is `display: none` until it has shown itself (showPopover, in an
     // effect that runs after this one), and everything in it reads as being at 0. Measured then, the

@@ -97,6 +97,9 @@ component's CSS.
 - `_shared/SlidingThumb` is the thumb that slides to the selected option (Tabs, SegmentedControl):
   `useSlidingThumb` measures the option's element and `SlidingThumb` draws it; the component's class gives
   its fill, radius and shadow.
+- `_shared/useIsomorphicLayoutEffect` is `useLayoutEffect` in a browser and `useEffect` on a server (React 18 warns for
+  the first one when rendering on a server). A component that measures or syncs in a layout effect uses it (TextField,
+  SlidingThumb, Toast's reflow); never `useLayoutEffect` directly.
 - `_shared/OptionText` is the label + description beside an option's control; `_shared/types.ts` has
   `NameProps` (the accessible-name union for every labelled input) and `OptionBase` (one option).
 - `_shared/Size.module.css` is the `size` scale as font-size. A component whose only scale prop is

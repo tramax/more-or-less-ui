@@ -1,7 +1,6 @@
 import {
   forwardRef,
   useCallback,
-  useLayoutEffect,
   useRef,
   useState,
   type ChangeEvent,
@@ -12,6 +11,7 @@ import { clsx } from '@/utils/clsx';
 import type { ScaleProp } from '@/types/scale';
 import { IconButton } from '../_shared/IconButton';
 import { TextFieldFrame } from '../_shared/TextFieldFrame';
+import { useIsomorphicLayoutEffect } from '../_shared/useIsomorphicLayoutEffect';
 import type { FieldNameProps } from '../_shared/types';
 import { EyeIcon, EyeOffIcon, MinusIcon, PlusIcon } from './FieldIcons';
 import styles from './TextField.module.css';
@@ -124,7 +124,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
     setCanDown(canStep(input, -1));
   };
   // After every render: a controlled value, `min`, `max` or `step` can change without an event
-  useLayoutEffect(syncSteppers);
+  useIsomorphicLayoutEffect(syncSteppers);
 
   const step = (direction: 1 | -1) => {
     if (inputRef.current) stepBy(inputRef.current, direction);

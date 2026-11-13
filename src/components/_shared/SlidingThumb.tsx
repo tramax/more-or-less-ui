@@ -1,10 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState, type RefCallback } from 'react';
+import { useRef, useState, type RefCallback } from 'react';
 import { clsx } from '@/utils/clsx';
+import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 import styles from './SlidingThumb.module.css';
-
-// Measuring has to happen before paint, or the thumb would be seen jumping; on a server there is
-// nothing to measure and useLayoutEffect only warns
-const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 export type ThumbBox = { x: number; y: number; width: number; height: number };
 const sameBox = (a: ThumbBox, b: ThumbBox) =>
