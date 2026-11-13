@@ -1,4 +1,4 @@
-import { Divider, Link, SegmentedControl, Stack, useTheme } from 'more-or-less-ui';
+import { Link, SegmentedControl, Stack, useTheme } from 'more-or-less-ui';
 import { GITHUB_URL, STORYBOOK_URL } from './links';
 import { useRouter } from './router';
 import styles from './site.module.css';
@@ -70,7 +70,6 @@ export function Header() {
           </Stack>
         </Stack>
       </div>
-      <Divider />
     </header>
   );
 }

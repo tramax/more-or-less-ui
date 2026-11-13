@@ -6,10 +6,12 @@
 
 /*
  * A faint wash of the brand color over the system canvas, in light and dark. Cards are Canvas, so they
- * lift off it; the header's blurred overlay and the field fills (translucent brand) sit on top of it.
+ * lift off it; the field fills (translucent brand) sit on top of it. The header is the same color, so
+ * it reads as part of the page rather than a bar over it.
  */
 :global(body) {
-  background: color-mix(in oklab, var(--color-primary) 6%, Canvas);
+  --site-background: color-mix(in oklab, var(--color-primary) 6%, Canvas);
+  background: var(--site-background);
 }
 
 .page {
@@ -19,12 +21,12 @@
   padding-inline: var(--space-more);
 }
 
-/* The page behind the header shows through, blurred, as it does behind the library's overlays */
+/* The page's own color, translucent: what scrolls under the header shows through, blurred */
 .header {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--color-overlay-background);
+  background: color-mix(in oklab, var(--site-background) 60%, transparent);
   backdrop-filter: blur(12px);
 }
 

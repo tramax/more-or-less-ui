@@ -17,21 +17,24 @@
   /* Flips system colors (Canvas, CanvasText, form controls, scrollbars) to their dark variants */
   color-scheme: dark;
 
-  --color-card-background-more: #4a3f33; /* umber */
-  --color-button-background-more: #4a3f33; /* umber */
+  /* The brand color taken 60% toward black: dark enough for white text on any brand, and the same hue,
+     so the dark theme's `more` fills follow --color-primary like the light theme's */
+  --color-primary-deep: color-mix(in oklab, var(--color-primary) 40%, black);
+  --color-card-background-more: var(--color-primary-deep);
+  --color-button-background-more: var(--color-primary-deep);
   /* Not --color-on-primary: the primary is still the light sand here, which would give black text */
   --color-button-text-more: white;
-  --color-banner-background-more: #4a3f33; /* umber */
+  --color-banner-background-more: var(--color-primary-deep);
   --color-banner-text-more: white;
-  --color-chip-background-selected: #4a3f33; /* umber */
+  --color-chip-background-selected: var(--color-primary-deep);
   --color-chip-text-selected: white;
-  --color-pagination-background-current: #4a3f33; /* umber */
+  --color-pagination-background-current: var(--color-primary-deep);
   --color-pagination-text-current: white;
-  --color-calendar-background-current: #4a3f33; /* umber */
+  --color-calendar-background-current: var(--color-primary-deep);
   --color-calendar-text-current: white;
-  --color-datefield-segment-background-active: #4a3f33; /* umber */
+  --color-datefield-segment-background-active: var(--color-primary-deep);
   --color-datefield-segment-text-active: white;
-  --color-segmented-thumb: #4a3f33; /* umber */
+  --color-segmented-thumb: var(--color-primary-deep);
   --color-segmented-text-selected: white;
   /* Dark enough that the avatar's text turns white by itself */
   --color-avatar-lightness: 0.45;

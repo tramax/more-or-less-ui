@@ -151,8 +151,13 @@ actually needs one.
 /* theme/themes.css */
 [data-theme='dark'] {
   color-scheme: dark; /* flips system colors: Canvas, CanvasText, form controls, scrollbars */
-  --color-card-background-more: #4a3f33; /* umber */
-  --color-button-background-more: #4a3f33; /* umber */
+  --color-primary-deep: color-mix(
+    in oklab,
+    var(--color-primary) 40%,
+    black
+  ); /* the brand, darkened */
+  --color-card-background-more: var(--color-primary-deep);
+  --color-button-background-more: var(--color-primary-deep);
   --color-button-text-more: white; /* set with the background: on-primary follows the sand primary */
   /* ...heavier --elevation-* shadows */
 }
@@ -629,7 +634,7 @@ hatch. `background="more"` is the brand-colored button, `background="less"` the 
 Text is `CanvasText`, except on `background="more"`: there it is `--color-button-text-more`, an alias of
 `--color-on-primary` (black or white, whichever contrasts with the primary), so a dark brand color
 gets light text. A theme or consumer that recolors `--color-button-background-more` must set
-`--color-button-text-more` with it (the dark theme does: its umber fill gets white). An escape-hatch
+`--color-button-text-more` with it (the dark theme does: its darkened-brand fill gets white). An escape-hatch
 `background` string keeps `CanvasText`.
 
 Border radius, font weight and box shadow are not props: the Button defines them itself in its CSS
@@ -1352,7 +1357,7 @@ GOV.UK advises, not in a banner.)
 is the opaque tint (`--color-primary-tint`, shared with Button's `normal`) and `more` is the brand
 color itself, with `--color-banner-text-more` (an alias of `--color-on-primary`) for its text. A banner is flat: no shadow
 on any background. As in Button, a theme that recolors the `more` background sets its text with it
-(the dark theme does: umber and white). An escape-hatch `background` is any CSS value, and keeps
+(the dark theme does: the darkened brand and white). An escape-hatch `background` is any CSS value, and keeps
 `CanvasText`. Because the scale is only strength of the same hue, nothing in it relies on a color
 difference: the words carry the meaning.
 
