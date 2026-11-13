@@ -127,15 +127,16 @@ not in DESIGN.md yet.
 
 A static site with hash routes and no server.
 
-1. **Landing:** the hero; a playground (a token customiser: brand color, corners, text size, spacing,
-   typeface, shadows, motion, with the CSS it produces; and a pottery-studio booking page built from the
+1. **Landing:** the hero; a playground (a token customiser: seven whole looks that each set 38 or more variables
+   (Slate, Brutal, Candy, Terminal, Lexend, Magazine, and Retro, which sets every variable the library has; Candy, Lexend, Magazine and Retro load a Google Font only when chosen), then brand color, corners, text size, spacing,
+   typeface, shadows, motion on top, with the CSS it produces; and a pottery-studio booking page built from the
    library, which restyles live); why three (fewer decisions for users and developers; a vocabulary a coding
    agent can use: the findings and their honest limits, no citations); how to start; and entry points to the
    rest. The less/normal/more demo lives on the `one-scale` principle card, not here.
 2. **Principles:** the 10 cards, each with its own permalink.
 3. **Components:** a card per component on one page with anchors, grouped like the Storybook sidebar. Each
    card links to its Storybook page.
-4. **About:** the author's background in human-computer interaction.
+4. **About:** a short, humble story, not a résumé (that is on LinkedIn): why the library exists (the pain of other libraries, a simpler approach, not one size fits all), what shapes it (a frontend developer with formal HCI training and a graphic design background), and that it is still taking shape. Ends with an invitation to connect on LinkedIn. Live.
 
 ## Part 5: LinkedIn series
 
@@ -160,6 +161,6 @@ live demo).
 - **The voice.** First person ("I chose") or third ("we chose").
 - **The stories.** "I learned this on project X". This is what makes the posts the author's and the site
   more than documentation.
-- **The About section.** Background in human-computer interaction and front-end work.
+- **The About section.** Done: it tells why the library exists and what shapes it, not the author's history.
 - **The decisions in part 3:** colored chips against principle 8, and the nav bar's shape.
 - **A check of every claim** against the code before a card is marked `reviewed`.

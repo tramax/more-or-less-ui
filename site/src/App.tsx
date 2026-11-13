@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Footer } from './Footer';
 import { Header } from './Header';
+import { About } from './pages/About';
 import { Coming } from './pages/Coming';
 import { Landing } from './pages/Landing';
 import { Principles } from './pages/Principles';
@@ -20,12 +21,7 @@ function Page({ route }: { route: Route }) {
     case 'principles':
       return <Principles />;
     case 'about':
-      return (
-        <Coming
-          title="About"
-          text="The experience in human-computer interaction behind the choices."
-        />
-      );
+      return <About />;
     case 'not-found':
       return <Coming title="Not found" text="There is nothing at this address." />;
   }

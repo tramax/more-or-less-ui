@@ -24,17 +24,24 @@ export function BrandPicker({
   color: string | null;
   onChange: (color: string | null) => void;
 }) {
-  const selected = BRANDS.find((brand) => brand.color === color)?.value ?? null;
+  // Sand is the library's own, which the page may also say out loud (`DEFAULT_BRAND`) under a look
+  const selected =
+    BRANDS.find((brand) => (brand.color ?? DEFAULT_BRAND) === (color ?? DEFAULT_BRAND))?.value ??
+    null;
 
   return (
     <>
-      <SegmentedControl
-        label="Brand color"
-        tooltip="Sets --color-primary. The fills, tints, shadows, focus ring and the text on them are all derived from it."
-        options={BRANDS.map(({ value }) => ({ value, label: value }))}
-        value={selected}
-        onChange={(value) => onChange(BRANDS.find((brand) => brand.value === value)?.color ?? null)}
-      />
+      <div className={styles.scrollX}>
+        <SegmentedControl
+          label="Brand color"
+          tooltip="Sets --color-primary. The fills, tints, shadows, focus ring and the text on them are all derived from it."
+          options={BRANDS.map(({ value }) => ({ value, label: value }))}
+          value={selected}
+          onChange={(value) =>
+            onChange(BRANDS.find((brand) => brand.value === value)?.color ?? null)
+          }
+        />
+      </div>
       <label className={styles.colorPicker}>
         <Text size="less" color="less">
           Or any color

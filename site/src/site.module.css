@@ -85,12 +85,12 @@
   gap: 4rem;
 }
 
-.heroCopy {
-  max-width: 48rem;
-}
-
-.heroText {
-  max-width: 36rem;
+/* A section of the About page: its heading on the left, its words on the right, so the page fills its
+   width and a line is still a readable length; below 56rem the heading goes above the words */
+.storyRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 4rem;
 }
 
 /* The card a principle or a component gets, with room above for the sticky header when scrolled to */
@@ -100,7 +100,12 @@
 
 .pre {
   margin: 0;
-  overflow-x: auto;
+  /* A whole look is dozens of lines: the block scrolls rather than push the page down */
+  max-height: 24rem;
+  overflow: auto;
+  /* A long line (a font URL, a font stack) wraps instead of sliding under the Copy button */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   padding: var(--space-normal);
   border-radius: var(--radius-less);
   background: var(--color-field-background);
@@ -164,8 +169,13 @@
 }
 
 @media (max-width: 56rem) {
-  .heroGrid {
+  .heroGrid,
+  .storyRow {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .storyRow {
+    gap: var(--space-normal);
   }
 
   .mark {
@@ -223,4 +233,13 @@
   grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
   gap: var(--space-more);
   align-items: start;
+}
+
+/* A row wider than its container scrolls inside it. The padding, pulled back by the margin, keeps the
+   focus ring and shadow of what is inside from being clipped by the box. */
+.scrollX {
+  max-width: 100%;
+  margin: -0.25rem;
+  padding: 0.25rem;
+  overflow-x: auto;
 }
