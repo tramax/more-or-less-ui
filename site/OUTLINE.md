@@ -135,7 +135,7 @@ A static site with hash routes and no server.
 2. **Principles:** the 10 cards, each with its own permalink.
 3. **Components:** a card per component on one page with anchors, grouped like the Storybook sidebar. Each
    card links to its Storybook page.
-4. **About:** a short, humble story, not a résumé (that is on LinkedIn): why the library exists (the pain of other libraries, a simpler approach, not one size fits all), what shapes it (a frontend developer with formal HCI training and an eye for design), and that it is still taking shape. Ends with an invitation to connect on LinkedIn. Live.
+4. **About:** a short, humble story, not a résumé (that is on LinkedIn): why the library exists (the pain of other libraries, a simpler approach, not one size fits all), what shapes it (a frontend developer with formal HCI training and a graphic design background), and that it is still taking shape. Ends with an invitation to connect on LinkedIn. Live.
 
 ## Part 5: LinkedIn series
 

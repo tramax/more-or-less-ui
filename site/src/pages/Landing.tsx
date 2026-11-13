@@ -80,7 +80,7 @@ export function Landing() {
     <div className={styles.page}>
       <section className={styles.hero} aria-labelledby="hero-title">
         <div className={styles.heroGrid}>
-          <Stack gap="more" className={styles.heroCopy}>
+          <Stack gap="more">
             {/* The one place that goes past `more`: a display size, as an escape hatch value */}
             <Title
               as="h1"
@@ -91,7 +91,7 @@ export function Landing() {
             >
               Three choices for everything
             </Title>
-            <Text as="p" size="more" color="less" className={styles.heroText}>
+            <Text as="p" size="more" color="less">
               A React component library where every size, radius, weight, space and shadow is less,
               normal or more, and every one of them is a CSS variable you can change.
             </Text>

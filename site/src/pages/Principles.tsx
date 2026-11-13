@@ -85,7 +85,7 @@ export function Principles() {
   return (
     <div className={styles.page}>
       <Stack gap="more" className={styles.section}>
-        <Stack gap="normal" align="start" className={styles.heroText}>
+        <Stack gap="normal" align="start">
           <Title as="h1" size="more">
             Principles
           </Title>

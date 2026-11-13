@@ -14,8 +14,8 @@ const BRINGS: InfoCardItem[] = [
   },
   {
     key: 'eye',
-    title: 'An eye for how it looks',
-    text: 'I like making things look good, and I trust my taste. I try to back it with research where there is some, and to say so where there is not.',
+    title: 'A background in graphic design',
+    text: 'I also have a background in graphic design, and I use its theory in my everyday work: hierarchy, spacing, color and contrast. It shapes how the defaults here look, and I try to keep it in service of the person using the interface.',
   },
 ];
 
@@ -37,11 +37,11 @@ export function About() {
   return (
     <div className={styles.page}>
       <section className={styles.hero} aria-labelledby="about-title">
-        <Stack gap="normal" className={styles.heroCopy}>
+        <Stack gap="normal">
           <Title as="h1" size="more" id="about-title">
             Hello, I am Tra
           </Title>
-          <Text as="p" size="more" color="less" className={styles.heroText}>
+          <Text as="p" size="more" color="less">
             I am a frontend developer, and this is a library I am building to make the interfaces I
             work on simpler to get right.
           </Text>
