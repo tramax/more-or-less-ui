@@ -11,6 +11,7 @@ import { MotionDemo } from '../demos/MotionDemo';
 import { NamesDemo } from '../demos/NamesDemo';
 import { NativeDemo } from '../demos/NativeDemo';
 import { ScaleDemo } from '../demos/ScaleDemo';
+import { Part } from '../Part';
 import { anchorId, useRouter } from '../router';
 import styles from '../site.module.css';
 
@@ -26,18 +27,6 @@ const DEMOS: Record<DemoKey, () => ReactNode> = {
   loading: LoadingDemo,
   frame: FrameDemo,
 };
-
-/** One part of a card: a small label above its text. */
-function Part({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <Stack gap="less">
-      <Text size="less" color="less" fontWeight="more" className={styles.demoLabel}>
-        {label}
-      </Text>
-      {children}
-    </Stack>
-  );
-}
 
 function PrincipleCard({ principle, number }: { principle: Principle; number: number }) {
   const Demo = DEMOS[principle.demo];

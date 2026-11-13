@@ -47,6 +47,11 @@
   padding-block: 4rem;
 }
 
+/* A section that follows straight from the one above it, which already has room below it */
+.sectionTight {
+  padding-block: 0 4rem;
+}
+
 .hero {
   padding-block: 5rem 3rem;
   max-width: 48rem;
@@ -137,4 +142,13 @@
   border: 0;
   background: none;
   cursor: pointer;
+}
+
+/* Two cards side by side, one over the other when there isn't room. Grid's `minWidth` fits as many columns
+   as the width allows, which would leave an empty column for two. */
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+  gap: var(--space-more);
+  align-items: start;
 }

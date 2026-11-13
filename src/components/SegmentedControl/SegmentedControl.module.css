@@ -25,7 +25,10 @@
 .track {
   position: relative;
   display: inline-flex;
-  gap: 0.125em;
+  /* More than a hovered segment grows by on each side (half of its scale less 1, as a share of its width:
+     about 0.2em on the widest labels), so it never overlaps the next one or the thumb behind it. The
+     track's padding is the same, so it stays inside the track at the ends. */
+  gap: 0.25em;
   padding: var(--segmented-padding);
   border-radius: var(--segmented-radius);
   corner-shape: squircle;
@@ -61,7 +64,7 @@
   /* Hover motion, as Button's and Pagination's: entering overshoots (--ease-enter) and settles; leaving is
      the plain ease-out, so the segment doesn't dip below its size and wobble once the pointer has gone.
      This is the leaving one, which is also what the segment returns on. Fixed, not a prop. */
-  --segmented-hover-scale: 1.06;
+  --segmented-hover-scale: 1.05;
   transform: scale(1);
   transition:
     transform 400ms var(--ease-leave),

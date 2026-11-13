@@ -127,7 +127,11 @@ not in DESIGN.md yet.
 
 A static site with hash routes and no server.
 
-1. **Landing:** the hero, the less/normal/more demo, a live re-skin panel, and entry points to the rest.
+1. **Landing:** the hero; a playground (a token customiser: brand color, corners, text size, spacing,
+   typeface, shadows, motion, with the CSS it produces; and a pottery-studio booking page built from the
+   library, which restyles live); why three (fewer decisions for users and developers; a vocabulary a coding
+   agent can use: the findings and their honest limits, no citations); how to start; and entry points to the
+   rest. The less/normal/more demo lives on the `one-scale` principle card, not here.
 2. **Principles:** the 10 cards, each with its own permalink.
 3. **Components:** a card per component on one page with anchors, grouped like the Storybook sidebar. Each
    card links to its Storybook page.

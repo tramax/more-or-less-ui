@@ -944,8 +944,8 @@ color (`--color-segmented-thumb`, an alias of `--color-primary`) with `--color-s
 (an alias of `--color-on-primary`), as a selected Chip and the current page of Pagination are. Tabs is a
 frosted tray with a page-colored thumb, which reads as navigation. Unselected segments are
 `--color-text-less`; under the pointer one takes the field's stronger tint (hover-capable pointers only).
-**Motion** is the system's, as Pagination's and Button's: a segment springs to 1.06 on `--ease-enter` (500 ms, overshoots and
-settles) and returns on `--ease-leave`; pressed, it shrinks to 0.95 in 120 ms with no overshoot. The thumb does the
+**Motion** is the system's, as Pagination's and Button's: a segment springs to 1.05 on `--ease-enter` (500 ms, overshoots and
+settles; the 0.25em gap between segments is more than that grows it by, so it never overlaps its neighbour or the thumb) and returns on `--ease-leave`; pressed, it shrinks to 0.95 in 120 ms with no overshoot. The thumb does the
 same when the chosen segment is the one under the pointer or pressed (the same scale from the same middle, so the label stays
 inside it), through `--thumb-scale` and its time and ease on `_shared/SlidingThumb`; at rest it is 1, so Tabs is
 unaffected. With `prefers-reduced-motion` nothing scales and the thumb jumps. The
