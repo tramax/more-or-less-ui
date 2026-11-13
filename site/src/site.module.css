@@ -33,9 +33,23 @@
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-less);
   font-weight: var(--weight-more);
   font-size: var(--size-more);
   white-space: nowrap;
+}
+
+/*
+ * The logo (public/logo.svg) as a mask, so it takes the link's text color and follows the theme toggle,
+ * which the file's own light/dark colors (for the favicon and README) would not.
+ */
+.logo {
+  width: 2rem;
+  aspect-ratio: 381.33 / 335.17;
+  background-color: currentColor;
+  mask: url('/logo.svg') center / contain no-repeat;
 }
 
 .nav {
