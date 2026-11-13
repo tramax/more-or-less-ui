@@ -1,0 +1,48 @@
+name: Deploy site and Storybook
+
+# The demo site is the root of https://tramax.github.io/more-or-less-ui/ and Storybook sits beside it
+# at /storybook/ (site/src/links.ts points there). Needs Settings > Pages > Source: GitHub Actions.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # version comes from "packageManager" in package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The site imports the library through a link to the repo root, so it needs dist/ first.
+      - run: pnpm build
+      - run: pnpm --filter more-or-less-ui-site build
+      - run: pnpm storybook:build
+      - name: Put Storybook beside the site
+        run: mv storybook-static site/dist/storybook
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
