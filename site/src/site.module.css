@@ -43,6 +43,11 @@
   white-space: nowrap;
 }
 
+/* The logo link is a mark, not text in a sentence: no Link underline, and no highlight on hover */
+.brand::after {
+  display: none;
+}
+
 /*
  * The logo (public/logo.svg) as a mask, so it takes the link's text color and follows the theme toggle,
  * which the file's own light/dark colors (for the favicon and README) would not.

@@ -8,6 +8,7 @@ import {
   Dialog,
   FileUpload,
   Grid,
+  Progress,
   Radio,
   SegmentedControl,
   Select,
@@ -59,6 +60,9 @@ export function BookClass() {
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
+  // Two things the booking needs: the progress bar is how far along the form is
+  const detailsDone = (name.trim() ? 1 : 0) + (startDate ? 1 : 0);
+
   const review = () => {
     const error = validateName(name);
     setNameError(error);
@@ -73,8 +77,8 @@ export function BookClass() {
       toast.add({
         title: 'You’re booked',
         description: startDate
-          ? `Wheel throwing starts ${formatDay(startDate)}. See you there, ${name.trim()}.`
-          : `Wheel throwing. See you there, ${name.trim()}.`,
+          ? `Wheel throwing starts ${formatDay(startDate)}. See you there${name.trim() && `, ${name.trim()}`}.`
+          : `Wheel throwing. See you there${name.trim() && `, ${name.trim()}`}.`,
       });
     }, 1000);
   };
@@ -91,6 +95,18 @@ export function BookClass() {
         <Card padding="more">
           <Stack gap="more">
             <Title as="h3">Book your place</Title>
+
+            <Stack gap="less">
+              <Progress
+                value={detailsDone}
+                max={2}
+                aria-label="Booking details"
+                aria-valuetext={`${detailsDone} of 2 details filled in`}
+              />
+              <Text size="less" color="less">
+                {detailsDone} of 2 details filled in: your name and a start date
+              </Text>
+            </Stack>
 
             <TextField
               label="Your name"
@@ -143,6 +159,9 @@ export function BookClass() {
                   Book my place
                 </Button>
               </Tooltip>
+              <Button background="less" onClick={() => setIsConfirming(true)}>
+                See the confirmation
+              </Button>
             </Stack>
 
             <Dialog
