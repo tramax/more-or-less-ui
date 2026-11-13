@@ -112,8 +112,8 @@ export function Landing() {
         <Stack gap="more">
           <SectionIntro id="try-title" title="See it, then make it yours">
             Below is a booking page for a pottery studio, built from nothing but this library. Use
-            it, then change the tokens and watch every part follow. A look of your own takes a few
-            variables, not a rewrite.
+            it, then try a whole look or change the tokens one at a time, and watch every part
+            follow. A look of your own takes a few variables, not a rewrite.
           </SectionIntro>
           <Customiser />
           <Showcase />
