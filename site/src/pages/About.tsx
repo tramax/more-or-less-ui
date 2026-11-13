@@ -1,7 +1,7 @@
+import type { ReactNode } from 'react';
 import { Link, Stack, Text, Title } from 'more-or-less-ui';
 import { InfoCards, type InfoCardItem } from '../InfoCards';
 import { GITHUB_URL, LINKEDIN_URL } from '../links';
-import { SectionIntro } from '../SectionIntro';
 import styles from '../site.module.css';
 
 // What shapes the library, in the author's own terms. Written to be read, not to impress: no résumé,
@@ -19,6 +19,20 @@ const BRINGS: InfoCardItem[] = [
   },
 ];
 
+/** A heading on the left and what it says on the right; `id` is what the section's `aria-labelledby` names. */
+function Story({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+  return (
+    <section className={styles.sectionTight} aria-labelledby={id}>
+      <div className={styles.storyRow}>
+        <Title as="h2" id={id}>
+          {title}
+        </Title>
+        <Stack gap="more">{children}</Stack>
+      </div>
+    </section>
+  );
+}
+
 export function About() {
   return (
     <div className={styles.page}>
@@ -34,48 +48,51 @@ export function About() {
         </Stack>
       </section>
 
-      <section className={styles.sectionTight} aria-labelledby="why-title">
-        <SectionIntro id="why-title" title="Why I made it">
+      <Story id="why-title" title="Why I made it">
+        <Text as="p">
           I have built with a lot of component libraries, and I know where they hurt: a prop for
           every possible look, three ways to do one thing, a theme I needed a map to read. Most are
           trying to fit every product. That is a fair goal, but it leaves a large surface to learn
           and many choices to make before anything looks right.
-        </SectionIntro>
-      </section>
+        </Text>
+      </Story>
 
-      <section className={styles.sectionTight} aria-labelledby="instead-title">
-        <SectionIntro id="instead-title" title="What I wanted instead">
+      <Story id="instead-title" title="What I wanted instead">
+        <Text as="p">
           Something smaller, with one simple way of doing things. Every size, space and weight is
           less, normal or more, and the rest is a CSS variable you can change. It is not trying to
           suit every product. Simple turned out to be the hard part: each option I leave out has to
           be a choice I can explain, and the <Link href="/principles">Principles</Link> are where I
           try.
-        </SectionIntro>
-      </section>
+        </Text>
+      </Story>
 
-      <section className={styles.sectionTight} aria-labelledby="bring-title">
-        <Stack gap="more">
-          <SectionIntro id="bring-title" title="Two things shape how I build it">
-            Neither is a claim that I have got it right. They are where the questions come from.
-          </SectionIntro>
-          <InfoCards items={BRINGS} />
-        </Stack>
-      </section>
+      <Story id="bring-title" title="Two things shape how I build it">
+        <Text as="p">
+          Neither is a claim that I have got it right. They are where the questions come from.
+        </Text>
+        <InfoCards items={BRINGS} />
+      </Story>
 
       <section className={styles.section} aria-labelledby="shaping-title">
-        <SectionIntro id="shaping-title" title="Still taking shape">
-          The library is early, and I am still finding what it gets wrong. Some defaults will
-          change. If one gets in your way,{' '}
-          <Link href={`${GITHUB_URL}/issues`} target="_blank" rel="noopener">
-            please tell me on GitHub
-          </Link>
-          . And if you would like to talk about it, or about interfaces in general, connect with me
-          on{' '}
-          <Link href={LINKEDIN_URL} target="_blank" rel="noopener">
-            LinkedIn
-          </Link>
-          .
-        </SectionIntro>
+        <div className={styles.storyRow}>
+          <Title as="h2" id="shaping-title">
+            Still taking shape
+          </Title>
+          <Text as="p">
+            The library is early, and I am still finding what it gets wrong. Some defaults will
+            change. If one gets in your way,{' '}
+            <Link href={`${GITHUB_URL}/issues`} target="_blank" rel="noopener">
+              please tell me on GitHub
+            </Link>
+            . And if you would like to talk about it, or about interfaces in general, connect with
+            me on{' '}
+            <Link href={LINKEDIN_URL} target="_blank" rel="noopener">
+              LinkedIn
+            </Link>
+            .
+          </Text>
+        </div>
       </section>
     </div>
   );

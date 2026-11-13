@@ -93,6 +93,14 @@
   max-width: 36rem;
 }
 
+/* A section of the About page: its heading on the left, its words on the right, so the page fills its
+   width and a line is still a readable length; below 56rem the heading goes above the words */
+.storyRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 4rem;
+}
+
 /* The card a principle or a component gets, with room above for the sticky header when scrolled to */
 .anchor {
   scroll-margin-top: 6rem;
@@ -164,8 +172,13 @@
 }
 
 @media (max-width: 56rem) {
-  .heroGrid {
+  .heroGrid,
+  .storyRow {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .storyRow {
+    gap: var(--space-normal);
   }
 
   .mark {
