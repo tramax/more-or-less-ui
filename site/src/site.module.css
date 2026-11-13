@@ -1,0 +1,136 @@
+/*
+ * Page layout only. Colors, radii, spacing and type all come from the library's tokens and components;
+ * the site invents no recipe of its own. (Fonts: the site inherits the body font, and only <pre> asks
+ * for a monospace one, which the library has no token for.)
+ */
+
+.page {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: var(--space-more);
+}
+
+/* The page behind the header shows through, blurred, as it does behind the library's overlays */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-overlay-background);
+  backdrop-filter: blur(12px);
+}
+
+.headerRow {
+  padding-block: var(--space-normal);
+}
+
+.brand {
+  font-weight: var(--weight-more);
+  font-size: var(--size-more);
+  white-space: nowrap;
+}
+
+.nav {
+  flex: 1;
+}
+
+/* A section of a page: the space above it is the page's rhythm, not a component's margin */
+.section {
+  padding-block: 4rem;
+}
+
+.hero {
+  padding-block: 5rem 3rem;
+  max-width: 48rem;
+}
+
+.heroText {
+  max-width: 36rem;
+}
+
+/* The card a principle or a component gets, with room above for the sticky header when scrolled to */
+.anchor {
+  scroll-margin-top: 6rem;
+}
+
+.pre {
+  margin: 0;
+  overflow-x: auto;
+  padding: var(--space-normal);
+  border-radius: var(--radius-less);
+  background: var(--color-field-background);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--size-less);
+  line-height: 1.6;
+}
+
+.codeBlock {
+  position: relative;
+}
+
+.copy {
+  position: absolute;
+  top: var(--space-less);
+  inset-inline-end: var(--space-less);
+}
+
+/* The code is padded away from the copy button, so a long first line isn't under it */
+.codeBlock .pre {
+  padding-inline-end: 6rem;
+}
+
+.demoLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.footer {
+  padding-block: var(--space-more) 3rem;
+}
+
+@media (max-width: 40rem) {
+  /* Three rows of header would cover a phone screen, so it scrolls away; the nav gets a row of its own */
+  .header {
+    position: static;
+  }
+
+  .nav {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .hero {
+    padding-block: 3rem 2rem;
+  }
+
+  .section {
+    padding-block: 2.5rem;
+  }
+}
+
+/*
+ * "The usual" badge in the calm-color demo: the same mark as the library's Indicator, but in the error
+ * color, to show what the library chose not to do. Not a component: it exists only for the comparison.
+ */
+.badgeHost {
+  position: relative;
+  display: inline-flex;
+}
+
+.redBadge {
+  position: absolute;
+  top: 0;
+  inset-inline-end: 0;
+  transform: translate(35%, -35%);
+  display: grid;
+  place-items: center;
+  min-width: 1.25em;
+  height: 1.25em;
+  padding-inline: 0.3em;
+  border-radius: 999px;
+  background: var(--color-danger);
+  color: white;
+  font-size: var(--size-less);
+  font-weight: var(--weight-more);
+  line-height: 1;
+}
