@@ -28,7 +28,7 @@ export type Principle = {
   cost: string;
   /** A live example, keyed to pages/Principles.tsx. */
   demo: DemoKey;
-  /** Where in the library to see it. */
+  /** Where to see it: the components a person can use, and what to try on them. */
   evidence: string;
 };
 
@@ -46,7 +46,8 @@ export const principles: Principle[] = [
     ],
     cost: 'Only three steps. Anything in between is an escape hatch value.',
     demo: 'scale',
-    evidence: 'Title’s sizes are ratios: 16 to 18px shows; 40 to 42px doesn’t.',
+    evidence:
+      'Any component. Try size on Button, TextField and Title, or padding, borderRadius and boxShadow on Card: less, normal or more.',
   },
   {
     slug: 'intensity-not-kind',
@@ -62,7 +63,8 @@ export const principles: Principle[] = [
     ],
     cost: 'No ready-made danger button. Pass a CSS color (var(--color-danger)) and check its contrast yourself.',
     demo: 'intensity',
-    evidence: 'Button, Card and Banner take background; Text and Title take color.',
+    evidence:
+      'Button, Card and Banner (background), Text and Title (color). None of them has a variant prop.',
   },
   {
     slug: 'affordance',
@@ -78,7 +80,8 @@ export const principles: Principle[] = [
     ],
     cost: 'It limits the look. A loud label can’t borrow a fill without looking pressable, and flat design where buttons look like text isn’t on offer.',
     demo: 'affordance',
-    evidence: 'Chip, Collapsible, Calendar, Toggle, TextField.',
+    evidence:
+      'Chip (outlined, removable or selectable), Collapsible, Calendar, Toggle and a read-only TextField. Each shows what it does before you try it.',
   },
   {
     slug: 'names-in-types',
@@ -93,7 +96,8 @@ export const principles: Principle[] = [
     ],
     cost: 'A little more to write. The types check there is a name, not that it’s a good one: “button” still compiles.',
     demo: 'names',
-    evidence: 'Button, Dialog, NameProps.',
+    evidence:
+      'Button, Dialog and every field. Leave the name out in your editor and it won’t compile.',
   },
   {
     slug: 'native-first',
@@ -108,7 +112,8 @@ export const principles: Principle[] = [
     ],
     cost: 'You take the platform’s quirks, and its browser floor: a 2024 browser (Popover API, :has(), color-mix()).',
     demo: 'native',
-    evidence: 'Dialog, Toggle, Slider. The only dependency is clsx.',
+    evidence:
+      'Dialog and Drawer (dialog), Toggle (role=switch), Slider (range input), Checkbox and Radio (fieldset), Popover, Menu and Tooltip (Popover API).',
   },
   {
     slug: 'forms-by-research',
@@ -124,7 +129,8 @@ export const principles: Principle[] = [
     ],
     cost: 'You write the rule and choose the moment. Hint text that must always show isn’t built yet.',
     demo: 'forms',
-    evidence: 'TextField (NN/g, GOV.UK).',
+    evidence:
+      'TextField: the label above, the error below once you leave the field, the ⓘ beside the label. Textarea, Select and the other fields do the same.',
   },
   {
     slug: 'motion-with-purpose',
@@ -140,7 +146,8 @@ export const principles: Principle[] = [
     ],
     cost: 'New moving components must use the three curves. Springiness is a taste: override the curves for none.',
     demo: 'motion',
-    evidence: '--ease-enter, --ease-leave, --ease-pop.',
+    evidence:
+      'Hover and press Button, Chip and Toggle. Open a Dialog or show a Toast to see enter and leave. Tune the curves with --ease-enter, --ease-leave and --ease-pop.',
   },
   {
     slug: 'derived-color',
@@ -157,7 +164,7 @@ export const principles: Principle[] = [
     cost: 'Color carries little alone: no success green or warning amber, so say it in words and an icon. A very pale brand gives weak tints, and the dark theme sets a few fills by hand.',
     demo: 'color',
     evidence:
-      'tokens.css: --color-primary-tint, --color-primary-strong, --color-field-background, --color-on-primary, --shadow-color.',
+      'Button, Chip, Toggle, TextField, Slider, Progress, Banner and Indicator all follow --color-primary. Change that one variable.',
   },
   {
     slug: 'loading-is-state',
@@ -172,7 +179,8 @@ export const principles: Principle[] = [
     ],
     cost: 'Only text and pictures become blocks today; buttons, fields and cards don’t. You pick placeholder text of about the right length.',
     demo: 'loading',
-    evidence: '_shared/Placeholder.',
+    evidence:
+      'Put aria-busy="true" on a Stack or Card that holds Text, Title, Avatar or a Table, and they turn into blocks.',
   },
   {
     slug: 'one-frame',
@@ -187,6 +195,7 @@ export const principles: Principle[] = [
     ],
     cost: 'A new input has to fit the frame, and some bend it: Slider draws its own control, FileUpload uses its drop zone.',
     demo: 'frame',
-    evidence: 'TextFieldFrame, OptionGroupFrame.',
+    evidence:
+      'TextField, Textarea, Select, Slider, FileUpload and DateField share one frame; Checkbox, Radio and SegmentedControl share another. Turn on an error in each and compare.',
   },
 ];

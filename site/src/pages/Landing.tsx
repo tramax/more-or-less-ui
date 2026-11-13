@@ -32,8 +32,15 @@ export function Landing() {
     <div className={styles.page}>
       <section className={styles.hero} aria-labelledby="hero-title">
         <Stack gap="more">
-          <Title as="h1" size="more" id="hero-title">
-            Three sizes for everything
+          {/* The one place that goes past `more`: a display size, as an escape hatch value */}
+          <Title
+            as="h1"
+            size="clamp(2.75rem, 1.5rem + 5vw, 5rem)"
+            fontWeight="more"
+            color="more"
+            id="hero-title"
+          >
+            Three choices for everything
           </Title>
           <Text as="p" size="more" color="less" className={styles.heroText}>
             A React component library where every size, radius, weight, space and shadow is less,
