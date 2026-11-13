@@ -54,6 +54,17 @@
 
 .hero {
   padding-block: 6rem 6rem;
+}
+
+/* The words on the left, the mark on the right; below 56rem the mark goes and the words take the row */
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+  align-items: center;
+  gap: 4rem;
+}
+
+.heroCopy {
   max-width: 48rem;
 }
 
@@ -99,6 +110,46 @@
 
 .footer {
   padding-block: var(--space-more) 3rem;
+}
+
+/*
+ * The mark is drawn on a canvas (HeroMark.tsx), which cannot read a CSS variable, so two hidden
+ * elements carry its colors and the canvas reads their computed `color`. They are the theme's own
+ * colors, not a recipe of the site's: the brand color for the large group and the strong brand color,
+ * the one that stays visible as a line, for the other two.
+ */
+.mark {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.markCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.probe {
+  display: none;
+}
+
+.probeBrand {
+  color: var(--color-primary);
+}
+
+.probeStrong {
+  color: var(--color-primary-strong);
+}
+
+@media (max-width: 56rem) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mark {
+    display: none;
+  }
 }
 
 @media (max-width: 40rem) {

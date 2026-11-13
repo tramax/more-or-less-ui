@@ -1,6 +1,7 @@
 import { Button, Link, Stack, Text, Title } from 'more-or-less-ui';
 import { CodeBlock } from '../CodeBlock';
 import { Customiser } from '../demos/Customiser';
+import { HeroMark } from '../HeroMark';
 import { InfoCards, type InfoCardItem } from '../InfoCards';
 import { STORYBOOK_URL } from '../links';
 import { SectionIntro } from '../SectionIntro';
@@ -78,30 +79,33 @@ export function Landing() {
   return (
     <div className={styles.page}>
       <section className={styles.hero} aria-labelledby="hero-title">
-        <Stack gap="more">
-          {/* The one place that goes past `more`: a display size, as an escape hatch value */}
-          <Title
-            as="h1"
-            size="clamp(2.75rem, 1.5rem + 5vw, 5rem)"
-            fontWeight="more"
-            color="more"
-            id="hero-title"
-          >
-            Three choices for everything
-          </Title>
-          <Text as="p" size="more" color="less" className={styles.heroText}>
-            A React component library where every size, radius, weight, space and shadow is less,
-            normal or more, and every one of them is a CSS variable you can change.
-          </Text>
-          <Stack direction="row" gap="more" align="center" wrap>
-            <Button background="more" size="more" onClick={() => navigate('/principles')}>
-              Read the reasoning
-            </Button>
-            <Link href={STORYBOOK_URL} target="_blank" rel="noopener" size="more">
-              Try the components in Storybook
-            </Link>
+        <div className={styles.heroGrid}>
+          <Stack gap="more" className={styles.heroCopy}>
+            {/* The one place that goes past `more`: a display size, as an escape hatch value */}
+            <Title
+              as="h1"
+              size="clamp(2.75rem, 1.5rem + 5vw, 5rem)"
+              fontWeight="more"
+              color="more"
+              id="hero-title"
+            >
+              Three choices for everything
+            </Title>
+            <Text as="p" size="more" color="less" className={styles.heroText}>
+              A React component library where every size, radius, weight, space and shadow is less,
+              normal or more, and every one of them is a CSS variable you can change.
+            </Text>
+            <Stack direction="row" gap="more" align="center" wrap>
+              <Button background="more" size="more" onClick={() => navigate('/principles')}>
+                Read the reasoning
+              </Button>
+              <Link href={STORYBOOK_URL} target="_blank" rel="noopener" size="more">
+                Try the components in Storybook
+              </Link>
+            </Stack>
           </Stack>
-        </Stack>
+          <HeroMark />
+        </div>
       </section>
 
       <section className={styles.sectionTight} aria-labelledby="try-title">
