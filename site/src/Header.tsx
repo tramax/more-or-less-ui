@@ -44,7 +44,7 @@ export function Header() {
           className={styles.headerRow}
         >
           <Link href="/" className={styles.brand} isCurrent={route.page === 'home'}>
-            more-or-less-ui
+            More or Less UI
           </Link>
           <nav aria-label="Main" className={styles.nav}>
             <Stack direction="row" gap="more" wrap>

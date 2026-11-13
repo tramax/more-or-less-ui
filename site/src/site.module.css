@@ -4,6 +4,14 @@
  * for a monospace one, which the library has no token for.)
  */
 
+/*
+ * A faint wash of the brand color over the system canvas, in light and dark. Cards are Canvas, so they
+ * lift off it; the header's blurred overlay and the field fills (translucent brand) sit on top of it.
+ */
+:global(body) {
+  background: color-mix(in oklab, var(--color-primary) 6%, Canvas);
+}
+
 .page {
   width: 100%;
   max-width: 72rem;
@@ -108,29 +116,25 @@
   }
 }
 
-/*
- * "The usual" badge in the calm-color demo: the same mark as the library's Indicator, but in the error
- * color, to show what the library chose not to do. Not a component: it exists only for the comparison.
- */
-.badgeHost {
-  position: relative;
-  display: inline-flex;
+/* The number before a card's title, quieter than the title and the same size */
+.number {
+  margin-inline-end: 0.4em;
+  color: var(--color-text-less);
+  font-variant-numeric: tabular-nums;
 }
 
-.redBadge {
-  position: absolute;
-  top: 0;
-  inset-inline-end: 0;
-  transform: translate(35%, -35%);
-  display: grid;
-  place-items: center;
-  min-width: 1.25em;
-  height: 1.25em;
-  padding-inline: 0.3em;
-  border-radius: 999px;
-  background: var(--color-danger);
-  color: white;
-  font-size: var(--size-less);
-  font-weight: var(--weight-more);
-  line-height: 1;
+/* The native color input and its caption, stacked */
+.colorPicker {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-less);
+}
+
+.colorPicker input {
+  width: 4rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
 }

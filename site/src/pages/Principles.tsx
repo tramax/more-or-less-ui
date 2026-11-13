@@ -46,14 +46,10 @@ function PrincipleCard({ principle, number }: { principle: Principle; number: nu
   return (
     <Card id={anchorId('principles', principle.slug)} className={styles.anchor} padding="more">
       <Stack gap="more">
-        <Stack gap="less">
-          <Text size="less" color="less">
-            {number}
-          </Text>
-          <Title as="h2">
-            <Link href={permalink}>{principle.title}</Link>
-          </Title>
-        </Stack>
+        <Title as="h2">
+          <span className={styles.number}>{number}</span>
+          <Link href={permalink}>{principle.title}</Link>
+        </Title>
 
         <Part label="The issue with the existing convention">
           <Text as="p">{principle.issue}</Text>

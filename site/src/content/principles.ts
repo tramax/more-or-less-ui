@@ -147,19 +147,22 @@ export const principles: Principle[] = [
     evidence: '--ease-enter, --ease-leave, --ease-pop.',
   },
   {
-    slug: 'calm-color',
-    title: 'Calm color',
+    slug: 'derived-color',
+    title: 'One brand color; the rest is derived',
     issue:
-      'Red is the convention for a badge (Material’s badge defaults to its error color), and used on everything it stops being seen: Braze calls it “red dot blindness”. A red mark says something is wrong and to hurry, when what you meant was that something is here.',
+      'A palette: a brand color plus numbered shades (50 to 900) and a family for each role (primary, secondary, success, warning, danger). Someone has to pick every shade by hand, keep them harmonious, and pair each fill with a text color that reads on it. Change the brand color and you pick them all again.',
     decision:
-      'One brand color, no status palette, and the badge is not red. Contrast ratios are published.',
+      'Pick one brand color. The fills, tints, shadows, focus ring and the text on them are all derived from it in CSS, so they share a hue by construction, and re-skinning is changing one value.',
     why: [
-      'One brand color and one error color, and no palette of status colors. The badge says “something is here”, and gets noticed by sitting on a corner and arriving with a pop, not by alarm.',
-      'Contrast is checked, not assumed. The sand brand color is 2.09:1 on white, below the 3:1 that WCAG asks of a graphic, so the badge uses a darker mix of it: 5.1:1 on white and 11.4:1 on a dark page.',
+      'One input, dozens of colors. The brand color is the only color you choose. The button’s tint is the brand color mixed toward the page color, the stronger variant is mixed toward the text color, the field fill is the brand color at 15% (25% on hover), and the shadow tint is the brand color darkened. The focus ring, text selection, slider, progress, chips and banners all read from it too. Change it and they follow, as the example shows.',
+      'Harmonious by construction. Every derived color is the brand color at a different strength, over the page or toward the text, so they are one hue and can’t clash the way colors picked one by one can. Even the Avatar’s colors, which differ by name, share one lightness and chroma, so they sit with the brand color.',
+      'The text on a color is derived too. The mark on the brand fill (the tick in a Checkbox, the dot in a Radio, the label on a filled Button) is black or white, whichever contrasts more with the brand color, worked out in CSS. A darker brand color gets light text without anyone setting it.',
+      'Derived doesn’t mean identical: where the brand color can’t do a job, a variant of it does. The sand brand color is 2.09:1 on white, below the 3:1 that WCAG asks of a graphic, so the badge uses a darker mix of it. Red is kept for errors, which have their own color, so a badge isn’t red: a red mark says something is wrong, and used on everything it stops being seen (Braze calls it “red dot blindness”).',
     ],
-    cost: 'Fewer ways to say “status” at a glance: there is no success green or warning amber. You say it in words, with an icon.',
+    cost: 'Everything is one hue, so color can carry little information by itself: there is no success green or warning amber, and you say it in words, with an icon. Derivation can’t rescue a poor brand color, as a very pale one gives weak tints. And the dark theme sets a few fills by hand (a dark umber for the strongest ones), so on a dark page those don’t follow a recolored brand.',
     demo: 'color',
-    evidence: 'Indicator (Braze’s “red dot blindness”, WCAG 3:1).',
+    evidence:
+      'tokens.css: --color-primary-tint, --color-primary-strong, --color-field-background, --color-on-primary, --shadow-color.',
   },
   {
     slug: 'loading-is-state',

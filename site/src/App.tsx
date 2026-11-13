@@ -7,11 +7,11 @@ import { Principles } from './pages/Principles';
 import { useRouter, type Route } from './router';
 
 const TITLES: Record<Route['page'], string> = {
-  home: 'more-or-less-ui',
-  principles: 'Principles · more-or-less-ui',
-  components: 'Components · more-or-less-ui',
-  about: 'About · more-or-less-ui',
-  'not-found': 'Not found · more-or-less-ui',
+  home: 'More or Less UI',
+  principles: 'Principles · More or Less UI',
+  components: 'Components · More or Less UI',
+  about: 'About · More or Less UI',
+  'not-found': 'Not found · More or Less UI',
 };
 
 function Page({ route }: { route: Route }) {
