@@ -11,7 +11,6 @@ import {
   Radio,
   SegmentedControl,
   Select,
-  Slider,
   Spinner,
   Stack,
   Text,
@@ -120,8 +119,17 @@ export function BookClass() {
 
             <Radio label="Time" options={TIMES} orientation="horizontal" defaultValue="evening" />
             <Checkbox label="Add-ons" options={EXTRAS} defaultValue={['apron']} />
-            <Slider label="People in your group" min={1} max={6} defaultValue={2} />
-            <SegmentedControl label="Pay" options={PAYMENT} defaultValue="once" />
+            <Grid columns={{ minWidth: '12rem' }} gap="normal">
+              <TextField
+                label="People in your group"
+                type="number"
+                hasSteppers
+                min={1}
+                max={6}
+                defaultValue={2}
+              />
+              <SegmentedControl label="Pay" options={PAYMENT} defaultValue="once" />
+            </Grid>
             <Textarea
               label="Anything we should know?"
               placeholder="Allergies, access, a first time at the wheel…"
