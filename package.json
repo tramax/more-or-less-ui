@@ -52,7 +52,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint -c eslint.config.cjs \"src/**/*.{ts,tsx}\" \".storybook/**/*.{ts,tsx}\"",
+    "lint": "eslint -c eslint.config.cjs \"src/**/*.{ts,tsx}\" \".storybook/**/*.{ts,tsx}\" \"site/src/**/*.{ts,tsx}\"",
     "check:dup": "jscpd",
     "test": "vitest run",
     "test:watch": "vitest",
