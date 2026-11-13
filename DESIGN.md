@@ -2539,7 +2539,9 @@ and every link below it uses it. The provider needs no clone, so no React 18 / 1
   `#/about`). A normal click goes to `navigate` and never reads the attribute, so the router alone would
   work; everything else reads it: Ctrl / Cmd-click and "open in new tab" (`/about` would be a 404 under
   `/app`), "copy link address", the status bar, a crawler, and the page before React has run. `navigate`
-  always gets the `href` as written, so the router still gets its own terms. Leave it out for an app
+  always gets the `href` as written, so the router still gets its own terms. It is called only for a
+  link to a place in the app: another origin and a fragment keep the `href` as written. A same-origin
+  URL the router does not own (a static `/docs/`) is the app's to exempt inside `resolveHref`. Leave it out for an app
   served from `/` with a browser router, which is most. It is a plain function, not a hook as React
   Aria's `useHref` is, so it can't call a router hook: pass the base path yourself.
 - Without a provider a link is a plain anchor, so the library has no router dependency.

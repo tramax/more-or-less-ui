@@ -9,7 +9,6 @@ import { useRouter, type Route } from './router';
 const TITLES: Record<Route['page'], string> = {
   home: 'More or Less UI',
   principles: 'Principles · More or Less UI',
-  components: 'Components · More or Less UI',
   about: 'About · More or Less UI',
   'not-found': 'Not found · More or Less UI',
 };
@@ -20,13 +19,6 @@ function Page({ route }: { route: Route }) {
       return <Landing />;
     case 'principles':
       return <Principles />;
-    case 'components':
-      return (
-        <Coming
-          title="Components"
-          text="A card for each component: what it does differently, and why. Coming next."
-        />
-      );
     case 'about':
       return (
         <Coming

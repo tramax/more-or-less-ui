@@ -67,13 +67,15 @@ export function useLinkProps({ href, target, download, onClick }: LinkInput) {
   const router = useContext(LinkRouterContext);
   if (!router || href === undefined) return { href, onClick };
 
+  const isOutside = isOutsideApp(href);
   return {
-    href: router.resolveHref ? router.resolveHref(href) : href,
+    // `resolveHref` is for the router's own places; another site's URL or a fragment is already real
+    href: router.resolveHref && !isOutside ? router.resolveHref(href) : href,
     onClick: (event: MouseEvent<HTMLAnchorElement>) => {
       onClick?.(event);
       if (event.defaultPrevented || !isPlainPrimaryClick(event)) return;
       if ((target && target !== '_self') || download !== undefined) return;
-      if (isOutsideApp(href)) return;
+      if (isOutside) return;
       event.preventDefault();
       router.navigate(href);
     },

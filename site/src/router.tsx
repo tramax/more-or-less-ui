@@ -8,11 +8,11 @@ import {
   type ReactNode,
 } from 'react';
 import { LinkProvider } from 'more-or-less-ui';
+import { STORYBOOK_URL } from './links';
 
 export type Route =
   | { page: 'home' }
   | { page: 'principles'; slug?: string }
-  | { page: 'components'; slug?: string }
   | { page: 'about' }
   | { page: 'not-found' };
 
@@ -24,8 +24,6 @@ export function parseRoute(path: string): Route {
       return { page: 'home' };
     case 'principles':
       return { page: 'principles', slug };
-    case 'components':
-      return { page: 'components', slug };
     case 'about':
       return { page: 'about' };
     default:
@@ -34,7 +32,7 @@ export function parseRoute(path: string): Route {
 }
 
 /** The element id of a card on a page, for a route's `slug` to scroll to. */
-export const anchorId = (page: 'principles' | 'components', slug: string) => `${page}-${slug}`;
+export const anchorId = (page: 'principles', slug: string) => `${page}-${slug}`;
 
 const readPath = () => {
   const hash = window.location.hash.slice(1);
@@ -67,15 +65,19 @@ export function Router({ children }: { children: ReactNode }) {
   const navigate = useCallback((to: string) => {
     window.location.hash = to;
   }, []);
-  const resolveHref = useCallback((href: string) => `#${href}`, []);
+  // Storybook is a page beside the site, not a route in it
+  const resolveHref = useCallback(
+    (href: string) => (href.startsWith(STORYBOOK_URL) ? href : `#${href}`),
+    [],
+  );
 
   const route = useMemo(() => parseRoute(path), [path]);
 
   // A new route starts at the top, or at the card its slug names
   useEffect(() => {
     const target =
-      route.page === 'principles' || route.page === 'components'
-        ? route.slug && document.getElementById(anchorId(route.page, route.slug))
+      route.page === 'principles' && route.slug
+        ? document.getElementById(anchorId(route.page, route.slug))
         : null;
     if (target) target.scrollIntoView();
     else window.scrollTo(0, 0);

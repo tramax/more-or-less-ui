@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Card, Chip, Link, Stack, Text, Title } from 'more-or-less-ui';
+import { Card, Link, Stack, Text, Title } from 'more-or-less-ui';
 import { principles, type DemoKey, type Principle } from '../content/principles';
 import { AffordanceDemo } from '../demos/AffordanceDemo';
 import { ColorDemo } from '../demos/ColorDemo';
@@ -92,7 +92,6 @@ export function Principles() {
           <Text as="p" size="more" color="less">
             The decisions that run through every component, each with its reasons and what it costs.
           </Text>
-          <Chip>Draft: cards are being written one at a time</Chip>
         </Stack>
         {principles.map((principle, index) => (
           <PrincipleCard key={principle.slug} principle={principle} number={index + 1} />

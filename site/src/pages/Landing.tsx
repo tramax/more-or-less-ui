@@ -14,9 +14,10 @@ const ENTRY_POINTS = [
     text: 'The decisions that run through every component, each with its reasons and what it costs.',
   },
   {
-    href: '/components',
+    href: STORYBOOK_URL,
     title: 'Components',
-    text: 'Why each component is the way it is: what it does differently, and the research behind it.',
+    text: 'Every component in Storybook: try each one, change its props, and read how it behaves.',
+    external: true,
   },
   {
     href: '/about',
@@ -164,7 +165,12 @@ import { Button } from 'more-or-less-ui';`}
               <Card key={entry.href}>
                 <Stack gap="normal">
                   <Title as="h3" size="less">
-                    <Link href={entry.href}>{entry.title}</Link>
+                    <Link
+                      href={entry.href}
+                      {...('external' in entry && { target: '_blank', rel: 'noopener' })}
+                    >
+                      {entry.title}
+                    </Link>
                   </Title>
                   <Text as="p" color="less">
                     {entry.text}

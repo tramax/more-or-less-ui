@@ -1,7 +1,6 @@
 /**
  * The principle cards. Slugs, titles, decisions and evidence mirror site/OUTLINE.md part 1: change one,
- * change the other. Every card is a draft: its issue, reasons and cost are drawn from DESIGN.md and
- * are not yet checked against the code by the author.
+ * change the other. Each card's issue, reasons and cost are drawn from DESIGN.md.
  */
 export type DemoKey =
   | 'scale'

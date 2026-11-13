@@ -177,6 +177,21 @@ describe('Link', () => {
       expect(navigate).toHaveBeenCalledWith('/about');
     });
 
+    it('leaves another site and a fragment as written: resolveHref is only for the app', () => {
+      render(
+        <LinkProvider navigate={vi.fn()} resolveHref={(href) => `#${href}`}>
+          <Link href="https://github.com/org/repo">Elsewhere</Link>
+          <Link href="#section">Here</Link>
+          <Link href="/about">About</Link>
+        </LinkProvider>,
+      );
+      expect(screen.getByText('Elsewhere').getAttribute('href')).toBe(
+        'https://github.com/org/repo',
+      );
+      expect(screen.getByText('Here').getAttribute('href')).toBe('#section');
+      expect(screen.getByText('About').getAttribute('href')).toBe('#/about');
+    });
+
     it('is not routed when there is no href', () => {
       const navigate = vi.fn();
       render(
