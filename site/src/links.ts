@@ -7,3 +7,4 @@ export const STORYBOOK_URL = import.meta.env.DEV
   ? 'http://localhost:6006/'
   : `${import.meta.env.BASE_URL}storybook/`;
 export const GITHUB_URL = 'https://github.com/tramax/more-or-less-ui';
+export const LINKEDIN_URL = 'https://www.linkedin.com/in/nguyensontra';
