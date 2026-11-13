@@ -1,27 +1,73 @@
-import { Button, Card, Grid, Link, Stack, Text, Title } from 'more-or-less-ui';
+import { Button, Link, Stack, Text, Title } from 'more-or-less-ui';
 import { CodeBlock } from '../CodeBlock';
 import { Customiser } from '../demos/Customiser';
+import { InfoCards, type InfoCardItem } from '../InfoCards';
 import { STORYBOOK_URL } from '../links';
-import { Part } from '../Part';
+import { SectionIntro } from '../SectionIntro';
 import { useRouter } from '../router';
 import { Showcase } from '../showcase/Showcase';
 import styles from '../site.module.css';
 
-const ENTRY_POINTS = [
+const STRENGTHS: InfoCardItem[] = [
   {
-    href: '/principles',
-    title: 'Principles',
+    key: 'variables',
+    title: 'Theme with CSS variables',
+    text: 'Fifteen variables set every size, radius, weight, space and shadow; a few more set color. Change them on :root, or on any element to restyle only what is inside it.',
+  },
+  {
+    key: 'props',
+    title: 'A small interface',
+    text: 'Style props take less, normal or more, and the defaults already look right. Write <Button background="more"> and it works; there is no variant list to learn.',
+  },
+  {
+    key: 'extend',
+    title: 'Extend it your way',
+    text: 'Need a component we do not have? Build it from the same tokens and principles and it sits beside the rest, looking like it belongs.',
+  },
+];
+
+const REASONS: InfoCardItem[] = [
+  {
+    key: 'decide',
+    title: 'Less to decide',
+    text: (
+      <>
+        People choose slower as options grow, and hold about four things in mind at once. Three
+        steps fit, and nobody looks up whether <code>md</code> is bigger than <code>base</code>: the
+        words say it.
+      </>
+    ),
+  },
+  {
+    key: 'look',
+    title: 'A look that holds together',
+    text: 'With only three sizes, radii and shadows, the same few values repeat across a page, and repetition is what makes a design look deliberate.',
+  },
+  {
+    key: 'agent',
+    title: 'Easier for a coding agent',
+    text: 'Code models invent props and choose worse as options pile up. One vocabulary on every prop leaves little to invent, and the result is quick to review.',
+  },
+];
+
+const ENTRY_POINTS: InfoCardItem[] = [
+  {
+    key: 'principles',
+    title: <Link href="/principles">Principles</Link>,
     text: 'The decisions that run through every component, each with its reasons and what it costs.',
   },
   {
-    href: STORYBOOK_URL,
-    title: 'Components',
+    key: 'components',
+    title: (
+      <Link href={STORYBOOK_URL} target="_blank" rel="noopener">
+        Components
+      </Link>
+    ),
     text: 'Every component in Storybook: try each one, change its props, and read how it behaves.',
-    external: true,
   },
   {
-    href: '/about',
-    title: 'About',
+    key: 'about',
+    title: <Link href="/about">About</Link>,
     text: 'Who made it, and the experience in human-computer interaction behind the choices.',
   },
 ];
@@ -60,83 +106,33 @@ export function Landing() {
 
       <section className={styles.sectionTight} aria-labelledby="try-title">
         <Stack gap="more">
-          <Stack gap="normal" className={styles.heroText}>
-            <Title as="h2" id="try-title">
-              See it, then make it yours
-            </Title>
-            <Text as="p">
-              Below is a booking page for a pottery studio, built from nothing but this library. Use
-              it, then change the tokens and watch every part follow. A look of your own takes a few
-              variables, not a rewrite.
-            </Text>
-          </Stack>
+          <SectionIntro id="try-title" title="See it, then make it yours">
+            Below is a booking page for a pottery studio, built from nothing but this library. Use
+            it, then change the tokens and watch every part follow. A look of your own takes a few
+            variables, not a rewrite.
+          </SectionIntro>
           <Customiser />
           <Showcase />
         </Stack>
       </section>
 
+      <section className={styles.section} aria-labelledby="ready-title">
+        <Stack gap="more">
+          <SectionIntro id="ready-title" title="Beautiful before you have learned anything">
+            Every component looks finished with no setup. Reach for the same three words and a few
+            variables, and it stays that way.
+          </SectionIntro>
+          <InfoCards items={STRENGTHS} />
+        </Stack>
+      </section>
+
       <section className={styles.section} aria-labelledby="why-three-title">
         <Stack gap="more">
-          <Stack gap="normal" className={styles.heroText}>
-            <Title as="h2" id="why-three-title">
-              Why three
-            </Title>
-            <Text as="p">
-              Every choice is something a person has to read, compare and remember, whether they use
-              the interface or build it. Three is what we kept.
-            </Text>
-          </Stack>
-
-          <Card padding="more">
-            <Stack gap="more">
-              <Title as="h3">
-                Less to decide, for the person using it and the person building it
-              </Title>
-              <Part label="Why">
-                <Stack gap="normal">
-                  <Text as="p">
-                    People choose slower as the options grow, and they hold about four things in
-                    mind at once, not seven. Three steps fit. Nobody looks up whether{' '}
-                    <code>md</code> is bigger than <code>base</code>: the words say it.
-                  </Text>
-                  <Text as="p">
-                    For the person using it, a card and a button agree, so nothing is learned twice.
-                    For the person building it, there is one rule and fifteen variables to theme.
-                  </Text>
-                </Stack>
-              </Part>
-              <Part label="The honest limit">
-                <Text as="p">
-                  More choice is not always worse: across 50 experiments the average effect was
-                  close to zero. Our claim is narrower. On one ordered scale, three steps you can
-                  tell apart beat five that blur. We have not measured that here.
-                </Text>
-              </Part>
-            </Stack>
-          </Card>
-
-          <Card padding="more">
-            <Stack gap="more">
-              <Title as="h3">Easier for a coding agent to get right</Title>
-              <Part label="Why">
-                <Text as="p">
-                  Code models invent props and misuse APIs, and they choose worse as the options
-                  pile up. A closed vocabulary leaves little to invent: the same three words work on
-                  every prop, and there is no <code>variant</code>, no color named for a meaning.
-                  And <code>less</code> says what you meant, so whoever reviews the agent’s work can
-                  read it at a glance.
-                </Text>
-              </Part>
-              <Part label="The honest limit">
-                <Text as="p">
-                  Nobody has compared three steps with five for agent-written code. This is an
-                  inference from the findings, not a result. And the library does not enforce it:{' '}
-                  <code>size</code> takes any CSS length, so <code>size=&quot;lg&quot;</code> is not
-                  a type error. It is quietly ignored.
-                </Text>
-              </Part>
-            </Stack>
-          </Card>
+          <SectionIntro id="why-three-title" title="Why three">
+            Every choice is something a person has to read, compare and remember. Three is what we
+            kept.
+          </SectionIntro>
+          <InfoCards items={REASONS} />
         </Stack>
       </section>
 
@@ -155,30 +151,12 @@ import { Button } from 'more-or-less-ui';`}
         </Stack>
       </section>
 
-      <section className={styles.section} aria-labelledby="reasoning-title">
+      <section className={styles.section} aria-labelledby="explore-title">
         <Stack gap="more">
-          <Title as="h2" id="reasoning-title">
-            The reasoning
+          <Title as="h2" id="explore-title">
+            Keep exploring
           </Title>
-          <Grid columns={{ minWidth: '18rem' }} gap="more">
-            {ENTRY_POINTS.map((entry) => (
-              <Card key={entry.href}>
-                <Stack gap="normal">
-                  <Title as="h3" size="less">
-                    <Link
-                      href={entry.href}
-                      {...('external' in entry && { target: '_blank', rel: 'noopener' })}
-                    >
-                      {entry.title}
-                    </Link>
-                  </Title>
-                  <Text as="p" color="less">
-                    {entry.text}
-                  </Text>
-                </Stack>
-              </Card>
-            ))}
-          </Grid>
+          <InfoCards items={ENTRY_POINTS} />
         </Stack>
       </section>
     </div>
